@@ -1,0 +1,56 @@
+Current project vs Classic 1.4.3 School.unity
+Coord: gx=(ux-5)*0.2  gz=(uz+5)*-0.2+2  snap 2
+Size: Unity tile 10x10x10 -> project 2x2x2
+Yellow door 2x2, blue/faculty door 1x2 in 2-tall wall
+
+Unity named objects Floor=682 Ceiling=682 Wall=927
+
+FLOORS: unity=682 project=682 match=682 missing_in_project=0 extra_in_project=0
+CEILINGS: unity=682 project=682 match=682 missing_in_project=0 extra_in_project=0
+WALLS (tile,side): unity=704 project=704 match=704 missing_in_project=0 extra_in_project=0
+
+YELLOW / SWING DOORS (project left as-is; compare tile presence)
+  unity swing tiles=10 project=11
+  OK   Hall_SwingDoor (5)           tile=(12.0, -66.0) project side=e unity_walls=['n', 's'] yaw=0.0->n
+  OK   Hall_SwingDoor_Side (1)      tile=(-22.0, -58.0) project side=n unity_walls=['w'] yaw=0.0->n
+  OK   Cafe_Door                    tile=(-20.0, -58.0) project side=n unity_walls=['w'] yaw=0.0->n
+  OK   Cafe_Door (1)                tile=(4.0, -58.0) project side=s unity_walls=['e'] yaw=180.0->s
+  OK   Hall_SwingDoor_Side          tile=(6.0, -58.0) project side=s unity_walls=['e'] yaw=180.0->s
+  OK   Hall_SwingDoor_Pls           tile=(-6.0, -38.0) project side=w unity_walls=['n', 's'] yaw=0.0->n
+  OK   Hall_SwingDoor (3)           tile=(6.0, -38.0) project side=n unity_walls=['e', 'w'] yaw=270.0->w
+  OK   Hall_SwingDoor               tile=(0.0, -8.0) project side=n unity_walls=['e', 'w'] yaw=270.0->w
+  OK   Hall_SwingDoor (1)           tile=(-8.0, 0.0) project side=w unity_walls=['n', 's'] yaw=180.0->s
+  OK   Hall_SwingDoor (2)           tile=(8.0, 0.0) project side=e unity_walls=['n', 's'] yaw=0.0->n
+  EXTRA swing (0.0,2.0) s (not a Unity Hall_SwingDoor tile)
+
+BLUE CLASS + BROWN FACULTY DOORS
+  OK   class   Hall_2Wall_Door (7)          tile=(22.0, -60.0) project=e unity_yaw=e 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   class   Hall_2Wall_Door (4)          tile=(-22.0, -54.0) project=e unity_yaw=e 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   class   Hall_2Wall_Door (6)          tile=(-6.0, -48.0) project=n unity_yaw=n 1x2 unity_walls=['n', 's'] wall_on_door_side=yes
+  OK   class   Hall_2Wall_Door (3)          tile=(6.0, -32.0) project=e unity_yaw=e 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   class   Hall_2Wall_Door (5)          tile=(22.0, -32.0) project=e unity_yaw=e 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   class   Hall_2Wall_Door (2)          tile=(4.0, -26.0) project=n unity_yaw=n 1x2 unity_walls=['n', 's'] wall_on_door_side=yes
+  OK   class   Hall_2Wall_Door              tile=(0.0, -6.0) project=w unity_yaw=w 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   class   Hall_2Wall_Door (9)          tile=(12.0, -6.0) project=w unity_yaw=w 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   class   Hall_2Wall_Door (1)          tile=(0.0, -4.0) project=e unity_yaw=e 1x2 unity_walls=['w'] wall_on_door_side=NO
+  OK   faculty Hall_2Wall_FacultyDoor       tile=(6.0, -46.0) project=w unity_yaw=w 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   faculty Hall_2Wall_FacultyDoor (1)   tile=(-22.0, -32.0) project=w unity_yaw=w 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   faculty Hall_2Wall_FacultyDoor (3)   tile=(-6.0, -26.0) project=n unity_yaw=n 1x2 unity_walls=['n', 's'] wall_on_door_side=yes
+  OK   faculty Hall_2Wall_FacultyDoor (4)   tile=(22.0, -18.0) project=e unity_yaw=e 1x2 unity_walls=['e', 'w'] wall_on_door_side=yes
+  OK   faculty Hall_2Wall_FacultyDoor (2)   tile=(-16.0, 0.0) project=s unity_yaw=s 1x2 unity_walls=['n', 's'] wall_on_door_side=yes
+  blue/faculty side match 14/14
+
+SIZE CONTRACT (project emitters)
+  floor/ceil/wall quad: 2 x 2 (full tile)
+  yellow swing door:    2 x 2 (hw=1.0)
+  blue/faculty door:    1 x 2 (hw=0.5) + 0.5 jambs each side
+
+VERDICT
+  floors    MATCH
+  ceilings  MATCH
+  walls     MATCH
+  yellow    tile mismatch (sides are corridor openings, not Unity yaw)
+  blue      sides match Unity yaw
+
+Note: Unity combines many meshes; named Floor/Wall/Ceiling objects are the
+tile pieces. CombinedMeshes_* are furniture/lockers and are not in school_map.

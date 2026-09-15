@@ -1,0 +1,487 @@
+function bb_nav_build() {
+    if (variable_global_exists("nav_n") && ds_exists(global.nav_n, ds_type_map)) {
+        ds_map_destroy(global.nav_n);
+    }
+    global.nav_n = ds_map_create();
+    if (variable_global_exists("nav_portals") && ds_exists(global.nav_portals, ds_type_map)) {
+        ds_map_destroy(global.nav_portals);
+    }
+    global.nav_portals = ds_map_create();
+    var _keys = ds_map_keys_to_array(global.floors);
+    if (variable_struct_exists(global.map, "nav_edges")) {
+        for (var _i = 0; _i < array_length(_keys); _i++) ds_map_set(global.nav_n, _keys[_i], []);
+        for (var _i = 0; _i < array_length(global.map.nav_edges); _i++) {
+            var _e = global.map.nav_edges[_i];
+            var _a = bb_key(_e.a[0], _e.a[1]), _b = bb_key(_e.b[0], _e.b[1]);
+            var _an = ds_map_find_value(global.nav_n, _a), _bn = ds_map_find_value(global.nav_n, _b);
+            array_push(_an, _b);
+            array_push(_bn, _a);
+            ds_map_set(global.nav_n, _a, _an);
+            ds_map_set(global.nav_n, _b, _bn);
+            ds_map_set(global.nav_portals, _a + "|" + _b, _e.p);
+            ds_map_set(global.nav_portals, _b + "|" + _a, _e.p);
+        }
+        return;
+    }
+    var _i;
+    var _dirs = [[2, 0, "e", "w"], [-2, 0, "w", "e"], [0, 2, "s", "n"], [0, -2, "n", "s"]];
+    for (_i = 0; _i < array_length(_keys); _i++) {
+        var _k = _keys[_i];
+        var _p = string_split(_k, ",");
+        var _x = real(_p[0]);
+        var _z = real(_p[1]);
+        var _nb = [];
+        var _d;
+        for (_d = 0; _d < 4; _d++) {
+            var _nx = _x + _dirs[_d][0];
+            var _nz = _z + _dirs[_d][1];
+            var _nk = bb_key(_nx, _nz);
+            if (!ds_map_exists(global.floors, _nk)) {
+                continue;
+            }
+            if (bb_edge_solid(_x, _z, _dirs[_d][2]) || bb_edge_solid(_nx, _nz, _dirs[_d][3])) {
+                continue;
+            }
+            array_push(_nb, _nk);
+        }
+        ds_map_set(global.nav_n, _k, _nb);
+    }
+}
+
+function bb_edge_solid(_x, _z, _side) {
+    if (!variable_global_exists("wall_edge") || !ds_exists(global.wall_edge, ds_type_map)) {
+        return false;
+    }
+    return ds_map_exists(global.wall_edge, bb_key(_x, _z) + "," + _side);
+}
+
+function bb_tile_snap(_v) {
+    return round(_v / 2) * 2;
+}
+
+function bb_nav_nearest(_sx, _sz) {
+    var _sk = bb_key(bb_tile_snap(_sx), bb_tile_snap(_sz));
+    if (ds_map_exists(global.nav_n, _sk)) {
+        return _sk;
+    }
+    var _best = "";
+    var _best_d = 100000;
+    var _keys = ds_map_keys_to_array(global.nav_n);
+    var _i;
+    for (_i = 0; _i < array_length(_keys); _i++) {
+        var _p = string_split(_keys[_i], ",");
+        var _dx = real(_p[0]) - _sx;
+        var _dz = real(_p[1]) - _sz;
+        var _d = _dx * _dx + _dz * _dz;
+        if (_d < _best_d) {
+            _best_d = _d;
+            _best = _keys[_i];
+        }
+    }
+    return _best;
+}
+
+function bb_nav_step(_sx, _sz, _gx, _gz) {
+    if (!variable_global_exists("nav_n") || !ds_exists(global.nav_n, ds_type_map)) {
+        return [_sx, _sz];
+    }
+    var _sk = bb_nav_nearest(_sx, _sz);
+    var _gk = bb_nav_nearest(_gx, _gz);
+    if (_sk == "" || _gk == "") {
+        return [_sx, _sz];
+    }
+    var _sp = string_split(_sk, ",");
+    var _sx2 = real(_sp[0]);
+    var _sz2 = real(_sp[1]);
+    if (_sk == _gk) {
+        return [_gx, _gz];
+    }
+    var _came = ds_map_create();
+    var _cost = ds_map_create();
+    var _open = ds_priority_create();
+    ds_map_set(_cost, _sk, 0);
+    ds_priority_add(_open, _sk, 0);
+    var _found = "";
+    var _guard = 0;
+    var _gp = string_split(_gk, ",");
+    var _gtx = real(_gp[0]);
+    var _gtz = real(_gp[1]);
+    while (!ds_priority_empty(_open) && _guard < 2500) {
+        _guard += 1;
+        var _cur = ds_priority_delete_min(_open);
+        if (_cur == _gk) {
+            _found = _cur;
+            break;
+        }
+        var _nbs = ds_map_find_value(global.nav_n, _cur);
+        if (!is_array(_nbs)) {
+            continue;
+        }
+        var _i;
+        for (_i = 0; _i < array_length(_nbs); _i++) {
+            var _nb = _nbs[_i];
+            var _nc = ds_map_find_value(_cost, _cur) + 1;
+            if (!ds_map_exists(_cost, _nb) || _nc < ds_map_find_value(_cost, _nb)) {
+                ds_map_set(_cost, _nb, _nc);
+                ds_map_set(_came, _nb, _cur);
+                var _pp = string_split(_nb, ",");
+                var _h = abs(real(_pp[0]) - _gtx) + abs(real(_pp[1]) - _gtz);
+                ds_priority_add(_open, _nb, _nc + _h * 0.5);
+            }
+        }
+    }
+    var _wx = _sx2;
+    var _wz = _sz2;
+    if (_found != "") {
+        var _step = _found;
+        var _prev = _step;
+        while (ds_map_exists(_came, _step) && ds_map_find_value(_came, _step) != _sk) {
+            _prev = _step;
+            _step = ds_map_find_value(_came, _step);
+        }
+        if (ds_map_exists(_came, _step)) {
+            _prev = _step;
+        }
+        var _wp = string_split(_prev, ",");
+        _wx = real(_wp[0]);
+        _wz = real(_wp[1]);
+        var _portal_key = _sk + "|" + _prev;
+        if (ds_map_exists(global.nav_portals, _portal_key)) {
+            var _portal = ds_map_find_value(global.nav_portals, _portal_key);
+            if (bb_dist2(_sx, _sz, _portal[0], _portal[1]) > 0.0004) {
+                _wx = _portal[0];
+                _wz = _portal[1];
+            }
+        }
+    }
+    ds_map_destroy(_came);
+    ds_map_destroy(_cost);
+    ds_priority_destroy(_open);
+    return [_wx, _wz];
+}
+
+function bb_blocked_world(_px, _pz, _r, _doors_block) {
+    var _i;
+    for (_i = 0; _i < array_length(global.walls); _i++) {
+        var _w = global.walls[_i];
+        if (bb_aabb_hit(_px, _pz, _r, _w.x0, _w.z0, _w.x1, _w.z1)) {
+            return true;
+        }
+    }
+    // All actors collide with jambs and locked doors. NPCs may open unlocked doors.
+    {
+        var _g = global.G;
+        for (_i = 0; _i < array_length(_g.doors); _i++) {
+            var _d = _g.doors[_i];
+            if (_d.kind == "swing") {
+                if (!_d.locked) {
+                    continue;
+                }
+                var _box = bb_door_box(_d);
+                if (bb_aabb_hit(_px, _pz, _r, _box[0], _box[1], _box[2], _box[3])) {
+                    return true;
+                }
+            } else {
+                if (!variable_struct_exists(_d, "v")) {
+                    var _j0 = bb_door_jamb_box(_d, -1);
+                    var _j1 = bb_door_jamb_box(_d, 1);
+                    if (bb_aabb_hit(_px, _pz, _r, _j0[0], _j0[1], _j0[2], _j0[3])) return true;
+                    if (bb_aabb_hit(_px, _pz, _r, _j1[0], _j1[1], _j1[2], _j1[3])) return true;
+                }
+                if (!_d.open && (_doors_block || _d.locked || _d.lock_cd > 0)) {
+                    var _box2 = bb_door_box(_d);
+                    if (bb_aabb_hit(_px, _pz, _r, _box2[0], _box2[1], _box2[2], _box2[3])) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    if (!bb_on_floor(_px, _pz)) {
+        return true;
+    }
+    return false;
+}
+
+function bb_move_slide(_x, _z, _dx, _dz, _r, _doors_block) {
+    var _step = 0.08;
+    var _len = sqrt(_dx * _dx + _dz * _dz);
+    if (_len < 0.0001) {
+        return [_x, _z];
+    }
+    var _left = _len;
+    var _ux = _dx / _len;
+    var _uz = _dz / _len;
+    while (_left > 0.0001) {
+        var _use = min(_step, _left);
+        var _nx = _x + _ux * _use;
+        var _nz = _z + _uz * _use;
+        if (!bb_blocked_world(_nx, _nz, _r, _doors_block)) {
+            _x = _nx;
+            _z = _nz;
+            _left -= _use;
+            continue;
+        }
+        if (!bb_blocked_world(_x + _ux * _use, _z, _r, _doors_block)) {
+            _x += _ux * _use;
+            _left -= _use;
+            continue;
+        }
+        if (!bb_blocked_world(_x, _z + _uz * _use, _r, _doors_block)) {
+            _z += _uz * _use;
+            _left -= _use;
+            continue;
+        }
+        break;
+    }
+    return [_x, _z];
+}
+
+function bb_nav_advance(_x, _z, _tx, _tz, _dist, _r, _doors_block) {
+    var _remain = _dist;
+    var _guard = 0;
+    while (_remain > 0.00001 && _guard < 24) {
+        _guard += 1;
+        var _wp = bb_nav_step(_x, _z, _tx, _tz);
+        var _dx = _wp[0] - _x;
+        var _dz = _wp[1] - _z;
+        var _len = sqrt(_dx * _dx + _dz * _dz);
+        if (_len < 0.00001) {
+            break;
+        }
+        var _use = min(_remain, _len);
+        var _sl = bb_move_slide(_x, _z, (_dx / _len) * _use, (_dz / _len) * _use, _r, _doors_block);
+        var _moved = sqrt(sqr(_sl[0] - _x) + sqr(_sl[1] - _z));
+        _x = _sl[0];
+        _z = _sl[1];
+        if (_moved < 0.00001) {
+            break;
+        }
+        _remain -= _moved;
+    }
+    return [_x, _z];
+}
+
+function bb_los(_ax, _az, _bx, _bz) {
+    var _dx = _bx - _ax;
+    var _dz = _bz - _az;
+    var _len = sqrt(_dx * _dx + _dz * _dz);
+    if (_len < 0.2) {
+        return true;
+    }
+    var _steps = ceil(_len / 0.35);
+    var _i;
+    for (_i = 1; _i < _steps; _i++) {
+        var _t = _i / _steps;
+        var _x = _ax + _dx * _t;
+        var _z = _az + _dz * _t;
+        if (bb_blocked_world(_x, _z, 0.08, false)) {
+            return false;
+        }
+        if (bb_los_door_block(_x, _z)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function bb_los_door_block(_x, _z) {
+    var _g = global.G;
+    var _i;
+    for (_i = 0; _i < array_length(_g.doors); _i++) {
+        var _d = _g.doors[_i];
+        if (_d.open || _d.kind == "swing") {
+            continue;
+        }
+        var _box = bb_door_box(_d);
+        if (bb_aabb_hit(_x, _z, 0.08, _box[0], _box[1], _box[2], _box[3])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function bb_baldi_recalc_wait() {
+    var _g = global.G;
+    var _a = _g.baldi_anger;
+    if (_a < 0.5) {
+        _a = 0.5;
+        _g.baldi_anger = 0.5;
+    }
+    _g.baldi_wait = -3 * _a / (_a + 2 / 0.65) + 3;
+}
+
+function bb_get_angry(_value) {
+    var _g = global.G;
+    if (!_g.spoop_mode) {
+        bb_activate_spoop();
+    }
+    _g.baldi_anger += _value;
+    bb_baldi_recalc_wait();
+}
+
+function bb_get_temp_angry(_value) {
+    global.G.baldi_extra += _value;
+}
+
+function bb_hear(_x, _z) {
+    bb_hear_pri(_x, _z, 1);
+}
+
+function bb_hear_pri(_x, _z, _pri) {
+    var _g = global.G;
+    if (_g.anti_hear <= 0 && _pri >= _g.hear_pri) {
+        _g.hear_x = _x;
+        _g.hear_z = _z;
+        _g.hear_pri = _pri;
+    }
+}
+
+function bb_update_baldi(_dt) {
+    var _g = global.G;
+    if (!_g.baldi_active || _g.state != "play" || _g.debug.freeze_baldi) {
+        return;
+    }
+    if (_g.baldi_sprayed) {
+        _g.baldi_move = 0;
+        _g.baldi_cd = max(0.2, _g.baldi_cd - _dt);
+        return;
+    }
+    if (_g.baldi_extra > 0) {
+        _g.baldi_extra = max(0, _g.baldi_extra - 0.02 * _dt);
+    } else {
+        _g.baldi_extra = 0;
+    }
+    if (_g.baldi_cool > 0) {
+        _g.baldi_cool -= _dt;
+    }
+    if (bb_los(_g.baldi_x, _g.baldi_z, _g.px, _g.pz)) {
+        _g.hear_x = _g.px;
+        _g.hear_z = _g.pz;
+        _g.hear_pri = 0;
+        _g.baldi_cool = 1;
+    }
+    if (_g.baldi_move > 0) {
+        var _move_dt = min(_dt, _g.baldi_move);
+        _g.baldi_move -= _move_dt;
+        bb_npc_touch_doors(_g.baldi_x, _g.baldi_z, 0.4);
+        var _pos = bb_nav_advance(_g.baldi_x, _g.baldi_z, _g.hear_x, _g.hear_z, 15 * _move_dt, 0.28, true);
+        var _spray = bb_spray_contact(_g.baldi_x, _g.baldi_z, _pos[0], _pos[1], 1.28);
+        if (_spray != -1) {
+            bb_soda_push_baldi(_g.sprays[_spray], _dt);
+            _g.baldi_move = 0;
+            return;
+        }
+        _g.baldi_x = _pos[0];
+        _g.baldi_z = _pos[1];
+        bb_npc_touch_doors(_g.baldi_x, _g.baldi_z, 0.4);
+    }
+    if (_g.baldi_cd > 0) {
+        _g.baldi_cd -= _dt;
+    } else {
+        if (bb_dist2(_g.baldi_x, _g.baldi_z, _g.baldi_prev_x, _g.baldi_prev_z) < 0.04 && _g.baldi_cool < 0) {
+            bb_baldi_wander();
+            _g.hear_pri = 0;
+        }
+        bb_world_sound(snd_bal_slap, _g.baldi_x, _g.baldi_z, 3, 100);
+        _g.baldi_frame = 0;
+        _g.baldi_move = 0.2;
+        _g.baldi_cd = max(0.2, _g.baldi_wait - _g.baldi_extra);
+        _g.baldi_prev_x = _g.baldi_x;
+        _g.baldi_prev_z = _g.baldi_z;
+    }
+    _g.baldi_frame = min(4, _g.baldi_frame + 18 * _dt);
+    if (bb_dist2(_g.px, _g.pz, _g.baldi_x, _g.baldi_z) < 0.7 * 0.7) {
+        bb_gameover();
+    }
+}
+
+function bb_baldi_wander() {
+    var _g = global.G;
+    var _keys = ds_map_keys_to_array(global.floors);
+    if (array_length(_keys) == 0) {
+        return;
+    }
+    var _k = _keys[irandom(array_length(_keys) - 1)];
+    var _p = string_split(_k, ",");
+    _g.hear_x = real(_p[0]);
+    _g.hear_z = real(_p[1]);
+}
+
+function bb_npc_touch_doors(_x, _z, _r) {
+    var _g = global.G;
+    var _i;
+    for (_i = 0; _i < array_length(_g.doors); _i++) {
+        var _d = _g.doors[_i];
+        if (bb_door_touching(_d, _x, _z, _r)) {
+            bb_door_try_open(_d, false);
+        }
+    }
+}
+
+function bb_walk_nav_end(_x, _z, _dx, _dz) {
+    var _k = bb_nav_nearest(_x, _z);
+    if (_k == "") {
+        return [_x, _z];
+    }
+    var _guard = 0;
+    while (_guard < 80) {
+        _guard += 1;
+        var _p = string_split(_k, ",");
+        var _cx = real(_p[0]);
+        var _cz = real(_p[1]);
+        var _nk = bb_key(_cx + _dx, _cz + _dz);
+        var _nbs = ds_map_find_value(global.nav_n, _k);
+        var _ok = false;
+        if (is_array(_nbs)) {
+            var _i;
+            for (_i = 0; _i < array_length(_nbs); _i++) {
+                if (_nbs[_i] == _nk) {
+                    _ok = true;
+                    break;
+                }
+            }
+        }
+        if (!_ok) {
+            return [_cx, _cz];
+        }
+        _k = _nk;
+    }
+    var _p2 = string_split(_k, ",");
+    return [real(_p2[0]), real(_p2[1])];
+}
+
+function bb_baldi_chase_spawn() {
+    var _g = global.G;
+    var _ax = _g.tutor_x - _g.px;
+    var _az = _g.tutor_z - _g.pz;
+    var _card = [[2, 0], [-2, 0], [0, 2], [0, -2]];
+    var _best = 0;
+    var _best_d = -100000;
+    var _i;
+    for (_i = 0; _i < 4; _i++) {
+        var _dot = _card[_i][0] * _ax + _card[_i][1] * _az;
+        if (_dot > _best_d) {
+            _best_d = _dot;
+            _best = _i;
+        }
+    }
+    var _end = bb_walk_nav_end(_g.tutor_x, _g.tutor_z, _card[_best][0], _card[_best][1]);
+    if (bb_dist2(_end[0], _end[1], _g.tutor_x, _g.tutor_z) < 8) {
+        var _far = _end;
+        var _far_d = -1;
+        for (_i = 0; _i < 4; _i++) {
+            var _e2 = bb_walk_nav_end(_g.tutor_x, _g.tutor_z, _card[_i][0], _card[_i][1]);
+            if (bb_dist2(_e2[0], _e2[1], _g.px, _g.pz) < 9) {
+                continue;
+            }
+            var _td = bb_dist2(_e2[0], _e2[1], _g.tutor_x, _g.tutor_z);
+            if (_td > _far_d) {
+                _far_d = _td;
+                _far = _e2;
+            }
+        }
+        _end = _far;
+    }
+    return _end;
+}

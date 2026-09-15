@@ -1,0 +1,64 @@
+=== GameMaker runtime dump via gm-cli run (VM 2026.0.0.23) ===
+working_directory=D:\Github\baldibasicForGM\.gmcache\build-gms2-windows-VM\output\
+PLAYER x=0 y=1 z=2 yaw=0 fwd=(-sin(yaw),-cos(yaw)) yaw0=-Z
+TUTOR x=-0.30 y=0.79 z=-1 wave_spr=__newsprite43 142x256
+BALDI_HOME x=0 z=-24 slap0=__newsprite143 106x256
+FLOORS 682 COLLISION_WALLS 683
+WALL_QUADS n=151 s=147 e=192 w=193
+
+=== DOORS kind x z side lock_start locked tex ===
+0 swing x=12 z=-66 side=e lock_start=0 locked=1 tex=spr_tex_swing0 256x256
+1 swing x=-22 z=-58 side=n lock_start=0 locked=1 tex=spr_tex_swing0 256x256
+2 swing x=-20 z=-58 side=n lock_start=0 locked=1 tex=spr_tex_swing0 256x256
+3 swing x=4 z=-58 side=s lock_start=0 locked=1 tex=spr_tex_swing0 256x256
+4 swing x=6 z=-58 side=s lock_start=0 locked=1 tex=spr_tex_swing0 256x256
+5 swing x=-6 z=-38 side=w lock_start=0 locked=1 tex=spr_tex_swing0 256x256
+6 swing x=6 z=-38 side=n lock_start=0 locked=1 tex=spr_tex_swing0 256x256
+7 swing x=0 z=-8 side=n lock_start=1 locked=1 tex=spr_tex_swing0 256x256
+8 swing x=-8 z=0 side=w lock_start=1 locked=1 tex=spr_tex_swing0 256x256
+9 swing x=8 z=0 side=e lock_start=1 locked=1 tex=spr_tex_swing0 256x256
+10 swing x=0 z=2 side=s lock_start=1 locked=1 tex=spr_tex_swing0 256x256
+11 class x=22 z=-60 side=e lock_start=0 locked=0 tex=spr_tex_door 128x256
+12 class x=-22 z=-54 side=e lock_start=0 locked=0 tex=spr_tex_door 128x256
+13 class x=-6 z=-48 side=n lock_start=0 locked=0 tex=spr_tex_door 128x256
+14 class x=6 z=-32 side=e lock_start=0 locked=0 tex=spr_tex_door 128x256
+15 class x=22 z=-32 side=e lock_start=0 locked=0 tex=spr_tex_door 128x256
+16 class x=4 z=-26 side=n lock_start=0 locked=0 tex=spr_tex_door 128x256
+17 class x=0 z=-6 side=w lock_start=0 locked=0 tex=spr_tex_door 128x256
+18 class x=12 z=-6 side=w lock_start=0 locked=0 tex=spr_tex_door 128x256
+19 class x=0 z=-4 side=e lock_start=0 locked=0 tex=spr_tex_door 128x256
+20 faculty x=6 z=-46 side=w lock_start=0 locked=0 tex=runtime_faculty 128x256
+21 faculty x=-22 z=-32 side=w lock_start=0 locked=0 tex=runtime_faculty 128x256
+22 faculty x=-6 z=-26 side=n lock_start=0 locked=0 tex=runtime_faculty 128x256
+23 faculty x=22 z=-18 side=e lock_start=0 locked=0 tex=runtime_faculty 128x256
+24 faculty x=-16 z=0 side=s lock_start=0 locked=0 tex=runtime_faculty 128x256
+
+=== NOTEBOOKS (7) ===
+0 x=-6 y=0.78 z=-5 spr=runtime_nb_green 101x128
+1 x=6 y=0.78 z=-5 spr_nb_red 101x128
+2 x=6 y=0.78 z=-20 spr_nb_blue 101x128
+3 x=-8 y=0.78 z=-43 spr_nb_yellow 101x128
+4 x=-16 y=0.78 z=-8 spr_nb_cyan 101x128
+5 x=-6 y=0.78 z=-18 spr_nb_salmon 101x128
+6 x=-14 y=0.78 z=-32 spr_nb_black 101x128
+
+=== ITEMS ===
+0 x=-15.60 y=0.35 z=-8.40 kind=1 spr_zesty 64x64 Zesty
+1 x=-5.60 y=0.35 z=-18.40 kind=4 spr_bsoda 64x64 BSODA
+2 x=-13.60 y=0.35 z=-32.40 kind=1 spr_zesty 64x64 Zesty
+3 x=1.40 y=0.35 z=-32.40 kind=4 spr_bsoda 64x64 BSODA
+4 x=1.40 y=0.35 z=-32.40 kind=3 spr_key 64x64 Principal's Keys  << SAME POSITION AS ITEM 3
+
+=== NPCS (live=0 until first wrong) ===
+principal x=1 y=0.90 z=-33 h=1.64 spr 256x512
+playtime x=-22 y=0.90 z=-28 h=1.64 spr 653x593
+bully x=0 y=0.90 z=1 h=1.64 spr 256x256  << NEXT TO PLAYER SPAWN (0,2)
+sweep x=15 y=1.10 z=-6 h=1.64 spr 256x256
+crafters x=-2 y=0.90 z=-59 h=1.64 spr 1126x2048
+prize x=-14 y=0.90 z=-38 h=1.64 spr 256x256
+
+=== EXITS ===
+south x=0 z=4 spr_exit_sign 128x128
+west x=-22 z=-58
+cafe x=6 z=-58
+east x=12 z=-66

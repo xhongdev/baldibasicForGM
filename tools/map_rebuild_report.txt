@@ -1,0 +1,36 @@
+Classic 1.4.3 Unity-only map rebuild simulation
+
+Coord: gx=(ux-5)*0.2  gz=(uz+5)*-0.2+2  snap 2
+Unity yaw 0 (+Z) = project n (-Z). Tile 10 Unity = 2 project.
+Class door 1x2, swing door 2x2, wall height 2.
+
+Player unity=(5.0,-5.0) project=(0.00,2.00) yaw=0.0
+Tutor  unity=(4.0,10.0) project=(-0.20,-1.00)
+Baldi  unity=(5.0,125.0) project=(0.0,-24.0)
+
+OK     Hall_SwingDoor (2)           u=(   45.0,    5.0) raw=(  8.00,   0.00) tile=(8.0, 0.0) yaw=   0.0 prefer=n side=e swing   2.0x2.0 lock=True exit=False walls=['n', 's'] open=['w', 'e'] why=ew-hall-east dist=0.00
+OK     Hall_SwingDoor (1)           u=(  -35.0,    5.0) raw=( -8.00,   0.00) tile=(-8.0, 0.0) yaw= 180.0 prefer=s side=w swing   2.0x2.0 lock=True exit=False walls=['n', 's'] open=['w', 'e'] why=ew-hall-west dist=0.00
+OK     Hall_SwingDoor               u=(    5.0,   45.0) raw=(  0.00,  -8.00) tile=(0.0, -8.0) yaw= 270.0 prefer=w side=n swing   2.0x2.0 lock=True exit=False walls=['e', 'w'] open=['n', 's'] why=ns-hall-north dist=0.00
+OK     Hall_SwingDoor (5)           u=(   65.0,  335.0) raw=( 12.00, -66.00) tile=(12.0, -66.0) yaw=   0.0 prefer=n side=e swing   2.0x2.0 lock=False exit=True walls=['n', 's'] open=['w', 'e'] why=ew-hall-east dist=0.00
+OK     Hall_SwingDoor_Side (1)      u=( -105.0,  295.0) raw=(-22.00, -58.00) tile=(-22.0, -58.0) yaw=   0.0 prefer=n side=n swing   2.0x2.0 lock=False exit=True walls=['w'] open=['n', 's'] why=yaw-open dist=0.00
+OK     Hall_SwingDoor_Side          u=(   35.0,  295.0) raw=(  6.00, -58.00) tile=(6.0, -58.0) yaw= 180.0 prefer=s side=s swing   2.0x2.0 lock=False exit=True walls=['e'] open=['n', 's'] why=yaw-open dist=0.00
+OK     Hall_SwingDoor_Pls           u=(  -25.0,  195.0) raw=( -6.00, -38.00) tile=(-6.0, -38.0) yaw=   0.0 prefer=n side=w swing   2.0x2.0 lock=False exit=False walls=['n', 's'] open=['w', 'e'] why=ew-hall-west dist=0.00
+OK     Hall_SwingDoor (3)           u=(   35.0,  195.0) raw=(  6.00, -38.00) tile=(6.0, -38.0) yaw= 270.0 prefer=w side=n swing   2.0x2.0 lock=False exit=False walls=['e', 'w'] open=['n', 's'] why=ns-hall-north dist=0.00
+OK     Hall_2Wall_Door (1)          u=(    5.0,   25.0) raw=(  0.00,  -4.00) tile=(0.0, -4.0) yaw=  90.0 prefer=e side=w class   1.0x2.0 lock=False exit=False walls=['e'] open=['n', 's', 'w'] why=carpet-open dist=0.00
+OK     Hall_2Wall_Door              u=(    5.0,   35.0) raw=(  0.00,  -6.00) tile=(0.0, -6.0) yaw= 270.0 prefer=w side=e class   1.0x2.0 lock=False exit=False walls=['w'] open=['n', 's', 'e'] why=carpet-open dist=0.00
+PUNCH  Hall_2Wall_Door (5)          u=(  115.0,  165.0) raw=( 22.00, -32.00) tile=(22.0, -32.0) yaw=  90.0 prefer=e side=e class   1.0x2.0 lock=False exit=False walls=['e'] open=['n', 's'] why=yaw-wall dist=0.00
+PUNCH  Hall_2Wall_Door (7)          u=(  115.0,  305.0) raw=( 22.00, -60.00) tile=(22.0, -60.0) yaw=  90.0 prefer=e side=e class   1.0x2.0 lock=False exit=False walls=['e'] open=['n', 's'] why=yaw-wall dist=0.00
+PUNCH  Hall_2Wall_Door (4)          u=( -105.0,  275.0) raw=(-22.00, -54.00) tile=(-22.0, -54.0) yaw=  90.0 prefer=e side=e class   1.0x2.0 lock=False exit=False walls=['e'] open=['n', 's'] why=yaw-wall dist=0.00
+OK     Hall_2Wall_Door (6)          u=(  -25.0,  245.0) raw=( -6.00, -48.00) tile=(-6.0, -48.0) yaw=   0.0 prefer=n side=s class   1.0x2.0 lock=False exit=False walls=['n'] open=['s', 'w', 'e'] why=carpet-open dist=0.00
+PUNCH  Hall_2Wall_Door (9)          u=(   65.0,   35.0) raw=( 12.00,  -6.00) tile=(12.0, -6.0) yaw= 270.0 prefer=w side=w class   1.0x2.0 lock=False exit=False walls=['w'] open=['n', 's'] why=yaw-wall dist=0.00
+OK     Hall_2Wall_Door (2)          u=(   25.0,  135.0) raw=(  4.00, -26.00) tile=(4.0, -26.0) yaw=   0.0 prefer=n side=s class   1.0x2.0 lock=False exit=False walls=['n'] open=['s', 'w', 'e'] why=carpet-open dist=0.00
+OK     Hall_2Wall_Door (3)          u=(   35.0,  165.0) raw=(  6.00, -32.00) tile=(6.0, -32.0) yaw=  90.0 prefer=e side=w class   1.0x2.0 lock=False exit=False walls=['e'] open=['n', 's', 'w'] why=carpet-open dist=0.00
+PUNCH  Hall_2Wall_FacultyDoor (4)   u=(  115.0,   95.0) raw=( 22.00, -18.00) tile=(22.0, -18.0) yaw=  90.0 prefer=e side=e faculty 1.0x2.0 lock=False exit=False walls=['e'] open=['n', 's'] why=yaw-wall dist=0.00
+PUNCH  Hall_2Wall_FacultyDoor       u=(   35.0,  235.0) raw=(  6.00, -46.00) tile=(6.0, -46.0) yaw= 270.0 prefer=w side=w faculty 1.0x2.0 lock=False exit=False walls=['w'] open=['n', 's'] why=yaw-wall dist=0.00
+OK     Hall_2Wall_FacultyDoor (1)   u=( -105.0,  165.0) raw=(-22.00, -32.00) tile=(-22.0, -32.0) yaw= 270.0 prefer=w side=e faculty 1.0x2.0 lock=False exit=False walls=['w'] open=['n', 's', 'e'] why=carpet-open dist=0.00
+OK     Hall_2Wall_FacultyDoor (3)   u=(  -25.0,  135.0) raw=( -6.00, -26.00) tile=(-6.0, -26.0) yaw=   0.0 prefer=n side=s faculty 1.0x2.0 lock=False exit=False walls=['n'] open=['s', 'w', 'e'] why=carpet-open dist=0.00
+PUNCH  Hall_2Wall_FacultyDoor (2)   u=(  -75.0,    5.0) raw=(-16.00,   0.00) tile=(-16.0, 0.0) yaw= 180.0 prefer=s side=s faculty 1.0x2.0 lock=False exit=False walls=['n', 's'] open=['w', 'e'] why=yaw-wall dist=0.00
+ADD    south-exit spawn tile=(0.0, 2.0) side=s swing 2x2
+
+doors 23 fails 0
+{'swing': 9, 'class': 9, 'faculty': 5}

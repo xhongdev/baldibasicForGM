@@ -1,0 +1,905 @@
+{
+  "textures": {
+    "yctp_BaldiFeed": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_MathGame_Frown_Bald_Frown0000.png",
+      "source": "Assets/Texture2D/Characters/Baldi/MathGame/Frown/Bald_Frown0000.png",
+      "size": [
+        226,
+        236
+      ]
+    },
+    "yctp_YCTP": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_YCTP2_NoButtons.png",
+      "source": "Assets/Texture2D/YCTPTextures/YCTP2_NoButtons.png",
+      "size": [
+        1024,
+        768
+      ]
+    },
+    "yctp_Button (2)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_2_0.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/2_0.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (7)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_7_0.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/7_0.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (1)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_1_0.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/1_0.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (C)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_C_0.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/C_0.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (-)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_-_0.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/-_0.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (6)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_6_0.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/6_0.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (3)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_3.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/3.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (4)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_4.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/4.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (5)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_5.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/5.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (8)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_8.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/8.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (0)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_0_0.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/0_0.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "yctp_Button (OK)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_OK.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/OK.png",
+      "size": [
+        198,
+        198
+      ]
+    },
+    "yctp_Button (9)": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_NumberPad_9.png",
+      "source": "Assets/Texture2D/YCTPTextures/NumberPad/9.png",
+      "size": [
+        66,
+        66
+      ]
+    },
+    "hud_ItemSlots": {
+      "file": "tex/presentation/Texture2D_HudTextures_ItemSlots.png",
+      "source": "Assets/Texture2D/HudTextures/ItemSlots.png",
+      "size": [
+        256,
+        114
+      ]
+    },
+    "hud_ItemSlot0": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_1pxSprites_Blank.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/1pxSprites/Blank.png",
+      "size": [
+        4,
+        4
+      ]
+    },
+    "hud_ItemSlot1": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_1pxSprites_Blank.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/1pxSprites/Blank.png",
+      "size": [
+        4,
+        4
+      ]
+    },
+    "hud_ItemSlot2": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_1pxSprites_Blank.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/1pxSprites/Blank.png",
+      "size": [
+        4,
+        4
+      ]
+    },
+    "world_5185": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_Billboards_ExitSign.png",
+      "source": "Assets/Texture2D/SchoolHouse/Billboards/ExitSign.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "world_5313": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_SafetyScissors.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/SafetyScissors.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_5419": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Notebooks__nbYellow.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Notebooks/_nbYellow.png",
+      "size": [
+        101,
+        128
+      ]
+    },
+    "world_5794": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_EnergyFlavoredZestyBar.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/EnergyFlavoredZestyBar.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_6499": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Notebooks__nbGreen.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Notebooks/_nbGreen.png",
+      "size": [
+        101,
+        128
+      ]
+    },
+    "world_6531": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_BSODA.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/BSODA.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_6581": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Notebooks__nbSalmon.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Notebooks/_nbSalmon.png",
+      "size": [
+        101,
+        128
+      ]
+    },
+    "world_6832": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_wd_nosquee.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/wd_nosquee.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_6987": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_SafetyScissors.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/SafetyScissors.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_7214": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Key.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Key.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_7293": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_SafetyScissors.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/SafetyScissors.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_7891": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_BootsIcon.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/BootsIcon.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_8056": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_Billboards_ExitSign.png",
+      "source": "Assets/Texture2D/SchoolHouse/Billboards/ExitSign.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "world_8088": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Notebooks__nbBlue.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Notebooks/_nbBlue.png",
+      "size": [
+        101,
+        128
+      ]
+    },
+    "world_8133": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_Billboards_ExitSign.png",
+      "source": "Assets/Texture2D/SchoolHouse/Billboards/ExitSign.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "world_8166": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Notebooks__nbRed.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Notebooks/_nbRed.png",
+      "size": [
+        101,
+        128
+      ]
+    },
+    "world_8411": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_YellowDoorLock.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/YellowDoorLock.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_8528": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_Billboards_ExitSign.png",
+      "source": "Assets/Texture2D/SchoolHouse/Billboards/ExitSign.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "world_8559": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_AlarmClockItem.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/AlarmClockItem.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_9011": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Quarter.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Quarter.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_9250": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Quarter.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Quarter.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_9322": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Notebooks__nbCyan.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Notebooks/_nbCyan.png",
+      "size": [
+        101,
+        128
+      ]
+    },
+    "world_9340": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_Billboards_ExitSign.png",
+      "source": "Assets/Texture2D/SchoolHouse/Billboards/ExitSign.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "world_9436": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Notebooks__nbBlack.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Notebooks/_nbBlack.png",
+      "size": [
+        101,
+        128
+      ]
+    },
+    "world_9471": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_wd_nosquee.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/wd_nosquee.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_9620": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_EnergyFlavoredZestyBar.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/EnergyFlavoredZestyBar.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "world_9897": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Tape.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Tape.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item1": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_EnergyFlavoredZestyBar.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/EnergyFlavoredZestyBar.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item2": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_YellowDoorLock.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/YellowDoorLock.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item3": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Key.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Key.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item4": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_BSODA.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/BSODA.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item5": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Quarter.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Quarter.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item6": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Tape.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Tape.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item7": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_AlarmClockItem.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/AlarmClockItem.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item8": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_wd_nosquee.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/wd_nosquee.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item9": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_SafetyScissors.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/SafetyScissors.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "item10": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_BootsIcon.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/BootsIcon.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "check": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_Check.png",
+      "source": "Assets/Texture2D/YCTPTextures/Check.png",
+      "size": [
+        32,
+        32
+      ]
+    },
+    "xmark": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_X.png",
+      "source": "Assets/Texture2D/YCTPTextures/X.png",
+      "size": [
+        32,
+        32
+      ]
+    },
+    "spray": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Drops_BSODA_Spray.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Drops/BSODA_Spray.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "alarm_drop": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_Drops_AlarmClockDrop.png",
+      "source": "Assets/Texture2D/SchoolHouse/PickUps/Drops/AlarmClockDrop.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "slots": {
+      "file": "tex/presentation/Texture2D_HudTextures_ItemSlots.png",
+      "source": "Assets/Texture2D/HudTextures/ItemSlots.png",
+      "size": [
+        256,
+        114
+      ]
+    }
+  },
+  "hud": {
+    "itemText": {
+      "rect": [
+        430.0,
+        65.0,
+        200.0,
+        50.0
+      ]
+    },
+    "itemSelect": {
+      "rect": [
+        530.0,
+        0.0,
+        30.0,
+        50.0
+      ]
+    },
+    "notebookCount": {
+      "rect": [
+        5.0,
+        0.0,
+        300.0,
+        50.0
+      ]
+    },
+    "ItemSlots": {
+      "rect": [
+        512.0,
+        0.0,
+        128.0,
+        67.0
+      ],
+      "texture": "hud_ItemSlots"
+    },
+    "slot0": {
+      "rect": [
+        532.0,
+        8.0,
+        32.0,
+        32.0
+      ],
+      "texture": "hud_ItemSlot0"
+    },
+    "slot1": {
+      "rect": [
+        570.0,
+        10.0,
+        32.0,
+        32.0
+      ],
+      "texture": "hud_ItemSlot1"
+    },
+    "slot2": {
+      "rect": [
+        608.0,
+        10.0,
+        32.0,
+        32.0
+      ],
+      "texture": "hud_ItemSlot2"
+    }
+  },
+  "yctp": {
+    "BaldiFeed": {
+      "rect": [
+        132.0,
+        284.0,
+        88.0,
+        88.0
+      ],
+      "texture": "yctp_BaldiFeed"
+    },
+    "Result3": {
+      "rect": [
+        133.6,
+        228.96,
+        42.4,
+        42.4
+      ]
+    },
+    "Text": {
+      "rect": [
+        253.9199,
+        290.4,
+        184.0,
+        61.6
+      ]
+    },
+    "YCTP": {
+      "rect": [
+        0.0,
+        0.0,
+        640.0,
+        480.0
+      ],
+      "texture": "yctp_YCTP"
+    },
+    "Result1": {
+      "rect": [
+        138.8,
+        138.8,
+        42.4,
+        42.4
+      ]
+    },
+    "Result2": {
+      "rect": [
+        135.28,
+        182.32,
+        42.4,
+        42.4
+      ]
+    },
+    "Button (2)": {
+      "rect": [
+        518.9749,
+        211.375,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (2)"
+    },
+    "Button (7)": {
+      "rect": [
+        478.175,
+        129.775,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (7)"
+    },
+    "Button (1)": {
+      "rect": [
+        478.1749,
+        211.375,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (1)"
+    },
+    "Button (C)": {
+      "rect": [
+        478.1749,
+        252.175,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (C)"
+    },
+    "Button (-)": {
+      "rect": [
+        559.7751,
+        252.175,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (-)"
+    },
+    "Button (6)": {
+      "rect": [
+        559.775,
+        170.575,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (6)"
+    },
+    "Button (3)": {
+      "rect": [
+        559.7751,
+        211.375,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (3)"
+    },
+    "Button (4)": {
+      "rect": [
+        478.1749,
+        170.575,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (4)"
+    },
+    "Button (5)": {
+      "rect": [
+        518.9749,
+        170.575,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (5)"
+    },
+    "Button (8)": {
+      "rect": [
+        518.9749,
+        129.775,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (8)"
+    },
+    "Button (0)": {
+      "rect": [
+        518.9749,
+        252.175,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (0)"
+    },
+    "Button (OK)": {
+      "rect": [
+        477.7249,
+        292.525,
+        123.75,
+        123.75
+      ],
+      "texture": "yctp_Button (OK)"
+    },
+    "Button (9)": {
+      "rect": [
+        559.775,
+        129.775,
+        41.25,
+        41.25
+      ],
+      "texture": "yctp_Button (9)"
+    },
+    "question": {
+      "rect": [
+        208.08,
+        146.0,
+        236.8,
+        140.0
+      ]
+    },
+    "answer": {
+      "rect": [
+        245.9199,
+        284.8,
+        200.0,
+        72.0
+      ]
+    }
+  },
+  "notebooks": {
+    "5419": {
+      "texture": "world_5419",
+      "w": 0.404,
+      "h": 0.512
+    },
+    "6499": {
+      "texture": "world_6499",
+      "w": 0.404,
+      "h": 0.512
+    },
+    "6581": {
+      "texture": "world_6581",
+      "w": 0.404,
+      "h": 0.512
+    },
+    "8088": {
+      "texture": "world_8088",
+      "w": 0.404,
+      "h": 0.512
+    },
+    "8166": {
+      "texture": "world_8166",
+      "w": 0.404,
+      "h": 0.512
+    },
+    "9322": {
+      "texture": "world_9322",
+      "w": 0.404,
+      "h": 0.512
+    },
+    "9436": {
+      "texture": "world_9436",
+      "w": 0.404,
+      "h": 0.512
+    }
+  },
+  "pickups": {
+    "145": {
+      "texture": "world_5313",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "610": {
+      "texture": "world_5794",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "1401": {
+      "texture": "world_6531",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "1707": {
+      "texture": "world_6832",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "1868": {
+      "texture": "world_6987",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "2105": {
+      "texture": "world_7214",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "2178": {
+      "texture": "world_7293",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "2775": {
+      "texture": "world_7891",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "978": {
+      "texture": "world_8411",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "3459": {
+      "texture": "world_8559",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "3917": {
+      "texture": "world_9011",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "4162": {
+      "texture": "world_9250",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "4387": {
+      "texture": "world_9471",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "4549": {
+      "texture": "world_9620",
+      "w": 0.256,
+      "h": 0.256
+    },
+    "4834": {
+      "texture": "world_9897",
+      "w": 0.256,
+      "h": 0.256
+    }
+  },
+  "exit_signs": [
+    {
+      "texture": "world_5185",
+      "w": 0.512,
+      "h": 0.512,
+      "x": 16.9935,
+      "y": 1.748,
+      "z": -20.94838,
+      "source_id": "5185",
+      "entrance": ""
+    },
+    {
+      "texture": "world_8056",
+      "w": 0.512,
+      "h": 0.512,
+      "x": -8.0,
+      "y": 1.74,
+      "z": -66.0,
+      "source_id": "8056",
+      "entrance": "Entrance (2)"
+    },
+    {
+      "texture": "world_8133",
+      "w": 0.512,
+      "h": 0.512,
+      "x": -22.0,
+      "y": 1.74,
+      "z": -38.0,
+      "source_id": "8133",
+      "entrance": "Entrance (1)"
+    },
+    {
+      "texture": "world_8528",
+      "w": 0.512,
+      "h": 0.512,
+      "x": 0.0,
+      "y": 1.74,
+      "z": 0.0,
+      "source_id": "8528",
+      "entrance": "Entrance (0)"
+    },
+    {
+      "texture": "world_9340",
+      "w": 0.512,
+      "h": 0.512,
+      "x": 22.0,
+      "y": 1.74,
+      "z": -36.0,
+      "source_id": "9340",
+      "entrance": "Entrance (3)"
+    }
+  ]
+}
