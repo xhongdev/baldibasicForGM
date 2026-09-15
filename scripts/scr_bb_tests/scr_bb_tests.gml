@@ -212,6 +212,7 @@ function bb_test_restored_gameplay() {
     bb_test_assert(abs(_g.baldi_anger-_anger-.01)<.0001 && abs(_g.anger_rate-.01025)<.0001,"Endless anger rate grows using source timing");
     _g.debug.god=false;_g.gameover=false;_g.notebooks=_high+1;bb_gameover();
     bb_test_assert(_g.new_high_score && global.high_books==_high+1,"Endless death records notebook high score");
+    bb_test_assert(variable_struct_exists(global.PS,_g.gameover_image),"game-over selects an imported source failure image");
     audio_stop_all();global.high_books=_high;global.G=_original;bb_refresh_details();
 }
 

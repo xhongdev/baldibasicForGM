@@ -63,6 +63,7 @@ function bb_game_init() {
         yctp_bad3: "",
         pause: false,
         gameover: false,
+        gameover_image: "gameover_0",
         win: false,
         over_t: 0,
         mouse_ready: false,
@@ -1544,6 +1545,7 @@ function bb_gameover() {
     if (_g.gameover) return;
     _g.gameover = true;
     _g.over_t = 0;
+    _g.gameover_image = "gameover_" + string(irandom(4));
     if (_g.mode == "endless") {
         _g.new_high_score = (_g.notebooks > global.high_books);
         global.high_books = max(global.high_books, _g.notebooks);
@@ -1782,16 +1784,15 @@ function bb_game_draw_gui() {
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
     if (_g.gameover) {
-        draw_sprite_stretched(spr_gameover, 0, 0, 0, _gw, _gh);
+        var _over_spr = (variable_struct_exists(global.PS, _g.gameover_image))
+            ? global.PS[$ _g.gameover_image] : spr_gameover;
+        draw_sprite_stretched(_over_spr, 0, 0, 0, _gw, _gh);
         draw_set_font(global.fnt_ui);
         draw_set_halign(fa_center);
         draw_set_color(c_white);
         if (_g.mode == "endless") {
             draw_text(_gw * 0.5, 48, "Score: " + string(_g.notebooks) + " Notebooks");
             draw_text(_gw * 0.5, 76, _g.new_high_score ? "NEW HIGH SCORE!" : "High Score: " + string(global.high_books));
-        }
-        if (_g.over_t > 1.2) {
-            draw_text(_gw * 0.5, _gh - 36, "CLICK TO CONTINUE");
         }
         draw_set_halign(fa_left);
         return;

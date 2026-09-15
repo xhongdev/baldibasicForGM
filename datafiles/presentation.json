@@ -1160,6 +1160,46 @@
         64
       ]
     },
+    "gameover_0": {
+      "file": "tex/presentation/Texture2D_Screens_GameOver_0_1.png",
+      "source": "Assets/Texture2D/Screens/GameOver/0_1.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    "gameover_1": {
+      "file": "tex/presentation/Texture2D_Screens_GameOver_1_1.png",
+      "source": "Assets/Texture2D/Screens/GameOver/1_1.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    "gameover_2": {
+      "file": "tex/presentation/Texture2D_Screens_GameOver_2_1.png",
+      "source": "Assets/Texture2D/Screens/GameOver/2_1.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    "gameover_3": {
+      "file": "tex/presentation/Texture2D_Screens_GameOver_3_1.png",
+      "source": "Assets/Texture2D/Screens/GameOver/3_1.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    "gameover_4": {
+      "file": "tex/presentation/Texture2D_Screens_GameOver_5_1.png",
+      "source": "Assets/Texture2D/Screens/GameOver/5_1.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
     "item1": {
       "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_EnergyFlavoredZestyBar.png",
       "source": "Assets/Texture2D/SchoolHouse/PickUps/EnergyFlavoredZestyBar.png",

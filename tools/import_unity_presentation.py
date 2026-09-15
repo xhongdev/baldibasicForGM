@@ -216,6 +216,8 @@ def main():
     # Guaranteed source icons, independent of old sprite metadata and world sprites.
     from import_unity_gameplay import ICONS
     base = unity / "Assets/Texture2D"
+    for i, filename in enumerate(("0_1.png", "1_1.png", "2_1.png", "3_1.png", "5_1.png")):
+        texture("gameover_" + str(i), unity / "Assets/Texture2D/Screens/GameOver" / filename)
     for i, icon in enumerate(ICONS): texture("item" + str(i+1), base / f"SchoolHouse/PickUps/{icon}.png")
     for key, path in {"check": "YCTPTextures/Check.png", "xmark": "YCTPTextures/X.png",
                       "spray": "SchoolHouse/PickUps/Drops/BSODA_Spray.png",
