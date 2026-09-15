@@ -87,3 +87,44 @@ function bb_load_png_rb(_rel) {
     }
     return _s;
 }
+
+function bb_settings_init() {
+    global.game_mode = "story";
+    ini_open("baldi_settings.ini");
+    global.mouse_sensitivity = clamp(ini_read_real("Options", "MouseSensitivity", 1), 0.1, 3);
+    global.master_volume = clamp(ini_read_real("Options", "Volume", 1), 0, 1);
+    global.high_books = max(0, floor(ini_read_real("Scores", "HighBooks", 0)));
+    ini_close();
+    audio_master_gain(global.master_volume);
+}
+
+function bb_settings_save() {
+    if (global.bb_selftest) return;
+    ini_open("baldi_settings.ini");
+    ini_write_real("Options", "MouseSensitivity", global.mouse_sensitivity);
+    ini_write_real("Options", "Volume", global.master_volume);
+    ini_write_real("Scores", "HighBooks", global.high_books);
+    ini_close();
+}
+
+function bb_start_mode(_mode) {
+    global.game_mode = (_mode == "endless") ? "endless" : "story";
+    audio_stop_all();
+    room_goto(rm_school);
+}
+
+function bb_menu_button(_label,_action,_x,_y,_w=240,_h=44) {
+    return {label:_label,action:_action,x1:_x-_w*.5,y1:_y-_h*.5,x2:_x+_w*.5,y2:_y+_h*.5};
+}
+
+function bb_menu_layout(_page) {
+    switch (_page) {
+        case "title": return [bb_menu_button("START","modes",360,444,120),bb_menu_button("MENU","menu",555,444,110)];
+        case "modes": return [bb_menu_button("STORY MODE","story",320,110),bb_menu_button("ENDLESS MODE","endless",320,240),bb_menu_button("BACK","title",80,444,120)];
+        case "menu": return [bb_menu_button("HOW TO PLAY","controls",320,140),bb_menu_button("OPTIONS","options",320,220),bb_menu_button("QUIT","quit",320,300),bb_menu_button("BACK","title",80,444,120)];
+        case "options": return [bb_menu_button("-","sensitivity_down",220,155,50),bb_menu_button("+","sensitivity_up",420,155,50),
+            bb_menu_button("-","volume_down",220,260,50),bb_menu_button("+","volume_up",420,260,50),
+            bb_menu_button("TOGGLE FULLSCREEN","fullscreen",320,345,300),bb_menu_button("BACK","menu",80,444,120)];
+        default: return [bb_menu_button("BACK","menu",80,444,120)];
+    }
+}

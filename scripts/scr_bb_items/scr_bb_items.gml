@@ -49,6 +49,9 @@ function bb_interaction_target(_range) {
     var _hit = {kind: "", index: -1, distance: _range + 0.0001};
     for (var _i = 0; _i < array_length(global.walls); _i++) {
         var _w = global.walls[_i];
+        // Furniture below the camera blocks movement, but not the horizontal
+        // interaction ray to a notebook resting on its top.
+        if (variable_struct_exists(_w, "sight") && !_w.sight) continue;
         _hit.distance = min(_hit.distance, bb_ray_box(_g.px, _g.pz, _fx, _fz, _w.x0, _w.z0, _w.x1, _w.z1));
     }
     // Door jambs remain solid when the door is open.
@@ -77,11 +80,20 @@ function bb_interaction_target(_range) {
     }
     for (var _i = 0; _i < array_length(_g.props); _i++) {
         var _p = _g.props[_i];
-        if (_p.active) bb_target_point(_hit, "prop", _i, _p.x, _p.z, _p.w * 0.5, _fx, _fz);
+        if (!_p.active || bb_dist2(_g.px, _g.pz, _p.x, _p.z) > _range * _range) continue;
+        // Vending machines are solid. Target the same front surface that
+        // occludes the ray, rather than their center behind that surface.
+        var _colliders = _p.detail.colliders;
+        for (var _ci = 0; _ci < array_length(_colliders); _ci++) {
+            var _b = _colliders[_ci];
+            var _t = bb_ray_box(_g.px, _g.pz, _fx, _fz, _b[0], _b[2], _b[3], _b[5]);
+            if (_t <= _hit.distance + 0.0001) _hit = {kind:"prop", index:_i, distance:_t};
+        }
+        bb_target_point(_hit, "prop", _i, _p.x, _p.z, _p.w * 0.5, _fx, _fz);
     }
     for (var _i = 0; _i < array_length(_g.npcs); _i++) {
         var _n = _g.npcs[_i];
-        if (_n.live) bb_target_point(_hit, "npc", _i, _n.x, _n.z, 0.35, _fx, _fz);
+        if (_n.live && _n.visible) bb_target_point(_hit, "npc", _i, _n.x, _n.z, 0.35, _fx, _fz);
     }
     return _hit;
 }
@@ -180,7 +192,7 @@ function bb_use_item() {
             break;
         case 9:
             if (_g.play_lock > 0) {
-                bb_end_playtime();
+                bb_end_playtime("cut");
                 _used = true;
             } else if (_hit.kind == "npc" && _g.npcs[_hit.index].kind == "prize") {
                 _g.npcs[_hit.index].crazy = 15;
@@ -190,6 +202,7 @@ function bb_use_item() {
             break;
         case 10:
             _g.boots = 15;
+            _g.boot_anim = 0;
             _used = true;
             break;
     }
@@ -200,6 +213,10 @@ function bb_use_item() {
 function bb_update_item_effects(_dt) {
     var _g = global.G;
     _g.boots = max(0, _g.boots - _dt);
+    if (_g.boot_anim >= 0) {
+        _g.boot_anim += _dt;
+        if (_g.boot_anim >= 17) _g.boot_anim = -1;
+    }
     _g.anti_hear = max(0, _g.anti_hear - _dt);
     for (var _i = 0; _i < array_length(_g.props); _i++) {
         _g.props[_i].playing = max(0, _g.props[_i].playing - _dt);
@@ -232,8 +249,12 @@ function bb_draw_item_world() {
     for (var _i = 0; _i < array_length(_g.props); _i++) {
         var _p = _g.props[_i];
         if (!_p.active) continue;
+        if (array_length(_p.detail.meshes) > 0) {
+            bb_detail_meshes(_p.detail.meshes);
+            continue;
+        }
         var _spr = (_p.kind == "tape" && _p.playing > 0) ? spr_prop_tape_closed : _p.spr;
-        bb3d_draw_billboard(_spr, 0, _p.x, max(_p.y, _p.h * 0.5), _p.z, _p.w, _p.h, _g.px, _g.pz, c_white);
+        bb3d_draw_billboard(_spr, 0, _p.x, _p.y, _p.z, _p.w, _p.h, _g.px, _g.pz, c_white);
     }
     for (var _i = 0; _i < array_length(_g.alarms); _i++) {
         var _a = _g.alarms[_i];
@@ -250,9 +271,17 @@ function bb_start_playtime() {
     _g.jump_height = 0;
     _g.jump_velocity = 0;
     _g.rope_message = "Ready? Jump with SPACE!";
+    bb_playtime_sound("aud_ReadyGo");
 }
 
-function bb_end_playtime() {
+function bb_playtime_sound(_name, _index=-1) {
+    for (var _i=0; _i<array_length(global.G.npcs); _i++) {
+        var _n=global.G.npcs[_i];
+        if (_n.kind=="playtime") { bb_ai_sound(_n,_name,true,_index);return; }
+    }
+}
+
+function bb_end_playtime(_reason="release") {
     var _g = global.G;
     _g.play_lock = 0;
     _g.jump_height = 0;
@@ -260,6 +289,8 @@ function bb_end_playtime() {
     for (var _i = 0; _i < array_length(_g.npcs); _i++) {
         if (_g.npcs[_i].kind == "playtime") _g.npcs[_i].cool = 15;
     }
+    if (_reason=="cut") bb_playtime_sound("aud_Sad");
+    if (_reason=="success") bb_playtime_sound("aud_Congrats");
 }
 
 function bb_rope_tick(_dt, _jump) {
@@ -284,11 +315,13 @@ function bb_rope_tick(_dt, _jump) {
                 if (_g.jump_height > 0.04) {
                     _g.play_need -= 1;
                     _g.rope_delay = 0.5;
-                    if (_g.play_need <= 0) bb_end_playtime();
+                    if (_g.play_need <= 0) bb_end_playtime("success");
+                    else bb_playtime_sound("aud_Numbers",4-_g.play_need);
                 } else {
                     _g.play_need = 5;
                     _g.rope_delay = 2;
                     _g.rope_message = "Oops! Try again!";
+                    bb_playtime_sound("aud_Oops");
                 }
             }
         }
@@ -299,12 +332,10 @@ function bb_draw_rope(_w, _h) {
     var _g = global.G;
     if (_g.rope_delay > 0) return;
     var _phase = 1 - clamp(_g.rope_time, 0, 1);
-    var _cy = _h * (0.15 + 0.8 * _phase);
-    draw_set_color(make_colour_rgb(150, 60, 30));
-    for (var _i = 0; _i < 24; _i++) {
-        var _x0 = _w * _i / 24, _x1 = _w * (_i + 1) / 24;
-        var _y0 = _cy + sin(pi * _i / 24) * _h * 0.16;
-        var _y1 = _cy + sin(pi * (_i + 1) / 24) * _h * 0.16;
-        draw_line_width(_x0, _y0, _x1, _y1, 4);
+    var _frames = global.P.details.rope_frames, _texture = _frames[0].texture;
+    for (var _i = 1; _i < array_length(_frames); _i++) {
+        if (_frames[_i].time > _phase) break;
+        _texture = _frames[_i].texture;
     }
+    bb_ui_texture(_texture, global.P.details.hud.rope.rect);
 }

@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":1.8575964,
+  "duration":1.8575963718820863,
   "exportDir":"",
   "name":"snd_praise1",
   "parent":{
@@ -20,7 +20,7 @@
   "preload":false,
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
-  "sampleRate":44100,
+  "sampleRate":22050,
   "soundFile":"snd_praise1.wav",
   "volume":1.0,
 }

@@ -1,4 +1,7 @@
 function bb_game_init() {
+    global.path_ready=false;
+    global.path_signature=0;
+    global.path_grids={};
     if (!variable_global_exists("vf_3d")) {
         bb3d_init();
     }
@@ -31,6 +34,10 @@ function bb_game_init() {
         stamina_max: 100,
         notebooks: 0,
         notebooks_needed: 7,
+        mode: global.game_mode,
+        anger_time: global.E.baldi.timeToAnger,
+        anger_rate: global.E.baldi.angerRate,
+        new_high_score: false,
         state: "play",
         yctp_q: 0,
         yctp_a: 0,
@@ -45,6 +52,11 @@ function bb_game_init() {
         yctp_msg: "",
         yctp_marks: [0, 0, 0],
         yctp_end: false,
+        yctp_face_visible: true,
+        yctp_face_state: "idle",
+        yctp_face_time: 0,
+        yctp_music: -1,
+        yctp_hang: -1,
         yctp_voice_stage: 0,
         yctp_bad1: "",
         yctp_bad2: "",
@@ -88,6 +100,7 @@ function bb_game_init() {
         props: [],
         alarms: [],
         boots: 0,
+        boot_anim: -1,
         npcs: [],
         inv: [-1, -1, -1],
         inv_sel: 0,
@@ -116,6 +129,7 @@ function bb_game_init() {
         click_used: false
     };
     bb_debug_init();
+    global.G.craft_inside=array_create(array_length(global.E.craft_triggers),false);
 
     var _doors = global.map.doors;
     var _i;
@@ -163,6 +177,7 @@ function bb_game_init() {
             y: variable_struct_exists(_n, "y") ? _n.y : 0.78,
             z: _n.z,
             taken: false,
+            respawn: 0,
             spr: spr_notebook,
             tint: _tint
         });
@@ -172,6 +187,10 @@ function bb_game_init() {
         _book.tint = c_white;
         _book.w = _appearance.w;
         _book.h = _appearance.h;
+        _book.y = _appearance.y;
+        _book.pickup_y = _n.y;
+        _book.open_distance = _appearance.open_distance;
+        _book.respawn_audio = variable_struct_exists(_appearance, "respawn_audio") ? _appearance.respawn_audio : "";
     }
 
     var _gameplay = json_parse(bb_read_text("school_gameplay.json"));
@@ -189,15 +208,25 @@ function bb_game_init() {
         });
         var _item = global.G.items[array_length(global.G.items)-1];
         _item.w = 0.256; _item.h = 0.256;
+        _item.pickup_y = _it.y;
         if (variable_struct_exists(global.P.pickups, _it.source_id)) {
             var _appearance = global.P.pickups[$ _it.source_id];
             _item.spr = global.PS[$ _appearance.texture];
             _item.w = _appearance.w; _item.h = _appearance.h;
+            _item.y = _appearance.y;
+            _item.open_distance = _appearance.open_distance;
         }
     }
     for (_i = 0; _i < array_length(_gameplay.props); _i++) {
         var _prop = _gameplay.props[_i];
         _prop.spr = bb_prop_spr(_prop.kind);
+        _prop.detail = global.P.details.props[$ _prop.source_id];
+        if (variable_struct_exists(global.P.props, _prop.source_id)) {
+            var _appearance = global.P.props[$ _prop.source_id];
+            _prop.spr = global.PS[$ _appearance.texture];
+            _prop.w = _appearance.w; _prop.h = _appearance.h;
+            _prop.y = _appearance.y;
+        }
         _prop.playing = 0;
         array_push(global.G.props, _prop);
     }
@@ -225,6 +254,7 @@ function bb_game_init() {
             sprayed: false,
             live: false
         });
+        bb_ai_init(global.G.npcs[array_length(global.G.npcs)-1]);
         if (_npc.kind == "sweep") {
             global.G.npcs[array_length(global.G.npcs) - 1].wait = 120 + random(60);
         }
@@ -236,9 +266,15 @@ function bb_game_init() {
     if (variable_struct_exists(global.map, "exits")) {
         var _ex = global.map.exits;
         for (_i = 0; _i < array_length(_ex); _i++) {
-            array_push(global.G.exits, {x: _ex[_i].x, z: _ex[_i].z, name: _ex[_i].name, used: false, down: false});
+            var _source = undefined;
+            for (var _j = 0; _j < array_length(global.P.details.entrances); _j++) {
+                if (global.P.details.entrances[_j].name == _ex[_i].name) _source = global.P.details.entrances[_j];
+            }
+            array_push(global.G.exits, {x: _ex[_i].x, z: _ex[_i].z, name: _ex[_i].name, used: false, down: false, source:_source});
         }
     }
+    bb_refresh_details();
+    bb_grid_build();global.path_ready=true;
 
     if (variable_global_exists("dump_quit") && global.dump_quit) {
         bb_dump_runtime();
@@ -446,6 +482,7 @@ function bb_build_collision(_map) {
         if (_q.k == "floor") {
             ds_map_set(global.floors, bb_key(_q.x, _q.z), _q.m);
         } else if (_q.k == "wall" && variable_struct_exists(_q, "bounds")) {
+            if (variable_struct_exists(global.P.details.dynamic_ids, _q.source_id)) continue;
             var _b = _q.bounds;
             // Elevated cafeteria/entrance walls must not become ground-level barriers.
             if (_b[1] < 1 && _b[4] > 1) {
@@ -467,6 +504,7 @@ function bb_build_collision(_map) {
             ds_map_set(global.wall_edge, bb_key(_q.x, _q.z) + ",e", 1);
         }
     }
+    global.static_walls = variable_clone(global.walls);
 }
 
 function bb_blocked(_px, _pz, _r) {
@@ -548,6 +586,7 @@ function bb_door_looking(_d) {
 function bb_on_floor(_px, _pz) {
     var _tx = round(_px / 2) * 2;
     var _tz = round(_pz / 2) * 2;
+    if (ds_map_exists(global.floors,bb_key(_tx,_tz))) return true;
     var _dx, _dz;
     for (_dx = -2; _dx <= 2; _dx += 2) {
         for (_dz = -2; _dz <= 2; _dz += 2) {
@@ -565,6 +604,7 @@ function bb_on_floor(_px, _pz) {
 
 function bb_game_update(_dt) {
     var _g = global.G;
+    var _old_x = _g.px, _old_z = _g.pz;
     _dt = clamp(_dt, 0, 0.1);
     if (bb_debug_update()) return;
     if (_g.gameover || _g.win) {
@@ -601,7 +641,7 @@ function bb_game_update(_dt) {
         window_mouse_set_locked(true);
     } else {
         var _mx = window_mouse_get_delta_x();
-        _g.yaw -= _mx * 0.005;
+        _g.yaw -= _mx * 0.005 * global.mouse_sensitivity;
     }
 
     if (_g.detention > 0) {
@@ -665,8 +705,7 @@ function bb_game_update(_dt) {
         _g.guilt -= _dt;
     }
 
-    var _tile = ds_map_find_value(global.floors, bb_key(bb_tile_snap(_g.px), bb_tile_snap(_g.pz)));
-    _g.faculty = (_tile == "carpet" && bb_near_faculty(_g.px, _g.pz) && bb_dist2(_g.px, _g.pz, 1, -32) > 12);
+    _g.faculty = bb_region_contains(global.E.faculty,_g.px,_g.pz);
     if (_g.faculty && _g.detention <= 0) {
         if (1 >= _g.guilt) {
             _g.guilt = 1;
@@ -674,8 +713,12 @@ function bb_game_update(_dt) {
         }
     }
     if (_g.debug.no_rules) { _g.guilt = 0; _g.prin_chase = false; }
+    else if (_g.detention>0 && !bb_region_contains(global.E.office,_g.px,_g.pz)) {
+        _g.guilt=_g.detention;_g.guilt_type="escape";
+    }
 
     _g.nb_t += _dt;
+    bb_update_notebook_respawns(_dt);
     _g.click_used = false;
     bb_update_doors(_dt);
     bb_update_pickups();
@@ -687,7 +730,8 @@ function bb_game_update(_dt) {
     bb_update_baldi(_dt);
     if (_g.gameover) return;
     bb_update_npcs(_dt);
-    bb_check_exits();
+    bb_check_exits(_old_x, _old_z);
+    if (_g.win) return;
     bb_audio_update(_dt);
 }
 
@@ -826,14 +870,44 @@ function bb_update_pickups() {
         return;
     }
     var _target = bb_interaction_target(3);
-    if (_target.kind == "notebook") {
-        _g.notebooks_list[_target.index].taken = true;
-        _g.notebooks += 1;
-        bb_yctp_open();
-    } else if (_target.kind == "item" && _target.distance <= 2) {
+    if (_target.kind == "notebook" && bb_pickup_in_range(_g.notebooks_list[_target.index])) {
+        bb_collect_notebook(_target.index);
+    } else if (_target.kind == "item" && bb_pickup_in_range(_g.items[_target.index])) {
         var _it = _g.items[_target.index];
         _it.taken = true;
         bb_collect_item(_it.kind);
+    }
+}
+
+function bb_pickup_in_range(_pickup) {
+    return bb_dist2(global.G.px, global.G.pz, _pickup.x, _pickup.z)
+        + sqr(global.G.py - _pickup.pickup_y) < sqr(_pickup.open_distance);
+}
+
+function bb_collect_notebook(_index) {
+    var _g = global.G;
+    if (_g.state != "play" || _g.notebooks_list[_index].taken) return;
+    _g.notebooks_list[_index].taken = true;
+    _g.notebooks_list[_index].respawn = 120;
+    _g.notebooks += 1;
+    bb_yctp_open();
+}
+
+function bb_update_notebook_respawns(_dt) {
+    var _g = global.G;
+    if (_g.mode != "endless") return;
+    for (var _i = 0; _i < array_length(_g.notebooks_list); _i++) {
+        var _n = _g.notebooks_list[_i];
+        if (!_n.taken) continue;
+        // NotebookScript lowers collected books to Unity Y=-20. Its distance
+        // check includes that height and only counts time beyond 60 units.
+        if (_n.respawn > 0 && bb_dist2(_g.px, _g.pz, _n.x, _n.z) + sqr(_g.py + 4) > 144) {
+            _n.respawn = max(0, _n.respawn - _dt);
+        }
+        if (_n.respawn <= 0) {
+            _n.taken = false;
+            if (_n.respawn_audio != "") bb_world_sound(global.S.clips[$ _n.respawn_audio], _n.x, _n.z);
+        }
     }
 }
 
@@ -973,11 +1047,13 @@ function bb_activate_spoop() {
         _g.npcs[_i].live = true;
     }
     for (_i = 0; _i < array_length(_g.exits); _i++) {
-        _g.exits[_i].down = true;
+        bb_exit_lower(_g.exits[_i], false);
     }
+    bb_refresh_details();
     audio_stop_sound(snd_mus_learn);
     audio_stop_sound(snd_mus_school);
-    bb_sound_play(global.S.aud_Hang, false, 1);
+    var _hang = bb_sound_play(global.S.aud_Hang, false, 1);
+    if (_g.state == "yctp") _g.yctp_hang = _hang;
 }
 
 function bb_update_npcs(_dt) {
@@ -994,14 +1070,15 @@ function bb_update_npcs(_dt) {
         if (!_n.live || _n.sprayed) {
             continue;
         }
+        _n.sense_time-=_dt;
+        if (_n.sense_time<=0) { _n.sense_time=.05;_n.sees=bb_los(_n.x,_n.z,_g.px,_g.pz); }
         switch (_n.kind) {
-            case "principal": bb_npc_principal(_n, _dt); break;
-            case "playtime": bb_npc_playtime(_n, _dt); break;
-            case "bully": bb_npc_bully(_n, _dt); break;
-            case "sweep": bb_npc_sweep(_n, _dt); break;
-            case "crafters": bb_npc_crafters(_n, _dt); break;
-            case "prize": bb_npc_prize(_n, _dt); break;
-            default: bb_npc_wander(_n, _dt, 1.1);
+            case "principal": bb_ai_principal(_n, _dt); break;
+            case "playtime": bb_ai_playtime(_n, _dt); break;
+            case "bully": bb_ai_bully(_n, _dt); break;
+            case "sweep": bb_ai_sweep(_n, _dt); break;
+            case "crafters": bb_ai_crafters(_n, _dt); break;
+            case "prize": bb_ai_prize(_n, _dt); break;
         }
     }
 }
@@ -1257,6 +1334,7 @@ function bb_npc_prize(_n, _dt) {
 
 function bb_yctp_open() {
     var _g = global.G;
+    if (_g.state == "yctp") return;
     audio_stop_sound(snd_bal_hi);
     audio_stop_sound(snd_bal_prize);
     bb_voice_clear("tutor");
@@ -1270,12 +1348,17 @@ function bb_yctp_open() {
     _g.yctp_msg = "";
     _g.yctp_marks = [0, 0, 0];
     _g.yctp_end = false;
+    _g.yctp_face_visible = !_g.spoop_mode;
+    _g.yctp_face_state = "idle";
+    _g.yctp_face_time = 0;
+    _g.yctp_hang = -1;
+    _g.yctp_music = -1;
     bb_yctp_layout_init();
     window_mouse_set_locked(false);
     window_set_cursor(cr_default);
     if (!_g.spoop_mode) {
         audio_stop_sound(snd_mus_school);
-        audio_play_sound(snd_mus_learn, 1, true);
+        _g.yctp_music = bb_sound_play(global.S.learnMusic, true, 1, global.A.music.learnMusic.gain);
         if (_g.notebooks == 1) {
             bb_voice_queue("math", [global.S.bal_intro, global.S.bal_howto]);
         }
@@ -1294,7 +1377,9 @@ function bb_yctp_make() {
         _g.yctp_timer = 5;
         if (!_g.spoop_mode) {
             _g.yctp_msg = "WOW! YOU EXIST!";
-        } else if (_g.yctp_wrong >= 3) {
+        } else if (_g.mode == "endless" && _g.yctp_wrong == 0) {
+            _g.yctp_msg = choose("That's more like it...", "Keep up the good work or see me after class...");
+        } else if (_g.mode == "story" && _g.yctp_wrong >= 3) {
             _g.yctp_msg = "I HEAR MATH THAT BAD";
             bb_hear_pri(_g.px, _g.pz, 7);
             _g.failed_nbs += 1;
@@ -1303,7 +1388,7 @@ function bb_yctp_make() {
         }
         return;
     }
-    if (_g.yctp_q <= 2 || _g.notebooks <= 1) {
+    if (_g.yctp_q <= 2 || (_g.mode == "story" ? _g.notebooks <= 1 : _g.notebooks != 2)) {
         _g.yctp_a = irandom_range(0, 9);
         _g.yctp_b = irandom_range(0, 9);
         if (irandom(1) == 0) {
@@ -1326,6 +1411,7 @@ function bb_yctp_make() {
 function bb_yctp_update(_dt) {
     var _g = global.G;
     bb_audio_update(_dt);
+    bb_yctp_face_update(_dt);
     if (_g.yctp_end) {
         _g.yctp_timer -= _dt;
         if (_g.yctp_timer <= 0) {
@@ -1398,9 +1484,11 @@ function bb_yctp_submit() {
         _g.yctp_marks[_g.yctp_q - 1] = -1;
         _g.yctp_wrong += 1;
         if (!_g.spoop_mode) {
+            _g.yctp_face_state = "frown";
+            _g.yctp_face_time = 0;
             bb_activate_spoop();
         }
-        if (_g.yctp_q == 3) {
+        if (_g.yctp_q == 3 || _g.mode == "endless") {
             bb_get_angry(1);
         } else {
             bb_get_temp_angry(0.25);
@@ -1411,12 +1499,21 @@ function bb_yctp_submit() {
 
 function bb_yctp_close() {
     var _g = global.G;
+    if (_g.state != "yctp") return;
+    if (_g.mode == "endless" && _g.yctp_wrong == 0) {
+        // The source changes Baldi's stored anger even before he is active;
+        // a perfect first notebook must not activate spoop mode.
+        _g.baldi_anger -= 1;
+        bb_baldi_recalc_wait();
+    }
     if (_g.stamina < 100) {
         _g.stamina = 100;
     }
     _g.state = "play";
     bb_voice_clear("math");
     audio_stop_sound(snd_mus_learn);
+    _g.yctp_music = -1;
+    _g.yctp_hang = -1;
     audio_resume_all();
     window_mouse_set_locked(true);
     window_set_cursor(cr_none);
@@ -1430,13 +1527,14 @@ function bb_yctp_close() {
         }
         bb_voice_replace("tutor", [global.S.aud_Prize]);
     }
-    if (_g.notebooks >= 7) {
+    if (_g.mode == "story" && _g.notebooks >= 7) {
         if (!_g.exit_open) bb_voice_replace("tutor", [global.S.aud_AllNotebooks]);
         _g.exit_open = true;
         var _e;
         for (_e = 0; _e < array_length(_g.exits); _e++) {
             _g.exits[_e].down = false;
         }
+        bb_refresh_details();
     }
 }
 
@@ -1446,38 +1544,41 @@ function bb_gameover() {
     if (_g.gameover) return;
     _g.gameover = true;
     _g.over_t = 0;
+    if (_g.mode == "endless") {
+        _g.new_high_score = (_g.notebooks > global.high_books);
+        global.high_books = max(global.high_books, _g.notebooks);
+        bb_settings_save();
+    }
     audio_stop_all();
     bb_sound_play(global.S.aud_buzz, false, 5);
     window_mouse_set_locked(false);
     window_set_cursor(cr_default);
 }
 
-function bb_check_exits() {
+function bb_check_exits(_old_x = undefined, _old_z = undefined) {
     var _g = global.G;
-    if (!_g.exit_open) {
+    if (_g.mode != "story" || !_g.exit_open || _g.win || _g.gameover || _g.state != "play") {
         return;
     }
+    if (is_undefined(_old_x)) { _old_x = _g.px; _old_z = _g.pz; }
     var _i;
     for (_i = 0; _i < array_length(_g.exits); _i++) {
         var _e = _g.exits[_i];
         if (_e.used || _e.down) {
             continue;
         }
-        if (bb_dist2(_g.px, _g.pz, _e.x, _e.z) < 1.6 * 1.6) {
-            if (_g.exit_got < 3) {
-                _e.used = true;
-                _e.down = true;
+        if (_g.exit_got < 3) {
+            if (bb_exit_box_hit(_e.source.near, _old_x, _old_z, _g.px, _g.pz, _g.radius)) {
+                bb_exit_lower(_e, true);
+                bb_refresh_details();
                 _g.exit_got += 1;
                 _g.final_red = min(3, _g.exit_got);
                 bb_hear_pri(_e.x, _e.z, 8);
                 bb_finale_audio(_g.exit_got);
-            } else {
-                _g.win = true;
-                audio_stop_all();
-                window_mouse_set_locked(false);
-                window_set_cursor(cr_default);
-                return;
             }
+        } else if (bb_exit_box_hit(_e.source.finish, _old_x, _old_z, _g.px, _g.pz, _g.radius)) {
+            bb_win_game();
+            return;
         }
     }
 }
@@ -1495,6 +1596,8 @@ function bb_game_draw() {
     }
     bb3d_draw_sky(_g.px, _g.py, _g.pz);
     bb3d_draw_world();
+    bb_draw_entrances();
+    bb_draw_environment();
     bb_draw_doors();
     bb_draw_entities();
     bb3d_end();
@@ -1591,14 +1694,14 @@ function bb_draw_entities() {
     for (_i = 0; _i < array_length(_g.notebooks_list); _i++) {
         var _n = _g.notebooks_list[_i];
         if (!_n.taken) {
-            bb3d_draw_billboard(_n.spr, 0, _n.x, _n.y + sin(_g.nb_t)*0.1, _n.z, _n.w, _n.h, _g.px, _g.pz, c_white);
+            bb3d_draw_billboard(_n.spr, 0, _n.x, _n.y + sin(_g.nb_t*pi/3)*0.1, _n.z, _n.w, _n.h, _g.px, _g.pz, c_white);
         }
     }
     for (_i = 0; _i < array_length(_g.items); _i++) {
         var _it = _g.items[_i];
         if (!_it.taken) {
             var _is = (_it.spr != -1) ? _it.spr : spr_zesty;
-            var _ibob = sin(_g.nb_t) * 0.1;
+            var _ibob = sin(_g.nb_t*pi/3) * 0.1;
             bb3d_draw_billboard(_is, 0, _it.x, _it.y + _ibob, _it.z, _it.w, _it.h, _g.px, _g.pz, c_white);
         }
     }
@@ -1616,14 +1719,22 @@ function bb_draw_entities() {
     }
     for (_i = 0; _i < array_length(_g.npcs); _i++) {
         var _npc = _g.npcs[_i];
-        if (!_npc.live || abs(_npc.x) > 50) {
+        if (!_npc.live || !_npc.visible) {
             continue;
         }
         var _ns = (_npc.spr != -1) ? _npc.spr : spr_principal;
+        if (_npc.kind == "prize") _ns=bb_prize_view_sprite(_npc,_g.px,_g.pz);
         var _nh = (_npc.h > 0.1) ? _npc.h : 1.64;
-        bb3d_draw_char(_ns, 0, _npc.x, _npc.y, _npc.z, _nh, _g.px, _g.pz, c_white);
+        bb3d_draw_billboard(_ns, 0, _npc.x, _npc.y, _npc.z, _npc.w, _nh, _g.px, _g.pz, c_white);
     }
     bb_draw_exit_signs();
+}
+
+function bb_prize_view_sprite(_npc,_px,_pz) {
+    if (!variable_struct_exists(_npc.source,"views")) return (_npc.spr!=-1)?_npc.spr:spr_prize;
+    var _to_player=darctan2(_pz-_npc.z,_px-_npc.x)+_npc.dir;
+    var _view=floor(((_to_player+11.25) mod 360 + 360) mod 360 / 22.5);
+    return global.PS[$ _npc.source.views[_view]];
 }
 
 function bb_item_name(_k) {
@@ -1675,6 +1786,10 @@ function bb_game_draw_gui() {
         draw_set_font(global.fnt_ui);
         draw_set_halign(fa_center);
         draw_set_color(c_white);
+        if (_g.mode == "endless") {
+            draw_text(_gw * 0.5, 48, "Score: " + string(_g.notebooks) + " Notebooks");
+            draw_text(_gw * 0.5, 76, _g.new_high_score ? "NEW HIGH SCORE!" : "High Score: " + string(global.high_books));
+        }
         if (_g.over_t > 1.2) {
             draw_text(_gw * 0.5, _gh - 36, "CLICK TO CONTINUE");
         }
@@ -1700,29 +1815,10 @@ function bb_game_draw_gui() {
         draw_set_font(global.fnt_small);
         draw_set_halign(fa_center);
         draw_set_color(c_white);
-        draw_text(_gw * 0.5, 58, "FIND ALL 4 EXITS!");
+        //draw_text(_gw * 0.5, 58, "FIND ALL 4 EXITS!");
         draw_set_halign(fa_left);
     }
-    if (_g.detention > 0) {
-        draw_set_font(global.fnt_ui);
-        draw_set_halign(fa_center);
-        draw_set_color(c_white);
-        draw_text(_gw * 0.5, _gh - 48, "detention time: " + string(ceil(_g.detention)));
-        draw_set_halign(fa_left);
-    }
-    if (_g.play_lock > 0) {
-        bb_draw_rope(_gw, _gh);
-        draw_set_font(global.fnt_ui);
-        draw_set_halign(fa_center);
-        draw_set_color(c_white);
-        draw_text(_gw * 0.5, _gh * 0.72, _g.rope_message + "  " + string(5 - _g.play_need) + "/5");
-        draw_set_halign(fa_left);
-    }
-    if (_g.boots > 0) {
-        draw_set_font(global.fnt_small);
-        draw_set_color(c_white);
-        draw_text(8, _gh - 24, "Boots: " + string(ceil(_g.boots)) + "s");
-    }
+    bb_draw_hud_effects();
     if (_g.pause) {
         draw_set_alpha(0.55);
         draw_set_color(c_black);
@@ -1766,16 +1862,25 @@ function bb_game_cleanup() {
     bb3d_free_batches();
     if (variable_global_exists("floors") && ds_exists(global.floors, ds_type_map)) {
         ds_map_destroy(global.floors);
+        global.floors=-1;
     }
     if (variable_global_exists("wall_edge") && ds_exists(global.wall_edge, ds_type_map)) {
         ds_map_destroy(global.wall_edge);
+        global.wall_edge=-1;
     }
     if (variable_global_exists("nav_n") && ds_exists(global.nav_n, ds_type_map)) {
         ds_map_destroy(global.nav_n);
+        global.nav_n=-1;
     }
     if (variable_global_exists("nav_portals") && ds_exists(global.nav_portals, ds_type_map)) {
         ds_map_destroy(global.nav_portals);
+        global.nav_portals=-1;
     }
+    if (variable_global_exists("wall_cells") && ds_exists(global.wall_cells, ds_type_map)) ds_map_destroy(global.wall_cells);
+    global.wall_cells=-1;
+    global.path_ready=false;
+    global.path_grids={};
+    global.path_grid=undefined;
     window_mouse_set_locked(false);
     window_set_cursor(cr_default);
 }

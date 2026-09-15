@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":5.16644,
+  "duration":5.166439909297052,
   "exportDir":"",
   "name":"snd_mus_intro",
   "parent":{

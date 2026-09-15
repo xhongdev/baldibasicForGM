@@ -3,6 +3,7 @@ visible = true;
 window_set_caption("Baldi's Basics In Education And Learning");
 bb_res_init();
 gpu_set_texfilter(false);
+bb_settings_init();
 
 var font_path = "fonts/COMIC.ttf";
 if (!file_exists(font_path)) {
@@ -67,7 +68,7 @@ global.spr_npc_prin = bb_load_png_rb("tex/npc/principal.png");
 _keep += audio_sound_length(snd_bal_prize);
 global.keep_assets = _keep;
 
-global.bb_selftest = false;
+global.bb_selftest = (environment_get_variable("BB_SELF_TEST") == "1");
 for (var _arg = 1; _arg <= parameter_count(); _arg++) {
     if (parameter_string(_arg) == "--bb-self-test") global.bb_selftest = true;
 }

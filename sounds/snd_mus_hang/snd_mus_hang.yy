@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":3.6434693,
+  "duration":3.6434583333333332,
   "exportDir":"",
   "name":"snd_mus_hang",
   "parent":{
@@ -20,7 +20,7 @@
   "preload":false,
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
-  "sampleRate":44100,
+  "sampleRate":48000,
   "soundFile":"snd_mus_hang.wav",
   "volume":1.0,
 }

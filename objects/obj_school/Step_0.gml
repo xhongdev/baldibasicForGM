@@ -12,8 +12,7 @@ if (global.bb_selftest) {
         bb_debug_open();
     }
     if (test_frames >= 5) {
-        show_debug_message("BB_TEST_RESULT: " + string(global.test_total) + " checks, " + string(global.test_failed) + " failures");
-        game_end();
+        room_goto(rm_title);
     }
 } else {
     bb_game_update(delta_time / 1000000);

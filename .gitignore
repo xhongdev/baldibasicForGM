@@ -60,3 +60,15 @@ Temporary Items
 
 # GMRT build directory
 Build
+
+# gm-cli compile
+.gmcache
+
+# OpenCode
+.opencode
+
+# Other
+tools
+folders
+
+PORTING.md

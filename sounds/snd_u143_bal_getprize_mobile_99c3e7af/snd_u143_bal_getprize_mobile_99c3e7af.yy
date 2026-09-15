@@ -1,0 +1,26 @@
+{
+  "$GMSound":"v2",
+  "%Name":"snd_u143_bal_getprize_mobile_99c3e7af",
+  "audioGroupId":{
+    "name":"audiogroup_default",
+    "path":"audiogroups/audiogroup_default",
+  },
+  "bitDepth":1,
+  "channelFormat":0,
+  "compression":0,
+  "compressionQuality":4,
+  "conversionMode":0,
+  "duration":8.832698412698413,
+  "exportDir":"",
+  "name":"snd_u143_bal_getprize_mobile_99c3e7af",
+  "parent":{
+    "name":"Sounds",
+    "path":"folders/Sounds.yy",
+  },
+  "preload":false,
+  "resourceType":"GMSound",
+  "resourceVersion":"2.0",
+  "sampleRate":22050,
+  "soundFile":"snd_u143_bal_getprize_mobile_99c3e7af.wav",
+  "volume":1.0,
+}

@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.0,
+  "duration":26.935167,
   "exportDir":"",
   "name":"snd_src_aud_machinequiet",
   "parent":{
@@ -20,7 +20,7 @@
   "preload":false,
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
-  "sampleRate":44100,
+  "sampleRate":48000,
   "soundFile":"snd_src_aud_machinequiet.wav",
   "volume":1.0,
 }

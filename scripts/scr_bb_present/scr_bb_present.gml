@@ -1,5 +1,6 @@
 function bb_presentation_init() {
     global.P = json_parse(bb_read_text("presentation.json"));
+    global.E = json_parse(bb_read_text(global.P.environment_file));
     global.PS = {};
     var _files = {};
     var _keys = variable_struct_get_names(global.P.textures);
@@ -10,6 +11,7 @@ function bb_presentation_init() {
         global.PS[$ _key] = _files[$ _path];
     }
     global.S = bb_audio_assets();
+    global.A = json_parse(bb_read_text("audio_manifest.json"));
 }
 
 function bb_ui_begin() {
@@ -53,8 +55,14 @@ function bb_ui_text(_text, _r, _font, _colour) {
 
 function bb_present_hud(_g, _gw, _gh) {
     bb_ui_begin();
+    // Unity's active reticle is a small black point at the viewport center.
+    if (_g.state == "play" && !_g.pause) {
+        draw_set_color(c_black);
+        draw_circle(_gw * .5, _gh * .5, 2, false);
+        draw_set_color(c_white);
+    }
     draw_set_font(global.fnt_small);
-    draw_text(8, 6, string(_g.notebooks) + "/7 Notebooks");
+    draw_text(8, 6, string(_g.notebooks) + (_g.mode == "story" ? "/7 Notebooks" : " Notebooks"));
     var _bx = (_gw - 150)*0.5;
     draw_set_color(make_colour_rgb(180, 0, 0));
     draw_rectangle(_bx, 8, _bx + 150, 20, false);
@@ -62,14 +70,15 @@ function bb_present_hud(_g, _gw, _gh) {
     draw_rectangle(_bx, 8, _bx + 150*clamp(_g.stamina/_g.stamina_max, 0, 1), 20, false);
     if (_g.stamina < 0) bb_ui_text("YOU NEED REST!", [_bx-20, 22, 190, 24], global.fnt_small, c_red);
     var _hud = global.P.hud;
+    bb_ui_solid(global.P.details.hud.item_background);
     var _sel = _hud.itemSelect.rect;
     var _sx = _sel[0] + _g.inv_sel * 40;
     draw_set_color(make_colour_rgb(200, 32, 32));
     draw_rectangle(_sx, _sel[1], _sx + _sel[2], _sel[1] + _sel[3], false);
-    bb_ui_texture("slots", _hud.ItemSlots.rect);
     for (var _i = 0; _i < 3; _i++) {
         if (_g.inv[_i] > 0) bb_ui_fit_sprite(bb_item_spr(_g.inv[_i]), _hud[$ "slot" + string(_i)].rect);
     }
+    bb_ui_texture("slots", _hud.ItemSlots.rect);
     bb_ui_text(bb_item_name(_g.inv[_g.inv_sel]), _hud.itemText.rect, global.fnt_small, c_white);
 }
 
@@ -85,29 +94,130 @@ function bb_yctp_layout_init() {
     }
 }
 
+function bb_ui_solid(_node) {
+    var _r = _node.rect, _c = _node.colour;
+    draw_set_color(make_colour_rgb(_c[0]*255, _c[1]*255, _c[2]*255));
+    draw_set_alpha(_c[3]);
+    draw_rectangle(_r[0], _r[1], _r[0]+_r[2], _r[1]+_r[3], false);
+    draw_set_alpha(1); draw_set_color(c_white);
+}
+
+function bb_yctp_glyph(_char) {
+    var _glyphs = global.P.yctp_font.glyphs, _key = string(ord(_char));
+    return variable_struct_exists(_glyphs, _key) ? _glyphs[$ _key] : _glyphs[$ "63"];
+}
+
+// Lay out the source bitmap glyphs using the TMP baseline, advances and line height.
+function bb_yctp_text_layout(_text, _node, _single = false) {
+    var _font = global.P.yctp_font, _r = _node.rect;
+    var _scale = _node.font_size / _font.size, _spacing = _node.spacing;
+    var _x = 0, _y = _font.ascent * _scale, _glyphs = [];
+    for (var _i = 1; _i <= string_length(_text); _i++) {
+        var _ch = string_char_at(_text, _i);
+        if (_ch == "\n") { _x = 0; _y += _font.line_height * _scale; continue; }
+        if (!_single && _ch != " " && (_i == 1 || string_char_at(_text, _i-1) == " ")) {
+            var _word = 0;
+            for (var _j = _i; _j <= string_length(_text); _j++) {
+                var _next = string_char_at(_text, _j);
+                if (_next == " " || _next == "\n") break;
+                _word += bb_yctp_glyph(_next).advance * _scale + _spacing;
+            }
+            if (_x > 0 && _x + _word > _r[2]) { _x = 0; _y += _font.line_height * _scale; }
+        }
+        var _glyph = bb_yctp_glyph(_ch), _advance = _glyph.advance * _scale + _spacing;
+        if (!_single && _x > 0 && _x + _advance > _r[2]) { _x = 0; _y += _font.line_height * _scale; }
+        if (_ch != " ") array_push(_glyphs, {x:_r[0]+_x+_glyph.bearing[0]*_scale,
+            y:_r[1]+_y-_glyph.bearing[1]*_scale, src:_glyph.src, scale:_scale, baseline:_y, right:_r[0]+_x+_advance});
+        _x += _advance;
+    }
+    // TMP single-line input scrolls to keep the latest digits inside its viewport.
+    if (_single && _x > _r[2]) {
+        for (var _i = 0; _i < array_length(_glyphs); _i++) _glyphs[_i].x -= _x - _r[2];
+    }
+    var _halign = _node.alignment & 255;
+    if (!_single && _halign != 1) {
+        for (var _i = 0; _i < array_length(_glyphs);) {
+            var _end = _i, _baseline = _glyphs[_i].baseline;
+            while (_end+1 < array_length(_glyphs) && _glyphs[_end+1].baseline == _baseline) _end += 1;
+            var _width = _glyphs[_end].right - _r[0];
+            var _offset = (_r[2] - _width) * (_halign == 2 ? 0.5 : 1);
+            for (var _j = _i; _j <= _end; _j++) _glyphs[_j].x += _offset;
+            _i = _end + 1;
+        }
+    }
+    if ((_node.alignment & 512) != 0) {
+        var _height = _y + 7 * _scale;
+        for (var _i = 0; _i < array_length(_glyphs); _i++) _glyphs[_i].y += (_r[3] - _height) * 0.5;
+    }
+    return _glyphs;
+}
+
+function bb_yctp_text(_text, _node, _single = false, _clip = true) {
+    var _glyphs = bb_yctp_text_layout(_text, _node, _single), _r = _node.rect;
+    var _spr = global.PS[$ global.P.yctp_font.texture];
+    var _c = _node.colour, _colour = make_colour_rgb(_c[0]*255, _c[1]*255, _c[2]*255);
+    if (!_clip) _r = [-10000, -10000, 20000, 20000];
+    for (var _i = 0; _i < array_length(_glyphs); _i++) {
+        var _g = _glyphs[_i], _s = _g.scale, _src = _g.src;
+        var _x1 = max(_g.x, _r[0]), _y1 = max(_g.y, _r[1]);
+        var _x2 = min(_g.x+_src[2]*_s, _r[0]+_r[2]), _y2 = min(_g.y+_src[3]*_s, _r[1]+_r[3]);
+        if (_x2 <= _x1 || _y2 <= _y1) continue;
+        draw_sprite_part_ext(_spr, 0, _src[0]+(_x1-_g.x)/_s, _src[1]+(_y1-_g.y)/_s,
+            (_x2-_x1)/_s, (_y2-_y1)/_s, _x1, _y1, _s, _s, _colour, _c[3]);
+    }
+}
+
+function bb_yctp_face_update(_dt) {
+    var _g = global.G;
+    if (!_g.yctp_face_visible) return;
+    var _state = _g.yctp_face_state;
+    if (_state != "frown") {
+        var _handle = _g.voices.math.handle;
+        _state = (!_g.spoop_mode && _handle != -1 && audio_is_playing(_handle) && !audio_is_paused(_handle)) ? "talk" : "idle";
+    }
+    if (_state != _g.yctp_face_state) _g.yctp_face_time = 0;
+    _g.yctp_face_state = _state;
+    _g.yctp_face_time += _dt;
+}
+
+function bb_yctp_face_texture() {
+    var _g = global.G, _anim = global.P.yctp_face[$ _g.yctp_face_state];
+    var _time = _g.yctp_face_time * _anim.speed;
+    if (_anim.loop) _time = _time mod _anim.duration;
+    var _key = _anim.frames[0].texture;
+    for (var _i = 1; _i < array_length(_anim.frames); _i++) {
+        if (_anim.frames[_i].time > _time) break;
+        _key = _anim.frames[_i].texture;
+    }
+    return _key;
+}
+
 function bb_present_yctp() {
     var _g = global.G, _ui = global.P.yctp;
     bb_ui_begin();
-    bb_ui_texture(_ui.YCTP.texture, _ui.YCTP.rect);
-    var _q = _ui.question.rect;
-    if (_g.yctp_end) {
-        bb_ui_text(_g.yctp_msg, _q, global.fnt_ui, make_colour_rgb(16, 48, 16));
-    } else {
-        bb_ui_text("SOLVE MATH Q" + string(_g.yctp_q) + ":", [_q[0], _q[1], _q[2], 38], global.fnt_ui, make_colour_rgb(16, 48, 16));
-        if (_g.yctp_corrupt) {
-            var _bad = [_g.yctp_bad1, _g.yctp_bad2, _g.yctp_bad3];
-            for (var _i = 0; _i < 3; _i++) {
-                bb_ui_text(_bad[_i], [_q[0], _q[1]+42+_i*20, _q[2], 34], global.fnt_small, make_colour_rgb(16, 48, 16));
-            }
-        } else {
-            bb_ui_text(string(_g.yctp_a) + _g.yctp_op + string(_g.yctp_b) + "=", [_q[0], _q[1]+52, _q[2], 70], global.fnt_big, make_colour_rgb(16, 48, 16));
-        }
-        bb_ui_text(_g.yctp_input, _ui.answer.rect, global.fnt_big, c_black);
-    }
+    bb_ui_solid(_ui.BG);
+    bb_ui_solid(_ui.Image);
+    bb_ui_solid(_ui.TextBG);
+    bb_ui_solid(_ui.answerBackground);
     for (var _i = 0; _i < 3; _i++) {
         if (_g.yctp_marks[_i] != 0) bb_ui_texture(_g.yctp_marks[_i] > 0 ? "check" : "xmark", _ui[$ "Result" + string(_i+1)].rect);
     }
-    if (!_g.spoop_mode) bb_ui_fit_sprite(global.spr_wave[99], _ui.BaldiFeed.rect);
+    if (_g.yctp_face_visible) bb_ui_texture(bb_yctp_face_texture(), _ui.BaldiFeed.rect);
+    // The shell masks its inset screens, results and video feed.
+    bb_ui_texture(_ui.YCTP.texture, _ui.YCTP.rect);
+    if (_g.yctp_end) {
+        bb_yctp_text(_g.yctp_msg, _ui.question);
+    } else {
+        var _header = "SOLVE MATH Q" + string(_g.yctp_q) + ": \n";
+        if (_g.yctp_corrupt) {
+            bb_yctp_text(_header + _g.yctp_bad1, _ui.question);
+            bb_yctp_text(_header + _g.yctp_bad2, _ui.question2);
+            bb_yctp_text(_header + _g.yctp_bad3, _ui.question3);
+        } else {
+            bb_yctp_text(_header + " \n" + string(_g.yctp_a) + _g.yctp_op + string(_g.yctp_b) + "=", _ui.question);
+        }
+        bb_yctp_text(_g.yctp_input, _ui.answer, true);
+    }
     for (var _i = 0; _i < array_length(global.yctp_pad); _i++) {
         var _key = global.yctp_pad[_i];
         bb_ui_texture(_key.texture, _key.rect);

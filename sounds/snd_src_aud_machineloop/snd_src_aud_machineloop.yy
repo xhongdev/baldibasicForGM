@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.0,
+  "duration":8.997732426303855,
   "exportDir":"",
   "name":"snd_src_aud_machineloop",
   "parent":{

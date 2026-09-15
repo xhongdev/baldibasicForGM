@@ -77,8 +77,14 @@ function bb_run_selftests() {
             _x = _p[0]; _z = _p[1];
             if (bb_dist2(_x, _z, _n.x, _n.z) < 0.1) break;
         }
-        bb_test_assert(bb_dist2(_x, _z, _n.x, _n.z) < 0.1,
+        // Notebook centers sit above solid desks. Verify the route reaches
+        // a standable approach and that the actual pickup ray hits the book.
+        bb_test_assert(bb_dist2(_x, _z, _n.x, _n.z) < 1.05 * 1.05,
             "notebook route " + string(_i) + " ended at " + string(_x) + "," + string(_z));
+        _g.px = _x; _g.pz = _z;
+        _g.yaw = arctan2(_x - _n.x, _z - _n.z);
+        var _hit = bb_interaction_target(2);
+        bb_test_assert(_hit.kind == "notebook" && _hit.index == _i, "notebook pickup ray clears its desk " + string(_i));
     }
     // A half-wall adjacent to the first classroom must remain solid.
     bb_test_assert(bb_blocked_world(-1, -4.5, 0.28, true), "first classroom half-wall stays solid");
@@ -106,11 +112,222 @@ function bb_run_selftests() {
     bb_test_assert(bb_use_item() && _g.play_lock == 0, "scissors release rope");
     bb_test_soda_audio();
     global.G = _saved;
+    bb_refresh_details();
+    bb_test_yctp_state();
     bb_test_debug_menu();
+    bb_test_scene_details();
+    bb_test_stationary_navigation();
+    bb_test_restored_gameplay();
+    bb_test_ai_profile();
     audio_stop_all();
     window_mouse_set_locked(false);
     window_set_cursor(cr_default);
     show_debug_message("BB_TEST_LOGIC: " + string(global.test_total) + " checks, " + string(global.test_failed) + " failures");
+}
+
+function bb_test_restored_gameplay() {
+    var _original=global.G,_high=global.high_books;
+    global.G=variable_clone(_original);
+    var _g=global.G;
+    _g.debug.god=true;_g.debug.no_rules=false;_g.state="play";
+    var _pickup=_g.notebooks_list[0];_g.px=_pickup.x+2.5;_g.pz=_pickup.z;
+    bb_test_assert(!bb_pickup_in_range(_pickup),"notebook uses source ten-unit pickup distance");
+    _pickup=_g.items[0];_g.px=_pickup.x+1.5;_g.pz=_pickup.z;
+    bb_test_assert(bb_pickup_in_range(_pickup),"nearby item is inside source pickup distance");
+    _g.notebooks=7;
+    for (var _i=0;_i<array_length(_g.doors);_i++) { _g.doors[_i].locked=false;_g.doors[_i].lock_cd=0;_g.doors[_i].open=true; }
+    for (var _i=0;_i<array_length(_g.props);_i++) {
+        var _prop=_g.props[_i];
+        if (_prop.kind!="soda" && _prop.kind!="zesty") continue;
+        var _found=false;
+        for (var _angle=0;_angle<360;_angle+=45) {
+            _g.px=_prop.x+lengthdir_x(1.5,_angle);_g.pz=_prop.z+lengthdir_y(1.5,_angle);
+            if (bb_blocked_world(_g.px,_g.pz,_g.radius,true)) continue;
+            _g.yaw=arctan2(_g.px-_prop.x,_g.pz-_prop.z);
+            var _hit=bb_interaction_target(2);
+            if (_hit.kind=="prop" && _hit.index==_i) { _found=true;break; }
+        }
+        bb_test_assert(_found,"vending machine front can be targeted "+string(_i));
+        _g.inv=[5,-1,-1];_g.inv_sel=0;
+        bb_test_assert(_found && bb_use_item() && _g.inv[0]==(_prop.kind=="soda"?4:1),"quarter buys from solid machine "+string(_i));
+    }
+    var _principal=undefined,_bully=undefined,_playtime=undefined;
+    for (var _i=0;_i<array_length(_g.npcs);_i++) {
+        var _n=_g.npcs[_i];
+        if (_n.kind=="principal") _principal=_n;
+        if (_n.kind=="bully") _bully=_n;
+        if (_n.kind=="playtime") _playtime=_n;
+    }
+    var _prize=undefined;
+    for (var _i=0;_i<array_length(_g.npcs);_i++) if (_g.npcs[_i].kind=="prize") _prize=_g.npcs[_i];
+    var _view_a=bb_prize_view_sprite(_prize,_prize.x+1,_prize.z),_view_b=bb_prize_view_sprite(_prize,_prize.x-1,_prize.z);
+    bb_test_assert(array_length(_prize.source.views)==16 && _view_a!=_view_b,"1st Prize uses sixteen source direction sprites");
+    _g.px=0;_g.pz=-14;_g.yaw=0;_g.prin_chase=false;_g.guilt=1;_g.guilt_type="running";
+    _principal.x=0;_principal.z=-12;_principal.cool=0;_principal.stare=0;_principal.sees=true;
+    bb_ai_principal(_principal,.49);
+    bb_test_assert(!_g.prin_chase,"principal requires half a second of visible guilt");
+    bb_ai_principal(_principal,.02);
+    bb_test_assert(_g.prin_chase,"principal chases after sustained rule break");
+    _g.guilt=0;_g.prin_chase=false;_principal.sees=false;_principal.bully_seen=false;
+    _principal.x=0;_principal.z=-12;_bully.x=0;_bully.z=-14;_bully.mode="active";_bully.guilt=10;
+    bb_voice_clear("principal");
+    bb_ai_principal(_principal,.01);bb_ai_principal(_principal,.01);
+    bb_test_assert(array_length(_g.voices.principal.queue)==1 && _g.voices.principal.queue[0]==global.S.clips[$ _principal.source.audio.audNoBullying],"principal announces bullying once per pursuit");
+    _principal.x=0;_principal.z=-14.2;bb_ai_principal(_principal,.01);
+    bb_test_assert(_bully.mode=="hidden","principal removes guilty bully on contact");
+    _playtime.x=_g.px;_playtime.z=_g.pz;_g.audio_log=[];
+    bb_start_playtime();
+    bb_test_assert(_g.audio_log[0].clip==global.S.clips[$ _playtime.source.audio.aud_ReadyGo],"rope starts source Ready Go voice");
+    bb_rope_tick(2.1,false);
+    bb_test_assert(_g.audio_log[array_length(_g.audio_log)-1].clip==global.S.clips[$ _playtime.source.audio.aud_Oops],"missed rope plays Oops voice");
+    _g.inv=[9,-1,-1];_g.inv_sel=0;bb_use_item();
+    bb_test_assert(_g.play_lock==0 && _g.audio_log[array_length(_g.audio_log)-1].clip==global.S.clips[$ _playtime.source.audio.aud_Sad],"cut rope releases player and disappoints Playtime");
+    _g.mode="endless";_g.spoop_mode=false;_g.notebooks=1;_g.baldi_active=false;
+    bb_yctp_open();
+    for (var _i=0;_i<3;_i++) { _g.yctp_input=string(_g.yctp_ans);bb_yctp_submit(); }
+    bb_yctp_close();
+    bb_test_assert(!_g.spoop_mode && !_g.baldi_active,"perfect first Endless notebook does not start pursuit");
+    _g.notebooks=2;bb_yctp_open();
+    for (var _i=0;_i<2;_i++) { _g.yctp_input=string(_g.yctp_ans);bb_yctp_submit(); }
+    bb_test_assert(_g.yctp_corrupt,"Endless second notebook has the impossible third problem");
+    _g.yctp_input="0";bb_yctp_submit();bb_yctp_close();
+    _g.notebooks=8;_g.baldi_anger=3;_g.exit_open=false;bb_yctp_open();
+    var _all_solvable=true;
+    for (var _i=0;_i<3;_i++) { _all_solvable=_all_solvable && !_g.yctp_corrupt;_g.yctp_input=string(_g.yctp_ans);bb_yctp_submit(); }
+    bb_yctp_close();
+    bb_test_assert(_all_solvable && _g.baldi_anger==2 && !_g.exit_open,"later Endless books are solvable, reduce anger and never raise exits");
+    bb_yctp_open();var _anger=_g.baldi_anger,_temp=_g.baldi_extra;
+    _g.yctp_input="99999";bb_yctp_submit();
+    bb_test_assert(_g.baldi_anger==_anger+1 && _g.baldi_extra==_temp,"every Endless wrong answer increases permanent anger");
+    bb_yctp_close();
+    var _book=_g.notebooks_list[0];_book.taken=true;_book.respawn=120;
+    _g.px=_book.x;_g.pz=_book.z;bb_update_notebook_respawns(60);
+    bb_test_assert(_book.respawn==120 && _book.taken,"Endless notebook timer pauses near player");
+    _g.px=_book.x+20;bb_update_notebook_respawns(119);
+    bb_test_assert(_book.taken && _book.respawn==1,"Endless notebook waits full distant countdown");
+    bb_update_notebook_respawns(1);
+    bb_test_assert(!_book.taken,"Endless notebook respawns after 120 distant seconds");
+    _g.debug.freeze_baldi=false;_g.anger_time=.5;_g.anger_rate=.01;_anger=_g.baldi_anger;
+    bb_update_baldi(.6);
+    bb_test_assert(abs(_g.baldi_anger-_anger-.01)<.0001 && abs(_g.anger_rate-.01025)<.0001,"Endless anger rate grows using source timing");
+    _g.debug.god=false;_g.gameover=false;_g.notebooks=_high+1;bb_gameover();
+    bb_test_assert(_g.new_high_score && global.high_books==_high+1,"Endless death records notebook high score");
+    audio_stop_all();global.high_books=_high;global.G=_original;bb_refresh_details();
+}
+
+function bb_test_ai_profile() {
+    var _original = global.G;
+    global.G = variable_clone(_original);
+    var _g = global.G;
+    random_set_seed(143);
+    _g.debug.god = true; _g.debug.no_rules = true;
+    _g.px = 0; _g.pz = -12; _g.notebooks = 7;
+    bb_activate_spoop();
+    var _start = get_timer(), _peak = 0;
+    for (var _i = 0; _i < 120; _i++) {
+        var _tick = get_timer();
+        bb_update_baldi(1/60); bb_update_npcs(1/60);
+        _peak = max(_peak, get_timer()-_tick);
+    }
+    show_debug_message("BB_PROFILE_AI: 120 frames avg_us=" + string((get_timer()-_start)/120) + " peak_us=" + string(_peak));
+    audio_stop_all(); global.G = _original; bb_refresh_details();
+}
+
+function bb_test_stationary_navigation() {
+    // Arrival and a missing next step both produce a zero-length direction.
+    var _offsets = [0, 0.000001];
+    for (var _i = 0; _i < array_length(_offsets); _i++) {
+        var _ok = false;
+        try {
+            var _pos = bb_nav_advance(0, -2, _offsets[_i], -2, 0.25, 0.28, true);
+            _ok = !is_nan(_pos[0]) && !is_nan(_pos[1]) && abs(_pos[0]) <= 0.00001 && _pos[1] == -2;
+        } catch (_error) {
+            show_debug_message("BB_TEST_NAV_ERROR: " + _error.message);
+        }
+        bb_test_assert(_ok, "stationary navigation remains finite at offset " + string(_offsets[_i]));
+    }
+    var _pos = bb_nav_advance(0, -2, 0, -4, 0.25, 0.28, true);
+    bb_test_assert(_pos[0] == 0 && abs(_pos[1]+2.25) < 0.0001, "navigation resumes normally toward a new target after arrival");
+    // IEEE values from a buffer exercise invalid movement without dividing by zero.
+    var _buffer = buffer_create(8, buffer_fixed, 1);
+    buffer_poke(_buffer, 0, buffer_u32, 0);
+    var _high_words = [2146959360, 2146435072]; // quiet NaN and positive infinity
+    for (var _i = 0; _i < array_length(_high_words); _i++) {
+        buffer_poke(_buffer, 4, buffer_u32, _high_words[_i]);
+        var _bad = buffer_peek(_buffer, 0, buffer_f64);
+        var _pos = bb_move_slide(0, -2, _bad, 0, 0.28, true);
+        bb_test_assert(_pos[0] == 0 && _pos[1] == -2, "invalid movement keeps last valid position " + string(_i));
+    }
+    buffer_delete(_buffer);
+    var _original = global.G;
+    global.G = variable_clone(_original);
+    var _g = global.G;
+    _g.state = "play"; _g.debug.god = true; _g.debug.freeze_baldi = false;
+    _g.px = 0; _g.pz = -24; _g.baldi_x = 0; _g.baldi_z = -24;
+    _g.baldi_active = true; _g.baldi_sprayed = false; _g.baldi_move = 0.2; _g.baldi_cd = 1;
+    var _ok = false;
+    try {
+        bb_update_baldi(1/60);
+        _ok = !is_nan(_g.baldi_x) && !is_nan(_g.baldi_z) && _g.baldi_x == 0 && _g.baldi_z == -24;
+    } catch (_error) {
+        show_debug_message("BB_TEST_NAV_ERROR: " + _error.message);
+    }
+    bb_test_assert(_ok, "Baldi can arrive at his hearing target without NaN");
+    global.G = _original;
+}
+
+function bb_test_yctp_state() {
+    var _original = global.G;
+    global.G = variable_clone(_original);
+    var _g = global.G;
+    audio_stop_all();
+    _g.state = "play"; _g.spoop_mode = false; _g.notebooks = 0;
+    _g.audio_log = [];
+    bb_collect_notebook(0);
+    bb_audio_update(0.01); bb_yctp_face_update(0.05);
+    bb_test_assert(_g.state == "yctp" && _g.notebooks == 1 && _g.notebooks_list[0].taken, "notebook click opens first pad");
+    bb_test_assert(array_length(_g.audio_log) == 2 && _g.audio_log[0].clip == global.S.learnMusic
+        && _g.audio_log[1].clip == global.S.bal_intro, "notebook entry plays only learn music and intro; no bell");
+    bb_test_assert(_g.yctp_face_visible && _g.yctp_face_state == "talk", "Baldi face talks with math voice");
+    var _frame = bb_yctp_face_texture();
+    bb_yctp_face_update(0.1);
+    bb_test_assert(bb_yctp_face_texture() != _frame, "talking face advances through source frames");
+    bb_voice_clear("math"); bb_yctp_face_update(0.01);
+    bb_test_assert(_g.yctp_face_state == "idle", "face rests when voice stops");
+    _g.yctp_input = "99999";
+    var _music = _g.yctp_music;
+    var _transition_start=get_timer();
+    bb_yctp_submit();
+    show_debug_message("BB_PROFILE_FIRST_WRONG_US: "+string(get_timer()-_transition_start));
+    bb_test_assert(_g.spoop_mode && _g.yctp_face_visible && _g.yctp_face_state == "frown", "first wrong answer starts visible frown");
+    bb_test_assert(!audio_is_playing(_music), "first wrong answer stops learning music");
+    bb_yctp_face_update(0.2); _frame = bb_yctp_face_texture();
+    bb_yctp_face_update(0.2);
+    bb_test_assert(bb_yctp_face_texture() != _frame, "frown animates after wrong answer");
+    _g.audio_log = [];
+    _g.yctp_input = string(_g.yctp_ans); bb_yctp_submit(); bb_audio_update(0.01);
+    bb_test_assert(array_length(_g.audio_log) == 0, "correct answer after failure stays silent");
+    bb_yctp_close();
+    var _alarm = bb_sound_play(snd_alarm);
+    _g.audio_log = [];
+    bb_collect_notebook(1); bb_audio_update(0.01); bb_yctp_face_update(0.01);
+    bb_test_assert(!_g.yctp_face_visible && array_length(_g.audio_log) == 0, "next notebook after failure has no Baldi face or math audio");
+    bb_test_assert(audio_is_paused(_alarm), "world alarm cannot leak into learning screen");
+    // Exercise both enqueue and playback guards, including a stale queue.
+    bb_voice_queue("math", [global.S.bal_intro]);
+    bb_test_assert(array_length(_g.voices.math.queue) == 0, "spoop mode rejects new math speech");
+    _g.voices.math.queue = [global.S.bal_howto]; _g.voices.math.head = 0;
+    bb_audio_update(0.01);
+    bb_test_assert(array_length(_g.audio_log) == 0 && _g.voices.math.handle == -1, "spoop mode discards stale voice before playback");
+    bb_debug_open(); bb_debug_close();
+    bb_test_assert(audio_is_paused(_alarm) && _g.voices.math.handle == -1, "closing cheats cannot resume world alarm or stale Baldi voice in pad");
+    _g.yctp_input = string(_g.yctp_ans); bb_yctp_submit(); bb_audio_update(0.01);
+    bb_test_assert(array_length(_g.audio_log) == 0, "later notebook correct answer stays silent");
+    bb_yctp_close();
+    bb_test_assert(!audio_is_paused(_alarm), "leaving pad resumes existing world alarm");
+    audio_stop_all();
+    global.G = _original;
+    bb_refresh_details();
 }
 
 function bb_test_debug_menu() {
@@ -219,6 +436,88 @@ function bb_test_debug_menu() {
     bb_debug_close();
     audio_stop_all();
     global.G = _original;
+    bb_refresh_details();
+}
+
+function bb_test_scene_details() {
+    var _original = global.G;
+    global.G = variable_clone(_original);
+    var _g = global.G;
+    audio_stop_all();
+    _g.state = "play"; _g.spoop_mode = false; _g.win = false; _g.gameover = false;
+    _g.px = 0; _g.pz = -2;
+    bb_debug_notebooks(0);
+    var _entrance_start=get_timer();
+    bb_activate_spoop();
+    show_debug_message("BB_PROFILE_FIRST_ENTRANCE_US: "+string(get_timer()-_entrance_start));
+    for (var _i = 0; _i < array_length(_g.exits); _i++) {
+        var _e = _g.exits[_i], _b = _e.source.wall_bounds;
+        bb_test_assert(_e.down && bb_blocked_world((_b[0]+_b[3])*0.5, (_b[2]+_b[5])*0.5, .28, true), "wrong-answer wall blocks exit " + _e.name);
+    }
+    bb_debug_notebooks(7);
+    for (var _i = 0; _i < array_length(_g.exits); _i++) {
+        var _e = _g.exits[_i], _b = _e.source.wall_bounds;
+        bb_test_assert(!_e.down && !bb_blocked_world((_b[0]+_b[3])*0.5, (_b[2]+_b[5])*0.5, .28, true), "seven books restore exit " + _e.name);
+    }
+    // Test all approach directions, well before reaching the physical exit plane.
+    for (var _i = 0; _i < 3; _i++) {
+        var _e = _g.exits[_i], _s = _e.source;
+        var _b = _s.wall_bounds, _cx = (_b[0]+_b[3])*.5, _cz = (_b[2]+_b[5])*.5;
+        var _dx = sign(_cx-_s.origin[0]), _dz = sign(_cz-_s.origin[2]);
+        _g.px = _s.origin[0]-_dx*.2; _g.pz = _s.origin[2]-_dz*.2;
+        var _previous = _g.finale_sound;
+        var _exit_start=get_timer();
+        bb_check_exits();
+        show_debug_message("BB_PROFILE_EXIT_"+string(_i)+"_US: "+string(get_timer()-_exit_start));
+        bb_test_assert(_e.used && _e.down && _g.exit_got == _i+1 && !_g.win, "near trigger closes unique exit " + string(_i));
+        bb_test_assert(!bb_blocked_world(_g.px, _g.pz, _g.radius, true), "early closure leaves player on clear ground " + string(_i));
+        if (_previous != -1) bb_test_assert(!audio_is_playing(_previous), "finale stage stops preceding loop " + string(_i));
+        bb_check_exits();
+        bb_test_assert(_g.exit_got == _i+1, "same exit cannot count twice");
+    }
+    var _rev = _g.finale_sound;
+    bb_audio_update(.01);
+    bb_test_assert(!_g.finale_loop && _g.finale_sound == _rev, "third exit cannot start loop over rev intro");
+    audio_stop_sound(_rev); _g.finale_remaining = 0;
+    bb_audio_update(.01);
+    bb_test_assert(_g.finale_loop && _g.finale_sound != _rev, "third exit loop follows completed intro");
+    var _last = _g.exits[3], _f = _last.source.finish;
+    _g.px = _last.source.origin[0]; _g.pz = _last.source.origin[2];
+    bb_check_exits();
+    bb_test_assert(!_g.win && !_last.down, "last exit stays open and does not win at near trigger");
+    bb_voice_queue("principal", [global.S.audDetention]);
+    var _noise = bb_sound_play(snd_alarm);
+    _g.px = (_f[0]+_f[3])*.5; _g.pz = (_f[2]+_f[5])*.5;
+    bb_check_exits();
+    var _win_handle = _g.win_sound;
+    bb_test_assert(_g.win && _win_handle != -1 && !audio_is_playing(_noise), "finish stops world audio and starts Results clip");
+    var _plays = array_length(_g.audio_log);
+    bb_audio_update(1); bb_win_game();
+    bb_test_assert(array_length(_g.audio_log) == _plays && _g.win_sound == _win_handle && _g.finale_sound == -1,
+        "post-win update cannot restart finale or queued voices");
+    bb_debug_open(); bb_debug_close();
+    bb_test_assert(!audio_is_paused(_win_handle), "cheat overlay resumes victory clip");
+    _g.win = false; bb_debug_notebooks(7);
+    var _e = _g.exits[0], _s = _e.source, _b = _s.wall_bounds;
+    var _cx = (_b[0]+_b[3])*.5, _cz = (_b[2]+_b[5])*.5;
+    var _dx = sign(_cx-_s.origin[0]), _dz = sign(_cz-_s.origin[2]);
+    _g.px = _cx+_dx*.2; _g.pz = _cz+_dz*.2;
+    bb_check_exits(_s.origin[0]-_dx*2, _s.origin[2]-_dz*2);
+    bb_test_assert(_e.down && !bb_blocked_world(_g.px, _g.pz, _g.radius, true), "fast approach is swept and ejected before wall closes");
+    _g.inv = [10, -1, -1]; _g.inv_sel = 0;
+    bb_use_item();
+    bb_test_assert(_g.boots == 15 && _g.boot_anim == 0, "boots start protection and entry animation together");
+    bb_update_item_effects(1);
+    var _r = bb_boots_rect(_g.boot_anim);
+    bb_test_assert(!is_undefined(_r) && _r[1] == 140, "boots cross center after one second");
+    bb_update_item_effects(2);
+    bb_test_assert(is_undefined(bb_boots_rect(_g.boot_anim)) && _g.boots == 12, "boots disappear while protection remains");
+    bb_update_item_effects(13);
+    _r = bb_boots_rect(_g.boot_anim);
+    bb_test_assert(!is_undefined(_r) && _r[1] == 140 && _g.boots == 0, "boots return on expiry");
+    bb_update_item_effects(1);
+    bb_test_assert(_g.boot_anim == -1, "boots animation ends after seventeen seconds");
+    audio_stop_all(); global.G = _original; bb_refresh_details();
 }
 
 function bb_test_soda_audio() {
@@ -281,7 +580,27 @@ function bb_test_pixel_near(_a, _b) {
         && abs(colour_get_blue(_a)-colour_get_blue(_b)) <= 2;
 }
 
+function bb_test_surface_buffer(_surface) {
+    var _buffer = buffer_create(surface_get_width(_surface)*surface_get_height(_surface)*4, buffer_fixed, 1);
+    buffer_get_surface(_buffer, _surface, 0);
+    return _buffer;
+}
+
+function bb_test_surface_difference(_a, _b, _step) {
+    var _ba = bb_test_surface_buffer(_a), _bb = bb_test_surface_buffer(_b), _different = 0;
+    var _w = surface_get_width(_a), _h = surface_get_height(_a);
+    for (var _y = 0; _y < _h; _y += _step) {
+        for (var _x = 0; _x < _w; _x += _step) {
+            var _offset = (_y*_w+_x)*4;
+            if ((buffer_peek(_ba,_offset,buffer_u32)&16777215) != (buffer_peek(_bb,_offset,buffer_u32)&16777215)) _different += 1;
+        }
+    }
+    buffer_delete(_ba); buffer_delete(_bb);
+    return _different;
+}
+
 function bb_test_presentation_render() {
+    show_debug_message("BB_TEST_STAGE: presentation render");
     var _mat = [matrix_get(matrix_world), matrix_get(matrix_view), matrix_get(matrix_projection)];
     var _saved = variable_clone(global.G);
     var _expected = surface_create(128, 128), _actual = surface_create(128, 128);
@@ -324,6 +643,10 @@ function bb_test_presentation_render() {
     surface_reset_target();
     global.G.inv = [-1, -1, -1];
     surface_set_target(_actual); draw_clear(c_black); bb_present_hud(global.G, 640, 480); surface_reset_target();
+    bb_test_assert(surface_getpixel(_actual, 585, 20) == c_white && surface_getpixel(_actual, 620, 20) == c_white,
+        "unselected inventory slots have white backing beneath frame");
+    global.G.inv = [1, 4, 9];
+    surface_set_target(_actual); draw_clear(c_black); bb_present_hud(global.G, 640, 480); surface_reset_target();
     var _bad = 0, _checked = 0;
     for (var _y = 2; _y < 65; _y += 3) {
         for (var _x = 513; _x < 639; _x += 3) {
@@ -332,9 +655,7 @@ function bb_test_presentation_render() {
             if (!bb_test_pixel_near(surface_getpixel(_expected, _x, _y), surface_getpixel(_actual, _x, _y))) _bad += 1;
         }
     }
-    bb_test_assert(_checked > 50 && _bad == 0, "HUD frame is fully drawn without cropping or distortion");
-    global.G.inv = [1, 4, 9];
-    surface_set_target(_actual); draw_clear(c_black); bb_present_hud(global.G, 640, 480); surface_reset_target();
+    bb_test_assert(_checked > 50 && _bad == 0, "HUD frame remains fully visible above populated item slots");
     surface_save(_actual, "bb_hud_check.png");
     bb_yctp_layout_init();
     global.G.state = "yctp"; global.G.yctp_q = 1; global.G.yctp_end = false;
@@ -355,6 +676,73 @@ function bb_test_presentation_render() {
         bb_test_assert(bb_yctp_pad_at((_b.x1+_b.x2)*0.5, (_b.y1+_b.y2)*0.5) == _b.v, "YCTP visible button hit area " + string(_b.v));
     }
     surface_save(_actual, "bb_yctp_check.png");
+    // Opposite backgrounds must produce the same complete pad, including its holes.
+    surface_set_target(_expected); draw_clear(c_lime); bb_present_yctp(); surface_reset_target();
+    surface_set_target(_actual); draw_clear(c_fuchsia); bb_present_yctp(); surface_reset_target();
+    var _different = bb_test_surface_difference(_actual, _expected, 8);
+    bb_test_assert(_different == 0, "pad is fully opaque over every scene background");
+    bb_test_assert(surface_getpixel(_actual, 0, 0) == c_black && surface_getpixel(_actual, 639, 479) == c_black, "pad outer background is black");
+    bb_test_assert(surface_getpixel(_actual, 440, 210) == c_white && surface_getpixel(_actual, 430, 330) == c_white, "question and answer have white backing inside shell");
+    // White panels, face and result marks must never paint over opaque shell pixels.
+    global.G.yctp_end = true; global.G.yctp_msg = "";
+    surface_set_target(_actual); bb_present_yctp(); surface_reset_target();
+    surface_set_target(_expected); draw_clear_alpha(c_black, 0); bb_ui_texture(global.P.yctp.YCTP.texture, global.P.yctp.YCTP.rect); surface_reset_target();
+    var _over = 0, _opaque = 0;
+    var _ba = bb_test_surface_buffer(_actual), _be = bb_test_surface_buffer(_expected);
+    for (var _y = 100; _y < 420; _y += 3) {
+        for (var _x = 100; _x < 470; _x += 3) {
+            var _offset = (_y*640+_x)*4, _pixel = buffer_peek(_be,_offset,buffer_u32);
+            if (((_pixel >> 24) & 255) < 254) continue;
+            _opaque += 1;
+            if (!bb_test_pixel_near(buffer_peek(_ba,_offset,buffer_u32)&16777215, _pixel&16777215)) _over += 1;
+        }
+    }
+    buffer_delete(_ba); buffer_delete(_be);
+    bb_test_assert(_opaque > 100 && _over == 0, "shell stays above panels, face and result marks");
+    global.G.yctp_end = false;
+    // Source glyphs must be actual letter shapes, at the authored top-left baseline.
+    surface_set_target(_actual); draw_clear(c_white); bb_yctp_text("SOLVE MATH Q1: \n \n3+2=", global.P.yctp.question); surface_reset_target();
+    var _ink = 0, _left = 640, _top = 480, _right = 0, _bottom = 0;
+    for (var _y = 140; _y < 290; _y++) {
+        for (var _x = 200; _x < 450; _x++) {
+            if (surface_getpixel(_actual, _x, _y) == c_white) continue;
+            _ink += 1; _left = min(_left, _x); _top = min(_top, _y); _right = max(_right, _x); _bottom = max(_bottom, _y);
+        }
+    }
+    bb_test_assert(_ink > 300 && _ink < 2800, "source font draws letter silhouettes, ink=" + string(_ink));
+    bb_test_assert(_left >= 208 && _left <= 212 && _top >= 151 && _top <= 156 && _right < 445 && _bottom < 286,
+        "question text follows original left/top position: " + string(_left) + "," + string(_top));
+    var _messages = ["WOW! YOU EXIST!", "I HEAR MATH THAT BAD", "I GET ANGRIER FOR EVERY PROBLEM YOU GET WRONG", "I HEAR EVERY DOOR YOU OPEN"];
+    for (var _mi = 0; _mi < array_length(_messages); _mi++) {
+        var _layout = bb_yctp_text_layout(_messages[_mi], global.P.yctp.question), _fits = true;
+        for (var _i = 0; _i < array_length(_layout); _i++) {
+            var _glyph = _layout[_i];
+            if (_glyph.y + _glyph.src[3] * _glyph.scale > 286) _fits = false;
+        }
+        bb_test_assert(_fits, "end message fits white text area " + string(_mi));
+    }
+    global.G.yctp_input = "-1234567";
+    surface_set_target(_actual); draw_clear(c_fuchsia); bb_yctp_text(global.G.yctp_input, global.P.yctp.answer, true); surface_reset_target();
+    bb_test_assert(surface_getpixel(_actual, 450, 325) == c_fuchsia && surface_getpixel(_actual, 240, 325) == c_fuchsia, "long answer stays clipped to input viewport");
+    global.G.yctp_input = "5"; global.G.yctp_a = 3; global.G.yctp_b = 2; global.G.yctp_op = "+";
+    global.G.yctp_face_visible = true; global.G.yctp_face_state = "talk"; global.G.yctp_face_time = 0.1;
+    surface_set_target(_actual); draw_clear(c_fuchsia); bb_present_yctp(); surface_reset_target();
+    surface_save(_actual, "bb_yctp_check.png");
+    global.G.yctp_face_state = "frown"; global.G.yctp_face_time = 0.7;
+    global.G.yctp_q = 3; global.G.yctp_corrupt = true; global.G.yctp_input = "";
+    global.G.yctp_bad1 = "1234+(5678X9012="; global.G.yctp_bad2 = "(983/412)+6789="; global.G.yctp_bad3 = "3456+(7890X1234=";
+    surface_set_target(_actual); draw_clear(c_fuchsia); bb_present_yctp(); surface_reset_target();
+    surface_save(_actual, "bb_yctp_corrupt_check.png");
+    global.G.state = "play"; global.G.detention = 30; global.G.play_lock = 0; global.G.boot_anim = -1;
+    show_debug_message("BB_TEST_STAGE: HUD effects");
+    surface_set_target(_actual); draw_clear(make_colour_rgb(180,180,180)); bb_draw_hud_effects(); surface_reset_target();
+    surface_save(_actual, "bb_detention_check.png");
+    global.G.detention = 0; global.G.play_lock = 1; global.G.play_need = 3; global.G.rope_delay = 0; global.G.rope_time = .25;
+    surface_set_target(_actual); draw_clear(make_colour_rgb(180,180,180)); bb_draw_hud_effects(); surface_reset_target();
+    surface_save(_actual, "bb_rope_check.png");
+    global.G.play_lock = 0; global.G.boot_anim = 1;
+    surface_set_target(_actual); draw_clear(make_colour_rgb(180,180,180)); bb_draw_hud_effects(); surface_reset_target();
+    surface_save(_actual, "bb_boots_check.png");
     surface_free(_expected); surface_free(_actual);
     global.G = _saved;
     _actual = surface_create(128, 128);
@@ -370,6 +758,55 @@ function bb_test_presentation_render() {
     surface_free(_actual);
     matrix_set(matrix_world, _mat[0]); matrix_set(matrix_view, _mat[1]); matrix_set(matrix_projection, _mat[2]);
     bb_ui_begin();
+    bb_test_world_details_render();
+}
+
+function bb_test_world_details_render() {
+    show_debug_message("BB_TEST_STAGE: world details");
+    var _saved = variable_clone(global.G), _g = global.G;
+    var _expected = surface_create(128,128), _actual = surface_create(128,128);
+    for (var _i = 0; _i < array_length(_g.exits); _i++) _g.exits[_i].down = false;
+    bb_refresh_details();
+    for (var _i = 0; _i < array_length(_g.exits); _i++) {
+        var _e = _g.exits[_i], _s = _e.source, _b = _s.wall_bounds;
+        var _dx = sign((_b[0]+_b[3])*.5-_s.origin[0]), _dz = sign((_b[2]+_b[5])*.5-_s.origin[2]);
+        var _x = _s.origin[0]-_dx*2, _z = _s.origin[2]-_dz*2;
+        for (var _angle = 0; _angle < 360; _angle += 45) {
+            var _cx = _s.origin[0]+lengthdir_x(2,_angle), _cz = _s.origin[2]+lengthdir_y(2,_angle);
+            if (!bb_blocked_world(_cx,_cz,.28,true) && bb_los(_cx,_cz,_s.origin[0],_s.origin[2])) {
+                _x = _cx; _z = _cz; break;
+            }
+        }
+        var _yaw = arctan2(_x-_s.origin[0],_z-_s.origin[2]);
+        _g.px = _x; _g.pz = _z;
+        surface_set_target(_expected); bb3d_begin(_x,1,_z,_yaw,1);
+        bb3d_draw_world(); bb_draw_entrances(); surface_reset_target(); bb3d_end();
+        surface_set_target(_actual); bb3d_begin(_x,1,_z,_yaw,1);
+        bb3d_draw_world(); bb_draw_entrances(); bb_draw_exit_signs(); surface_reset_target(); bb3d_end();
+        var _pixels = bb_test_surface_difference(_actual, _expected, 2);
+        bb_test_assert(_pixels > 5, "exit sign visible against actual walls " + _e.name + " pixels=" + string(_pixels));
+        show_debug_message("BB_TEST_STAGE: checked " + _e.name);
+    }
+    surface_free(_actual); surface_free(_expected);
+    _actual = surface_create(640,480);
+    var _e = _g.exits[0], _s = _e.source, _b = _s.wall_bounds;
+    var _dx = sign((_b[0]+_b[3])*.5-_s.origin[0]), _dz = sign((_b[2]+_b[5])*.5-_s.origin[2]);
+    _e.down = true; _e.used = true;
+    _g.px = _s.origin[0]-_dx*2; _g.pz = _s.origin[2]-_dz*2;
+    surface_set_target(_actual); bb3d_begin(_g.px,1,_g.pz,arctan2(-_dx,-_dz),640/480);
+    bb3d_draw_world(); bb_draw_entrances(); surface_reset_target(); bb3d_end();
+    surface_save(_actual,"bb_exit_map_check.png");
+    for (var _i = 0; _i < array_length(_g.props); _i++) {
+        var _p = _g.props[_i];
+        if (_p.kind != "soda") continue;
+        var _x = _p.x+1.4, _z = _p.z-2;
+        surface_set_target(_actual); bb3d_begin(_x,1,_z,arctan2(_x-_p.x,_z-_p.z),640/480);
+        bb_detail_meshes(_p.detail.meshes); surface_reset_target(); bb3d_end();
+        surface_save(_actual,"bb_vending_check.png");
+        break;
+    }
+    surface_free(_actual);
+    global.G = _saved; bb_refresh_details(); bb_ui_begin();
 }
 
 function bb_test_render() {

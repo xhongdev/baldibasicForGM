@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.0,
+  "duration":2.477074829931973,
   "exportDir":"",
   "name":"snd_src_audscolds1",
   "parent":{

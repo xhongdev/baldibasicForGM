@@ -8,10 +8,10 @@ import re
 import shutil
 import hashlib
 
-from import_unity_gameplay import DEFAULT_UNITY, ROOT, field, ref, vector, load_yy
+from import_unity_gameplay import DEFAULT_UNITY, ROOT, field, ref, vector, load_yy, PROPS
 from import_unity_map import guid, NOTEBOOK_SCRIPT
 from unity_scene import UnityScene, gm_point
-from build_from_godot import png_size, make_sound
+from build_from_godot import png_size
 
 
 def texture_index(unity):
@@ -21,6 +21,11 @@ def texture_index(unity):
         match = re.search(r"^guid: (\w+)", meta, re.M)
         if match: result[match[1]] = Path(str(path)[:-5])
     return result
+
+
+def colour(block, name):
+    value = field(block, name)
+    return [float(re.search(r"\b" + channel + r": ([\d.-]+)", value)[1]) for channel in "rgba"]
 
 
 def rect_reader(scene, size):
@@ -61,7 +66,7 @@ def main():
     textures = texture_index(unity)
     school = UnityScene(unity / "Assets/Scene/Scenes/School.unity")
     math = UnityScene(unity / "Assets/PrefabInstance/MathGame.prefab")
-    output = {"textures": {}, "hud": {}, "yctp": {}, "notebooks": {}, "pickups": {}, "exit_signs": []}
+    output = {"textures": {}, "hud": {}, "yctp": {}, "notebooks": {}, "pickups": {}, "props": {}, "exit_signs": []}
 
     def texture(key, src):
         source = textures.get(src) if isinstance(src, str) else src
@@ -81,20 +86,62 @@ def main():
     for tid in math.transforms.values():
         name = math.name(tid)
         if math.blocks[tid][0] != 224 or not math.active(tid): continue
-        if name in ("YCTP", "Result1", "Result2", "Result3", "BaldiFeed", "Text", "InputField", "Answer") or name.startswith("Button ("):
+        if name in ("BG", "Image", "TextBG", "YCTP", "Result1", "Result2", "Result3", "BaldiFeed") or name.startswith("Button ("):
             r = math_rect(tid)
             rec = {"rect": r}
             src = renderer_texture(math, tid)
             if src: rec["texture"] = texture("yctp_" + name, src)
+            graphic = next((b for _, _, b in math.components(tid, 114) if field(b, "m_Color")), None)
+            if graphic: rec["colour"] = colour(graphic, "m_Color")
             output["yctp"][name] = rec
             if args.inspect: print("YCTP", name, r, src.name if src else "")
     # Read the script references rather than guessing names for the answer field.
     script = next(b for kind, b in math.blocks.values() if kind == 114 and "  playerAnswer:" in b)
-    for name, source in (("question", "questionText"), ("answer", "playerAnswer")):
+    for name, source in (("question", "questionText"), ("question2", "questionText2"), ("question3", "questionText3"), ("answer", "playerAnswer")):
         component = math.blocks[ref(field(script, source))][1]
+        if name == "answer":
+            tid = math.transforms[ref(field(component, "m_GameObject"))]
+            output["yctp"]["answerBackground"] = {"rect": math_rect(tid), "colour": [1, 1, 1, 1]}
+            component = math.blocks[ref(field(component, "m_TextComponent"))][1]
         tid = math.transforms[ref(field(component, "m_GameObject"))]
-        output["yctp"][name] = {"rect": math_rect(tid)}
+        size = float(field(component, "m_fontSize")) * 0.8
+        output["yctp"][name] = {"rect": math_rect(tid), "font_size": size,
+            "alignment": int(field(component, "m_textAlignment")),
+            "spacing": float(field(component, "m_characterSpacing")) * size * 0.01,
+            "colour": colour(component, "m_fontColor")}
         if args.inspect: print("YCTP", name, math_rect(tid))
+
+    # Original bitmap font metrics avoid platform-dependent TTF sizes and baselines.
+    font = (unity / "Assets/Font/TMP/COMIC_Pro.asset").read_text(encoding="utf-8")
+    atlas = texture("yctp_font", guid(field(font, "atlas")))
+    atlas_h = output["textures"][atlas]["size"][1]
+    glyphs = {}
+    table = font.split("  m_GlyphTable:\n", 1)[1].split("  m_CharacterTable:", 1)[0]
+    for entry in re.split(r"^  - m_Index: ", table, flags=re.M)[1:]:
+        ident, body = entry.split("\n", 1)
+        metrics, rect = body.split("    m_GlyphRect:\n", 1)
+        number = lambda text, name: float(re.search(r"^\s+" + name + r": ([\d.-]+)", text, re.M)[1])
+        w, h = number(rect, "m_Width"), number(rect, "m_Height")
+        glyphs[int(ident)] = {"src": [number(rect, "m_X"), atlas_h-number(rect, "m_Y")-h, w, h],
+            "bearing": [number(metrics, "m_HorizontalBearingX"), number(metrics, "m_HorizontalBearingY")],
+            "advance": number(metrics, "m_HorizontalAdvance")}
+    chars = {code: glyphs[int(index)] for code, index in re.findall(r"m_Unicode: (\d+)\n\s+m_GlyphIndex: (\d+)", font)}
+    output["yctp_font"] = {"texture": atlas, "size": 24, "ascent": 26, "line_height": 33, "glyphs": chars}
+
+    # Follow the animator's sprite curves and state speeds, including the one-shot frown.
+    animator = UnityScene(unity / "Assets/AnimationClip/AnimatorController/BaldiFeed.controller")
+    animations = {}
+    for kind, state in animator.blocks.values():
+        if kind != 1102: continue
+        name = field(state, "m_Name")
+        anim = (unity / "Assets/AnimationClip" / (name + ".anim")).read_text(encoding="utf-8")
+        curve = anim.split("  m_PPtrCurves:", 1)[1].split("    attribute:", 1)[0]
+        frames = [{"time": float(t), "texture": texture(name + "_" + str(i), ident)} for i, (t, ident) in
+                  enumerate(re.findall(r"- time: ([\d.]+)\n\s+value: \{fileID: \d+, guid: (\w+)", curve))]
+        animations[name.removeprefix("Baldi_").lower()] = {"frames": frames, "speed": float(field(state, "m_Speed")),
+            "duration": float(re.search(r"m_StopTime: ([\d.]+)", anim)[1]),
+            "loop": re.search(r"m_LoopTime: (\d)", anim)[1] == "1"}
+    output["yctp_face"] = animations
 
     # Follow GameController's references so inactive mobile/ending HUDs cannot win.
     controller = next(b for kind, b in school.blocks.values() if kind == 114 and "  itemTextures:" in b)
@@ -126,10 +173,10 @@ def main():
         output["hud"][hud_ids.get(tid, name)] = rec
         if args.inspect: print("HUD", name, resolution, rec)
     for tid in school.transforms.values():
-        if not school.active(tid): continue
         name = school.name(tid)
+        if not school.active(tid) and not name.startswith('Pickup_'): continue
         is_notebook = any(NOTEBOOK_SCRIPT in b for _, _, b in school.components(tid, 114))
-        if is_notebook or name.startswith("Pickup_") or name == "ExitSign":
+        if is_notebook or name.startswith("Pickup_") or name == "ExitSign" or name in PROPS:
             render_tid = next((t for t in school.descendants(tid) if school.components(t, 212)), None)
             if render_tid is None: continue
             renderer = school.components(render_tid, 212)[0][2]
@@ -141,8 +188,21 @@ def main():
             mat = school.matrix(render_tid)
             sx = sum(mat[i][0]**2 for i in range(3))**0.5
             sy = sum(mat[i][1]**2 for i in range(3))**0.5
-            rec = {"texture": key, "w": round(size[0]/ppu*sx*0.2, 5), "h": round(size[1]/ppu*sy*0.2, 5)}
-            if is_notebook: output["notebooks"][tid] = rec
+            pivot_match = re.search(r'spritePivot: \{x: ([\d.]+), y: ([\d.]+)\}', meta)
+            pivot_y = float(pivot_match[2]) if pivot_match else .5
+            height = size[1]/ppu*sy*.2
+            rec = {"texture": key, "w": round(size[0]/ppu*sx*0.2, 5), "h": round(height, 5),
+                   "y": round(gm_point(school.point(render_tid))[1] + (.5-pivot_y)*height, 5)}
+            if is_notebook:
+                pickup = next(b for _, _, b in school.components(tid, 114) if field(b, 'openingDistance'))
+                rec['open_distance'] = float(field(pickup, 'openingDistance')) * .2
+            elif name.startswith('Pickup_'):
+                rec['open_distance'] = 2.0  # PickupScript uses a fixed distance < 10f.
+            if is_notebook:
+                audio = school.components(tid, 82)
+                if audio:
+                    rec['respawn_audio'] = guid(field(audio[0][2], 'm_audioClip'))
+                output["notebooks"][tid] = rec
             elif name == "ExitSign":
                 x, y, z = gm_point(school.point(tid))
                 rec.update(x=x, y=y, z=z, source_id=tid)
@@ -151,7 +211,7 @@ def main():
                 output["exit_signs"].append(rec)
             else:
                 go = ref(field(school.blocks[tid][1], "m_GameObject"))
-                output["pickups"][go] = rec
+                output["props" if name in PROPS else "pickups"][go] = rec
             if args.inspect: print("WORLD", name, source.name, gm_point(school.point(tid)), rec)
     # Guaranteed source icons, independent of old sprite metadata and world sprites.
     from import_unity_gameplay import ICONS
@@ -161,10 +221,23 @@ def main():
                       "spray": "SchoolHouse/PickUps/Drops/BSODA_Spray.png",
                       "alarm_drop": "SchoolHouse/PickUps/Drops/AlarmClockDrop.png",
                       "slots": "HudTextures/ItemSlots.png"}.items(): texture(key, base / path)
-    if args.inspect: return
+    from import_unity_details import build_details
+    output['details'] = build_details(unity, school, texture)
+    from import_unity_environment import export_environment
+    environment = export_environment(unity, school, texture, textures, output['details'])
+    output['environment_file'] = 'school_environment.json'
+    if args.inspect:
+        print('DETAIL HUD', output['details']['hud'])
+        for e in output['details']['entrances']: print('ENTRANCE', e['name'], 'wall', e['wall_bounds'], 'near', e['near'], 'finish', e['finish'])
+        print('PROP APPEARANCE', output['props'])
+        print('ENVIRONMENT', len(environment['meshes']), 'meshes', len(environment['billboards']), 'billboards', len(environment['colliders']), 'colliders')
+        print('MISSING MESHES', environment['missing_meshes'])
+        print('NPCS', environment['npcs'])
+        return
     if args.check:
         saved = json.loads((ROOT / "datafiles/presentation.json").read_text(encoding="utf-8"))
         assert saved == output, "Presentation data differs from Unity"
+        assert json.loads((ROOT/'datafiles/school_environment.json').read_text(encoding='utf-8')) == environment, 'Environment differs from Unity'
         for asset in output["textures"].values():
             assert hashlib.sha256((unity / asset["source"]).read_bytes()).digest() == hashlib.sha256((ROOT / "datafiles" / asset["file"]).read_bytes()).digest(), asset["file"]
         print("Presentation parity OK: UI rectangles, world sprite references and all imported image bytes")
@@ -189,49 +262,14 @@ def main():
         shutil.copy2(unity / asset["source"], ROOT / "datafiles" / path)
         include(path)
     include(Path("presentation.json"))
+    include(Path('school_environment.json'))
+    (ROOT/'datafiles/school_environment.json').write_text(json.dumps(environment,separators=(',',':'))+'\n',encoding='utf-8')
     (ROOT / "datafiles/presentation.json").write_text(json.dumps(output, indent=2)+"\n", encoding="utf-8")
-    # Exact clip references avoid substituting one unrelated error sound everywhere.
-    audio_index = {}
-    for path in (unity / "Assets/AudioClip").rglob("*.wav.meta"):
-        match = re.search(r"^guid: (\w+)", path.read_text(encoding="utf-8"), re.M)
-        if match: audio_index[match[1]] = Path(str(path)[:-5])
-    sounds = {}
-    for name in ("bal_intro", "bal_howto", "bal_plus", "bal_minus", "bal_equals", "bal_screech"):
-        sounds[name] = audio_index[guid(field(script, name))]
-    for name in ("bal_numbers", "bal_praises", "bal_problems"):
-        lines = re.search(r"^  " + name + r":\n((?:  - .*\n)+)", script, re.M)[1]
-        for i, ident in enumerate(re.findall(r"guid: (\w+)", lines)):
-            sounds[name + str(i)] = audio_index[ident]
-    for name in ("aud_buzz", "aud_Hang", "aud_Prize", "aud_AllNotebooks", "aud_Soda", "aud_Spray", "aud_Switch", "aud_MachineQuiet", "aud_MachineStart", "aud_MachineRev", "aud_MachineLoop"):
-        sounds[name] = audio_index[guid(field(controller, name))]
-    principal = next(b for kind, b in school.blocks.values() if kind == 114 and "  audDetention:" in b)
-    for name in ("audNoRunning", "audNoFaculty", "audNoDrinking", "audNoEscaping", "audDetention", "aud_Delay"):
-        sounds[name] = audio_index[guid(field(principal, name))]
-    for name in ("audTimes", "audScolds"):
-        lines = re.search(r"^  " + name + r":\n((?:  - .*\n)+)", principal, re.M)[1]
-        for i, ident in enumerate(re.findall(r"guid: (\w+)", lines)):
-            sounds[name + str(i)] = audio_index[ident]
-    resources = {r["id"]["name"] for r in load_yy(project)["resources"]}
-    def register(name, path):
-        nonlocal text
-        if name not in resources:
-            entry = {"id": {"name": name, "path": path}}
-            text = text.replace('"resources":[', '"resources":[\n    '+json.dumps(entry)+",", 1)
-            resources.add(name)
-    gml = []
-    for name, source in sounds.items():
-        resource = "snd_src_" + name.lower()
-        register(resource, make_sound(resource, source))
-        gml.append("        " + name + ": " + resource)
-    script_name = "scr_bb_audio_assets"
-    script_dir = ROOT / "scripts" / script_name
-    script_dir.mkdir(parents=True, exist_ok=True)
-    (script_dir / (script_name + ".gml")).write_text("// Generated by import_unity_presentation.py; references keep source clips in the build.\nfunction bb_audio_assets() {\n    return {\n"+",\n".join(gml)+"\n    };\n}\n", encoding="utf-8")
-    (script_dir / (script_name + ".yy")).write_text(json.dumps({"$GMScript": "v1", "%Name": script_name, "name": script_name,
-        "isCompatibility": False, "isDnD": False, "parent": {"name": "Scripts", "path": "folders/Scripts.yy"}, "resourceType": "GMScript", "resourceVersion": "2.0"}, indent=2), encoding="utf-8")
-    register(script_name, f"scripts/{script_name}/{script_name}.yy")
     project.write_text(text, encoding="utf-8")
     print(f"Imported {len(output['textures'])} sprite references, {len(output['yctp'])} YCTP rectangles, {len(output['exit_signs'])} exit signs")
+    print(f"Environment: {len(environment['meshes'])} meshes, {len(environment['billboards'])} decorations, {len(environment['colliders'])} colliders")
+    for kind, npc in environment['npcs'].items(): print('NPC', kind, 'size', npc['w'], npc['h'], 'center_y', npc['y'])
+    if environment['missing_meshes']: print('Missing mesh references:', environment['missing_meshes'])
 
 
 if __name__ == "__main__": main()

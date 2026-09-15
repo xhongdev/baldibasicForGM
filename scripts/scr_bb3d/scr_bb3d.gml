@@ -188,6 +188,7 @@ function bb3d_build_map(_map) {
     var _i;
     for (_i = 0; _i < array_length(_quads); _i++) {
         var _q = _quads[_i];
+        if (variable_struct_exists(_q, "source_id") && variable_struct_exists(global.P.details.dynamic_ids, _q.source_id)) continue;
         var _key = variable_struct_exists(_q, "material") ? _q.material : _q.m + (_q.d ? "_d" : "");
         if (!variable_struct_exists(_groups, _key)) {
             _groups[$ _key] = [];

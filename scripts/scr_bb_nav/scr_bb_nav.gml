@@ -7,6 +7,7 @@ function bb_nav_build() {
         ds_map_destroy(global.nav_portals);
     }
     global.nav_portals = ds_map_create();
+    global.nav_portal_points = [];
     var _keys = ds_map_keys_to_array(global.floors);
     if (variable_struct_exists(global.map, "nav_edges")) {
         for (var _i = 0; _i < array_length(_keys); _i++) ds_map_set(global.nav_n, _keys[_i], []);
@@ -20,6 +21,11 @@ function bb_nav_build() {
             ds_map_set(global.nav_n, _b, _bn);
             ds_map_set(global.nav_portals, _a + "|" + _b, _e.p);
             ds_map_set(global.nav_portals, _b + "|" + _a, _e.p);
+            var _known=false;
+            for (var _pi=0;_pi<array_length(global.nav_portal_points);_pi++) {
+                if (bb_dist2(global.nav_portal_points[_pi][0],global.nav_portal_points[_pi][1],_e.p[0],_e.p[1])<.0001) {_known=true;break;}
+            }
+            if (!_known) array_push(global.nav_portal_points,_e.p);
         }
         return;
     }
@@ -82,92 +88,99 @@ function bb_nav_nearest(_sx, _sz) {
 }
 
 function bb_nav_step(_sx, _sz, _gx, _gz) {
-    if (!variable_global_exists("nav_n") || !ds_exists(global.nav_n, ds_type_map)) {
-        return [_sx, _sz];
+    return bb_grid_step(_sx,_sz,_gx,_gz);
+}
+
+function bb_nav_portal_nearest(_x,_z,_tx,_tz) {
+    var _keys=ds_map_keys_to_array(global.nav_n),_best="",_score=1000000000;
+    for (var _i=0;_i<array_length(_keys);_i++) {
+        var _p=string_split(_keys[_i],",");
+        var _d=bb_dist2(_x,_z,real(_p[0]),real(_p[1]));
+        // A target-directed tie break selects the tile beyond a portal as
+        // soon as the actor reaches its center instead of turning back.
+        var _td=bb_dist2(_tx,_tz,real(_p[0]),real(_p[1]));
+        var _value=_d+0.0001*_td;
+        if (_value<_score) {_score=_value;_best=_keys[_i];}
     }
-    var _sk = bb_nav_nearest(_sx, _sz);
-    var _gk = bb_nav_nearest(_gx, _gz);
-    if (_sk == "" || _gk == "") {
-        return [_sx, _sz];
+    return _best;
+}
+
+function bb_nav_portal_open(_p,_mask) {
+    for (var _i=0;_i<array_length(global.G.doors);_i++) {
+        var _d=global.G.doors[_i];
+        if (bb_door_touching(_d,_p[0],_p[1],.12) && (_mask & (1<<_i))!=0) return false;
     }
-    var _sp = string_split(_sk, ",");
-    var _sx2 = real(_sp[0]);
-    var _sz2 = real(_sp[1]);
-    if (_sk == _gk) {
-        return [_gx, _gz];
+    return true;
+}
+
+function bb_nav_portal_step(_sx,_sz,_gx,_gz) {
+    var _start=bb_nav_portal_nearest(_sx,_sz,_gx,_gz);
+    var _goal=bb_nav_portal_nearest(_gx,_gz,_gx,_gz);
+    if (_start=="" || _goal=="") return [_sx,_sz];
+    var _sp=string_split(_start,","),_center_x=real(_sp[0]),_center_z=real(_sp[1]);
+    var _near_portal=false;
+    for (var _pi=0;_pi<array_length(global.nav_portal_points);_pi++) {
+        var _pp=global.nav_portal_points[_pi];
+        if (bb_dist2(_sx,_sz,_pp[0],_pp[1])<.08) {_near_portal=true;break;}
     }
-    var _came = ds_map_create();
-    var _cost = ds_map_create();
-    var _open = ds_priority_create();
-    ds_map_set(_cost, _sk, 0);
-    ds_priority_add(_open, _sk, 0);
-    var _found = "";
-    var _guard = 0;
-    var _gp = string_split(_gk, ",");
-    var _gtx = real(_gp[0]);
-    var _gtz = real(_gp[1]);
-    while (!ds_priority_empty(_open) && _guard < 2500) {
-        _guard += 1;
-        var _cur = ds_priority_delete_min(_open);
-        if (_cur == _gk) {
-            _found = _cur;
-            break;
+    if (!_near_portal) {
+        for (var _pi=0;_pi<array_length(global.nav_portal_points);_pi++) {
+            var _pp=global.nav_portal_points[_pi],_dx=abs(_sx-_pp[0]),_dz=abs(_sz-_pp[1]);
+            if ((_dx<.06 && _dz>.35 && _dz<1.05) || (_dz<.06 && _dx>.35 && _dx<1.05)) return _pp;
         }
-        var _nbs = ds_map_find_value(global.nav_n, _cur);
-        if (!is_array(_nbs)) {
-            continue;
-        }
-        var _i;
-        for (_i = 0; _i < array_length(_nbs); _i++) {
-            var _nb = _nbs[_i];
-            var _nc = ds_map_find_value(_cost, _cur) + 1;
-            if (!ds_map_exists(_cost, _nb) || _nc < ds_map_find_value(_cost, _nb)) {
-                ds_map_set(_cost, _nb, _nc);
-                ds_map_set(_came, _nb, _cur);
-                var _pp = string_split(_nb, ",");
-                var _h = abs(real(_pp[0]) - _gtx) + abs(real(_pp[1]) - _gtz);
-                ds_priority_add(_open, _nb, _nc + _h * 0.5);
+    }
+    // NPCs leave a spawn or an interrupted slide by first returning to the
+    // authored floor center.  Only a real doorway portal permits an offset.
+    if (!_near_portal && bb_dist2(_sx,_sz,_center_x,_center_z)>.06) return [_center_x,_center_z];
+    if (_near_portal) return [_center_x,_center_z];
+    if (_start==_goal) return [_gx,_gz];
+    var _mask=0;
+    for (var _i=0;_i<array_length(global.G.doors);_i++) {
+        if (global.G.doors[_i].locked || global.G.doors[_i].lock_cd>0) _mask|=(1<<_i);
+    }
+    if (!variable_global_exists("nav_routes") || !is_array(global.nav_routes)) global.nav_routes=[];
+    var _next=undefined;
+    for (var _ri=0;_ri<array_length(global.nav_routes);_ri++) {
+        var _route=global.nav_routes[_ri];
+        if (_route.goal==_goal && _route.mask==_mask) {_next=_route.next;break;}
+    }
+    if (is_undefined(_next)) {
+        _next={};
+        var _queue=[_goal],_head=0,_seen={};
+        variable_struct_set(_seen,_goal,true);
+        while (_head<array_length(_queue)) {
+            var _cur=_queue[_head++],_nbs=ds_map_find_value(global.nav_n,_cur);
+            for (var _ni=0;_ni<array_length(_nbs);_ni++) {
+                var _nb=_nbs[_ni],_p=ds_map_find_value(global.nav_portals,_cur+"|"+_nb);
+                if (is_undefined(_p) || !bb_nav_portal_open(_p,_mask) || variable_struct_exists(_seen,_nb)) continue;
+                variable_struct_set(_seen,_nb,true);variable_struct_set(_next,_nb,_cur);array_push(_queue,_nb);
             }
         }
+        array_push(global.nav_routes,{goal:_goal,mask:_mask,next:_next});
+        if (array_length(global.nav_routes)>32) array_delete(global.nav_routes,0,1);
     }
-    var _wx = _sx2;
-    var _wz = _sz2;
-    if (_found != "") {
-        var _step = _found;
-        var _prev = _step;
-        while (ds_map_exists(_came, _step) && ds_map_find_value(_came, _step) != _sk) {
-            _prev = _step;
-            _step = ds_map_find_value(_came, _step);
-        }
-        if (ds_map_exists(_came, _step)) {
-            _prev = _step;
-        }
-        var _wp = string_split(_prev, ",");
-        _wx = real(_wp[0]);
-        _wz = real(_wp[1]);
-        var _portal_key = _sk + "|" + _prev;
-        if (ds_map_exists(global.nav_portals, _portal_key)) {
-            var _portal = ds_map_find_value(global.nav_portals, _portal_key);
-            if (bb_dist2(_sx, _sz, _portal[0], _portal[1]) > 0.0004) {
-                _wx = _portal[0];
-                _wz = _portal[1];
+    if (!variable_struct_exists(_next,_start)) return [_sx,_sz];
+    var _to=variable_struct_get(_next,_start),_portal=ds_map_find_value(global.nav_portals,_start+"|"+_to);
+    if (!is_undefined(_portal)) {
+        // Offset classroom/faculty doors need an axis-aligned approach. A
+        // diagonal from a tile center can clip a jamb even when the portal is
+        // open, so insert the clear elbow before entering the doorway.
+        var _cx=real(_sp[0]),_cz=real(_sp[1]);
+        if (abs(_cx-_portal[0])>.06 && abs(_cz-_portal[1])>.06) {
+            var _elbows=[[ _cx,_portal[1] ],[ _portal[0],_cz ]];
+            for (var _ei=0;_ei<2;_ei++) {
+                var _ex=_elbows[_ei][0],_ez=_elbows[_ei][1];
+                if (bb_on_floor(_ex,_ez) && !bb_blocked_world(_ex,_ez,.29,true)) return [_ex,_ez];
             }
         }
+        return _portal;
     }
-    ds_map_destroy(_came);
-    ds_map_destroy(_cost);
-    ds_priority_destroy(_open);
-    return [_wx, _wz];
+    var _p=string_split(_to,",");return [real(_p[0]),real(_p[1])];
 }
 
 function bb_blocked_world(_px, _pz, _r, _doors_block) {
     var _i;
-    for (_i = 0; _i < array_length(global.walls); _i++) {
-        var _w = global.walls[_i];
-        if (bb_aabb_hit(_px, _pz, _r, _w.x0, _w.z0, _w.x1, _w.z1)) {
-            return true;
-        }
-    }
+    if (bb_walls_point(_px,_pz,_r)) return true;
     // All actors collide with jambs and locked doors. NPCs may open unlocked doors.
     {
         var _g = global.G;
@@ -204,6 +217,7 @@ function bb_blocked_world(_px, _pz, _r, _doors_block) {
 }
 
 function bb_move_slide(_x, _z, _dx, _dz, _r, _doors_block) {
+    if (is_nan(_dx) || is_nan(_dz) || is_infinity(_dx) || is_infinity(_dz)) return [_x, _z];
     var _step = 0.08;
     var _len = sqrt(_dx * _dx + _dz * _dz);
     if (_len < 0.0001) {
@@ -245,8 +259,11 @@ function bb_nav_advance(_x, _z, _tx, _tz, _dist, _r, _doors_block) {
         var _wp = bb_nav_step(_x, _z, _tx, _tz);
         var _dx = _wp[0] - _x;
         var _dz = _wp[1] - _z;
+        if (is_nan(_dx) || is_nan(_dz) || is_infinity(_dx) || is_infinity(_dz)) break;
         var _len = sqrt(_dx * _dx + _dz * _dz);
-        if (_len < 0.00001) {
+        // GM's comparison epsilon can make 0 < 0.00001 false. Include equality
+        // so arrival never normalizes a zero direction into 0/0 (NaN).
+        if (_len <= 0.00001) {
             break;
         }
         var _use = min(_remain, _len);
@@ -254,7 +271,7 @@ function bb_nav_advance(_x, _z, _tx, _tz, _dist, _r, _doors_block) {
         var _moved = sqrt(sqr(_sl[0] - _x) + sqr(_sl[1] - _z));
         _x = _sl[0];
         _z = _sl[1];
-        if (_moved < 0.00001) {
+        if (_moved <= 0.00001) {
             break;
         }
         _remain -= _moved;
@@ -263,24 +280,12 @@ function bb_nav_advance(_x, _z, _tx, _tz, _dist, _r, _doors_block) {
 }
 
 function bb_los(_ax, _az, _bx, _bz) {
-    var _dx = _bx - _ax;
-    var _dz = _bz - _az;
-    var _len = sqrt(_dx * _dx + _dz * _dz);
-    if (_len < 0.2) {
-        return true;
-    }
-    var _steps = ceil(_len / 0.35);
-    var _i;
-    for (_i = 1; _i < _steps; _i++) {
-        var _t = _i / _steps;
-        var _x = _ax + _dx * _t;
-        var _z = _az + _dz * _t;
-        if (bb_blocked_world(_x, _z, 0.08, false)) {
-            return false;
-        }
-        if (bb_los_door_block(_x, _z)) {
-            return false;
-        }
+    if (bb_walls_segment(_ax,_az,_bx,_bz,0,true)) return false;
+    for (var _i=0; _i<array_length(global.G.doors); _i++) {
+        var _d=global.G.doors[_i];
+        if (_d.open || _d.kind=="swing") continue;
+        var _b=bb_door_box(_d);
+        if (bb_ray_box(_ax,_az,_bx-_ax,_bz-_az,_b[0],_b[1],_b[2],_b[3])<=1) return false;
     }
     return true;
 }
@@ -308,7 +313,7 @@ function bb_baldi_recalc_wait() {
         _a = 0.5;
         _g.baldi_anger = 0.5;
     }
-    _g.baldi_wait = -3 * _a / (_a + 2 / 0.65) + 3;
+    _g.baldi_wait = -3 * _a / (_a + 2 / global.E.baldi.baldiSpeedScale) + 3;
 }
 
 function bb_get_angry(_value) {
@@ -341,6 +346,15 @@ function bb_update_baldi(_dt) {
     var _g = global.G;
     if (!_g.baldi_active || _g.state != "play" || _g.debug.freeze_baldi) {
         return;
+    }
+    if (_g.mode == "endless") {
+        _g.anger_time -= _dt;
+        while (_g.anger_time <= 0) {
+            _g.anger_time += global.E.baldi.angerFrequency;
+            _g.baldi_anger += _g.anger_rate;
+            _g.anger_rate += global.E.baldi.angerRateRate;
+            bb_baldi_recalc_wait();
+        }
     }
     if (_g.baldi_sprayed) {
         _g.baldi_move = 0;

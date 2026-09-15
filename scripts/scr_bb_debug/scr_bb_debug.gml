@@ -26,10 +26,12 @@ function bb_debug_close() {
     // Think Pad already pauses world audio. Closing this overlay must preserve it.
     if (_g.pause) return;
     if (_g.state == "yctp") {
-        if (_g.voices.math.handle != -1) audio_resume_sound(_g.voices.math.handle);
-        audio_resume_sound(snd_mus_learn);
-        audio_resume_sound(global.S.aud_Hang);
-    } else if (_g.gameover || _g.win) {
+        if (!_g.spoop_mode && _g.voices.math.handle != -1) audio_resume_sound(_g.voices.math.handle);
+        if (!_g.spoop_mode && _g.yctp_music != -1) audio_resume_sound(_g.yctp_music);
+        if (_g.yctp_hang != -1) audio_resume_sound(_g.yctp_hang);
+    } else if (_g.win) {
+        if (_g.win_sound != -1) audio_resume_sound(_g.win_sound);
+    } else if (_g.gameover) {
         audio_resume_sound(global.S.aud_buzz);
     } else {
         audio_resume_all();
@@ -135,11 +137,14 @@ function bb_debug_notebooks(_count) {
     _g.exit_open = (_g.notebooks >= 7);
     _g.exit_got = 0; _g.final_red = 0; _g.win = false;
     if (_g.finale_sound != -1) audio_stop_sound(_g.finale_sound);
+    if (_g.finale_switch != -1) audio_stop_sound(_g.finale_switch);
+    if (_g.win_sound != -1) audio_stop_sound(_g.win_sound);
     _g.finale_sound = -1; _g.finale_loop = false;
     for (var _i = 0; _i < array_length(_g.exits); _i++) {
         _g.exits[_i].used = false;
         _g.exits[_i].down = _g.spoop_mode && !_g.exit_open;
     }
+    bb_refresh_details();
     for (var _i = 0; _i < array_length(_g.doors); _i++) {
         var _door = _g.doors[_i];
         if (_door.kind == "swing") _door.locked = bb_swing_blocked(_door);
@@ -262,7 +267,9 @@ function bb_debug_action(_action, _value = 0) {
 function bb_debug_player_move(_dx, _dz) {
     var _g = global.G;
     if (_g.debug.noclip) return [_g.px+_dx, _g.pz+_dz];
-    return bb_move_slide(_g.px, _g.pz, _dx, _dz, _g.radius, true);
+    var _p=bb_move_slide(_g.px, _g.pz, _dx, _dz, _g.radius, true);
+    if (bb_ai_bully_blocks(_p[0],_p[1])) return [_g.px,_g.pz];
+    return _p;
 }
 
 function bb_debug_button(_label, _action, _value, _x, _y, _w, _h, _selected = false) {

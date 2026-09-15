@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.0,
+  "duration":15.394829931972788,
   "exportDir":"",
   "name":"snd_src_aud_allnotebooks",
   "parent":{

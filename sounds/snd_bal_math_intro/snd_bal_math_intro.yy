@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.0,
+  "duration":9.729161,
   "exportDir":"",
   "name":"snd_bal_math_intro",
   "parent":{

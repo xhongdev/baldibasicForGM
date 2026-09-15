@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.0,
+  "duration":3.297233560090703,
   "exportDir":"",
   "name":"snd_bell",
   "parent":{
@@ -20,7 +20,7 @@
   "preload":false,
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
-  "sampleRate":44100,
+  "sampleRate":22050,
   "soundFile":"snd_bell.wav",
   "volume":1.0,
 }

@@ -1,0 +1,791 @@
+{
+  "clips": {
+    "29ef99924d409394084ea02a014fbd0e": {
+      "source": "Assets/AudioClip/Characters/1stPrize/1PR_AmComing.wav",
+      "sha256": "1c763f570515e4cd439e027a312d18626d71f10332d5278121d0267f333d4fa7",
+      "resource": "snd_u143_1pr_amcoming_29ef9992"
+    },
+    "448442495ada1254388c5458c08c5a37": {
+      "source": "Assets/AudioClip/Characters/1stPrize/1PR_AmLooking.wav",
+      "sha256": "8d1a6b84072843638210db66806cd7f58fc594ba66517f81d5a17d467420eb50",
+      "resource": "snd_u143_1pr_amlooking_44844249"
+    },
+    "494a9c50cd154b14f8022fb85c05eb68": {
+      "source": "Assets/AudioClip/Characters/1stPrize/1PR_BeenProgrammed.wav",
+      "sha256": "61180accab5d88eba7b7efd6859f76dfb1ea1ffb988ea6215ad405b884a41f71",
+      "resource": "snd_u143_1pr_beenprogrammed_494a9c50"
+    },
+    "ceec70c0f277c924abd8fd196611f418": {
+      "source": "Assets/AudioClip/Characters/1stPrize/1PR_HaveLost.wav",
+      "sha256": "a25b6289f0da0e5324eb2d50fc1139c9adde09afde9478da0ebf0f5159975da7",
+      "resource": "snd_u143_1pr_havelost_ceec70c0"
+    },
+    "ff2d289345ad65f47b910d300d78f4e6": {
+      "source": "Assets/AudioClip/Characters/1stPrize/1PR_IHug.wav",
+      "sha256": "bf73e08e037a397177ba4e2f7ffee566cab770914c92b7d0e332586f5966f869",
+      "resource": "snd_u143_1pr_ihug_ff2d2893"
+    },
+    "6d47b23efa22e5d419c635878e29cf96": {
+      "source": "Assets/AudioClip/Characters/1stPrize/1PR_ISeeYou.wav",
+      "sha256": "a245aab33cc2ff6892844b4e48506bee3fa6f374e8c94c0a11fd3256b831568f",
+      "resource": "snd_u143_1pr_iseeyou_6d47b23e"
+    },
+    "6cb058bb62335074aa96f418c103fb7e": {
+      "source": "Assets/AudioClip/Characters/1stPrize/1PR_Marry.wav",
+      "sha256": "6b98d478ad83d107cb6e33a50bb8b9e96b0ee427eb1819b1e1ba52daaba16dad",
+      "resource": "snd_u143_1pr_marry_6cb058bb"
+    },
+    "c51f9a76b4039914d822f50b8b365e43": {
+      "source": "Assets/AudioClip/Characters/1stPrize/1PR_OhNo.wav",
+      "sha256": "743961eb053bbe07838276dc10be9a3262b5be15102146e0de809bfe1a237007",
+      "resource": "snd_u143_1pr_ohno_c51f9a76"
+    },
+    "eb96ce88ea3f5ae459aa943cb0193344": {
+      "source": "Assets/AudioClip/Characters/1stPrize/Sounds/1PR_Motor.wav",
+      "sha256": "cd13a9361dffd7acf3e17c53a8b9ed33a941c920855bb316030add2c7f702bec",
+      "resource": "snd_u143_1pr_motor_eb96ce88"
+    },
+    "3b610cea7c5a8344d8e68e697374f66b": {
+      "source": "Assets/AudioClip/Characters/1stPrize/Sounds/Bang.wav",
+      "sha256": "7f7c5f71059c4f6997a88e9239f244fe16f7f96a334b95f56730fbbec4489d23",
+      "resource": "snd_u143_bang_3b610cea"
+    },
+    "0bf3516759302d24e8fa04136989f6c6": {
+      "source": "Assets/AudioClip/Characters/Arts&Crafters/CFT_Intro.wav",
+      "sha256": "13e2e11e2e2d09dc5f56dce2d028a2714859bbc18957300c34273e60e0aced32",
+      "resource": "snd_u143_cft_intro_0bf35167"
+    },
+    "b1a50bf8e9569354d92af5646414b6ab": {
+      "source": "Assets/AudioClip/Characters/Arts&Crafters/CFT_Loop.wav",
+      "sha256": "48f351efd3893f9bbe9ba798ecf0f95db9bac63b71324dd8ea1af36af5e695d7",
+      "resource": "snd_u143_cft_loop_b1a50bf8"
+    },
+    "80ae7b39a843c2d4e9d94d392b9fddce": {
+      "source": "Assets/AudioClip/Characters/Baldi/BAL_AllNotebooks.wav",
+      "sha256": "936f308029038d76620a5b468a74053481807f1f59cebd9a0cf077adce00ab7d",
+      "resource": "snd_src_aud_allnotebooks"
+    },
+    "0fdbe2b1b6a4d3e4c8db49839fbe5551": {
+      "source": "Assets/AudioClip/Characters/Baldi/BAL_MainMenu.wav",
+      "sha256": "72f7319ce637da9ffd4f4bd196d5122ba46681b25eedd1bac356e283f1cb59d1",
+      "resource": "snd_bal_menu"
+    },
+    "f5ed7a21d9f700e4ea24797d5c97b823": {
+      "source": "Assets/AudioClip/Characters/Baldi/BaldiTutor/BAL_Door.wav",
+      "sha256": "86efbd029c7d5d7c826c1533c5efcb9a53374261e118d94f6d77f60b6e1e8d9c",
+      "resource": "snd_bal_doors"
+    },
+    "96a81e273fc7ad348a3566872a52d19e": {
+      "source": "Assets/AudioClip/Characters/Baldi/BaldiTutor/BAL_GetPrize.wav",
+      "sha256": "69a6bc8fda2ef8627defedf36fa3a2a1df49bb97da50d3e198cba4bf553a852f",
+      "resource": "snd_bal_prize"
+    },
+    "99c3e7afa95ac534c9c236d6372aadfc": {
+      "source": "Assets/AudioClip/Characters/Baldi/BaldiTutor/BAL_GetPrize_Mobile.wav",
+      "sha256": "47c0e6f50463f628fbea0200370ffdecb3e01b62b5c83d022c50467d98fb7671",
+      "resource": "snd_u143_bal_getprize_mobile_99c3e7af"
+    },
+    "b7189817f52d4c64b9a99131c3c30975": {
+      "source": "Assets/AudioClip/Characters/Baldi/BaldiTutor/BAL_Hi.wav",
+      "sha256": "25ba437646b679e6ceb1b4a40ae3f254c787827ece1aa92b8430b68402c60909",
+      "resource": "snd_bal_hi"
+    },
+    "b31ebb0fc77ac05448b9e76637d4bbcb": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/BAL_Math_Equals.wav",
+      "sha256": "8fe8b81ab609818784499cda71693fd736c7850105f67497e3c73037ae193a41",
+      "resource": "snd_src_bal_equals"
+    },
+    "3c304cda423f45742a6ba62a95559660": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/BAL_Math_Minus.wav",
+      "sha256": "b88c00b772bdd81f9b740dbd17a2dbd48ac40b5a2b20765bc6a655e2161a7f56",
+      "resource": "snd_src_bal_minus"
+    },
+    "4256e9014ca457544a8d4add81035c04": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/BAL_Math_Plus.wav",
+      "sha256": "7c7a877c92316ff6e1a5c5ea652795e6c858b398fcd32ee0233f5e31be3149eb",
+      "resource": "snd_src_bal_plus"
+    },
+    "8ebda5a1d128c10438f26774e94b04c8": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/BAL_Math_Times.wav",
+      "sha256": "f785dbe01447f0fe8161b141f2e5643a57a217930b5fd5b4ed9c9fbe58a22261",
+      "resource": "snd_src_bal_times"
+    },
+    "f4b92ba06ae550e48a0ce9b0d7befbca": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Intro/BAL_General_HowTo.wav",
+      "sha256": "f213518b848dc79afdfbd69952f4f94ab3568481c043dd209800cd38fd35fa1f",
+      "resource": "snd_src_bal_howto"
+    },
+    "97197e75b0d13b740a582f1c2d4858d9": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Intro/BAL_Math_Intro.wav",
+      "sha256": "f7f33e8a62ebd5ab9909c095507fe862db0fae8303e3abb04edc9f7fb0cc0b38",
+      "resource": "snd_src_bal_intro"
+    },
+    "b2887fc8f9f2aa847b7637b116893ee7": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_0.wav",
+      "sha256": "64b308f57d4fc92be0f2aa527776d381bafbb37c994496ab5d958b26b60ea312",
+      "resource": "snd_src_bal_numbers0"
+    },
+    "8dcbcee5b8898364c8a8db27ce0e8151": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_1.wav",
+      "sha256": "9c1c01acfc7e61567fee94a39bed68e158e20a8984bbcaba0895d57244526525",
+      "resource": "snd_src_bal_numbers1"
+    },
+    "53f5dc9758c9cc54d83bc05c90db058b": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_2.wav",
+      "sha256": "3529944278084837ed9bd3d87e62c600bc6ce609be57d7f55cf27b968c078c53",
+      "resource": "snd_src_bal_numbers2"
+    },
+    "bec8d2b762e2c4842b4400f93b386dc4": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_3.wav",
+      "sha256": "e357f5da0e2487e9ef2d48aaf2716bdec80a50213c3b661f92cf3ab622e83d9a",
+      "resource": "snd_src_bal_numbers3"
+    },
+    "4222035db6569a94fa4de431a84fae53": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_4.wav",
+      "sha256": "125b24de0671e65d1b48c4fb024d1bd62bdc5d859e96328123f1c0d943159722",
+      "resource": "snd_src_bal_numbers4"
+    },
+    "be5a663a543415b4695aeefacc034dbe": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_5.wav",
+      "sha256": "82e6c599e0103dd07040e77649a31f3b551eb656af72619b68d38a39f9e3bb1e",
+      "resource": "snd_src_bal_numbers5"
+    },
+    "6734f2d82db31ac41893bb32aaea7cb2": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_6.wav",
+      "sha256": "d7e92630e47b32bb2c1a6d649e3c89ebb4ef24c339933a40b02bcf19f49c06f8",
+      "resource": "snd_src_bal_numbers6"
+    },
+    "439e7a548089ecd4280c3c040d4c62af": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_7.wav",
+      "sha256": "2e85ecbae3f126d1f87690bfed9682c09d59150a67bf46b04b3c29cf9709a58b",
+      "resource": "snd_src_bal_numbers7"
+    },
+    "d0b4eafa2e1b8364882495e84041533b": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_8.wav",
+      "sha256": "6619ad679a6b526e07f9a03132d140a87e318651de33a7509d724386d977076c",
+      "resource": "snd_src_bal_numbers8"
+    },
+    "47b05c7fefad8d243b01c717fb0cf3b6": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Numbers/BAL_Math_9.wav",
+      "sha256": "1bc1ae931e01b394fde0b421c03c1024993daf0272b50317f82f352190789e1f",
+      "resource": "snd_src_bal_numbers9"
+    },
+    "9b1c1111e9c86c94e80aeeff3283ffbe": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Praises/BAL_Praise1.wav",
+      "sha256": "762e8961cda542d0b8cd8f021eea9a5a5f4c9da6921e903087762b7d940939c3",
+      "resource": "snd_praise1"
+    },
+    "39843fc17220db847ae76c916467cbe0": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Praises/BAL_Praise2.wav",
+      "sha256": "77b60c0f79e6a653ba2455f700e9665dc7816aac541431ae96eae057802e4e95",
+      "resource": "snd_praise2"
+    },
+    "bffe6d5145b920048b1cd56b89a41ff7": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Praises/BAL_Praise3.wav",
+      "sha256": "94cd4fed29fad3599f2090c5ded53f11d0b73876026913e5eefda49e67780caf",
+      "resource": "snd_praise3"
+    },
+    "9ee0aea1418bb81479457333fda045e7": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Praises/BAL_Praise4.wav",
+      "sha256": "29fc55fa52eda1c397200154f9b4fc99997708395e7352beb4cc8c662c7644de",
+      "resource": "snd_praise4"
+    },
+    "7039eec11376b5342900aa1e51188125": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Praises/BAL_Praise5.wav",
+      "sha256": "9b8387e4c18000e83c262c61af5ef707a3950f5a772a4b84641b5481efabc299",
+      "resource": "snd_praise5"
+    },
+    "d09167bad0fb5b546b0bf4ee5444b198": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Problems/BAL_General_Problem1.wav",
+      "sha256": "b069d6334b15a905d124a4fd04f04a4c73f30eb88de2e7de7a46937853433871",
+      "resource": "snd_src_bal_problems0"
+    },
+    "1a192f1c6ef24fa4eb28afa9fde45a06": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Problems/BAL_General_Problem2.wav",
+      "sha256": "d545bde0ec6635671edf1647ab421f49cc2f419858f2c73f7d40b8d86f161d7f",
+      "resource": "snd_src_bal_problems1"
+    },
+    "5dd789d4f0b9e5a49b1e17d2f0effae9": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Problems/BAL_General_Problem3.wav",
+      "sha256": "4ae70a074257c7994331f9bf831be64103f027dbd6fc451834eb7a2fd3456dfc",
+      "resource": "snd_src_bal_problems2"
+    },
+    "bc97c92d72daa9e488108d4f2082b511": {
+      "source": "Assets/AudioClip/Characters/Baldi/MathGame/Unused/BAL_Math_Divided.wav",
+      "sha256": "d4ad72bc6259264782a259a5ef6d4795ca7bec0d36d5885e65c85009ecebcbf7",
+      "resource": "snd_src_bal_divided"
+    },
+    "136776f62eb733a46b4ad3d162612aac": {
+      "source": "Assets/AudioClip/Characters/Baldi/Sounds/BAL_Screech.wav",
+      "sha256": "6da3ae0a2dda7ad5132c800414e426349e029bee07957b989c13000cd2e69581",
+      "resource": "snd_bal_screech"
+    },
+    "affac2acfe66b954cada2dca22605fed": {
+      "source": "Assets/AudioClip/Characters/Baldi/Sounds/BAL_Slap.wav",
+      "sha256": "3fb28b122dafd76ff06463d03cbd7291a1dba833693d4acd8df23e7c57bdfd41",
+      "resource": "snd_bal_slap"
+    },
+    "99ec318b52a509448b3b93ad8f0303d6": {
+      "source": "Assets/AudioClip/Characters/Bully/B_Donation.wav",
+      "sha256": "71f65091af890b11d8d011ed9e782d620a58a6a212825f44f2b8346916e205e6",
+      "resource": "snd_u143_b_donation_99ec318b"
+    },
+    "2938dc505c9374642bbe70c7a7ddcb9d": {
+      "source": "Assets/AudioClip/Characters/Bully/B_GiveGreat.wav",
+      "sha256": "dee3812e878f51499eba70173c8c9a72abe5e94d2c03386b8ffdebe177595e0c",
+      "resource": "snd_u143_b_givegreat_2938dc50"
+    },
+    "ac6e0e350652b8248a67147b49e9e680": {
+      "source": "Assets/AudioClip/Characters/Bully/B_NoItems.wav",
+      "sha256": "be5cf4077e4ff7ff7dc86d74e176a076208d88815045646f29fa7c3fd41c8a0f",
+      "resource": "snd_u143_b_noitems_ac6e0e35"
+    },
+    "556073eeb23090b42a3ffd7a36832fa5": {
+      "source": "Assets/AudioClip/Characters/Bully/B_TakeCandy.wav",
+      "sha256": "a3df7510a866e8b08d7d4770f6c0199f06947dbd44c0e03375bd826b73b351a7",
+      "resource": "snd_u143_b_takecandy_556073ee"
+    },
+    "2e992c4d083545646a8edb65d655de01": {
+      "source": "Assets/AudioClip/Characters/Bully/B_TakeThat.wav",
+      "sha256": "918fa8c014130a473be73abdfc6fdfc87e37b2de78181ac0f7df249eb2e3e09a",
+      "resource": "snd_u143_b_takethat_2e992c4d"
+    },
+    "98c2a67bc6adb0e488fd4a3ded1441b5": {
+      "source": "Assets/AudioClip/Characters/Filename2/great.wav",
+      "sha256": "b841f42ee70b477cf0214f7459a9cbc893d447ef2469f997782e0440ff952613",
+      "resource": "snd_u143_great_98c2a67b"
+    },
+    "255904102fcfb0c4d8b4023ca587ff7f": {
+      "source": "Assets/AudioClip/Characters/Filename2/recording.wav",
+      "sha256": "d2574cb86a6589733069237bc3d29ee47f02194667775f867c04224ab6f9c226",
+      "resource": "snd_u143_recording_25590410"
+    },
+    "d88271222daebed4b905992173c8c535": {
+      "source": "Assets/AudioClip/Characters/GottaSweep/GS_GottaSweep.wav",
+      "sha256": "4c02f8e43f2881557b620fe956cfae6fc56562b54a34b6932a728d800a29a6a5",
+      "resource": "snd_u143_gs_gottasweep_d8827122"
+    },
+    "3d90f27083389114f82243c6a6fcc6b8": {
+      "source": "Assets/AudioClip/Characters/GottaSweep/GS_Intro.wav",
+      "sha256": "8918224ffb4b8fe7d9d0bf68f15ce1b3026d5cab61b89f5e76ac8e657e949516",
+      "resource": "snd_u143_gs_intro_3d90f270"
+    },
+    "260703d9eac480941af71d4455b928ba": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/PT_1.wav",
+      "sha256": "3c41db2d56253c5d8c7c31c6185670cea6095e697079d052ebccc5022ca5c3d0",
+      "resource": "snd_u143_pt_1_260703d9"
+    },
+    "8d268d39bfd1c214ba299b24fac1c5eb": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/PT_2.wav",
+      "sha256": "b7b3fd07d8e5fecaa9525c442c207b38c35ee408815d9d0f095e783b09d8c810",
+      "resource": "snd_u143_pt_2_8d268d39"
+    },
+    "7a7df771c2f4ef9428fc13b930d8bf06": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/PT_3.wav",
+      "sha256": "88818563708f739cbf021df3d27e7e6f45e6afd5c63bd31bd79e80167802ccfe",
+      "resource": "snd_u143_pt_3_7a7df771"
+    },
+    "58c0e4fb35f7f4344ac77d339269e68a": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/PT_4.wav",
+      "sha256": "277eef1d2dea62cba8d1dd6a8c475e58b9d0f0a28c343a0f341f10e86fd28bfb",
+      "resource": "snd_u143_pt_4_58c0e4fb"
+    },
+    "240b673bcb070fb4090e3a0ba150548f": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/PT_5.wav",
+      "sha256": "d82188cb1476bfa5fafc41d4d9998afb9ab5a8196174ba094a73837af3f7ab66",
+      "resource": "snd_u143_pt_5_240b673b"
+    },
+    "2736ee393cb8c6142b54afc3d85fb0ae": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/Unused/PT_10.wav",
+      "sha256": "db6d0c5bcf14797944659d3b9a8c779ce64b02e8032d9e48af828c704d918876",
+      "resource": "snd_u143_pt_10_2736ee39"
+    },
+    "5c7bddf65a3910b428477026ada5cea0": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/Unused/PT_6.wav",
+      "sha256": "1f8fc2e42d79302527750ed04ba89bf0ab14fe139bded152942db8ddba585b35",
+      "resource": "snd_u143_pt_6_5c7bddf6"
+    },
+    "fb310e686cd94694dad1fc1545bddf3c": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/Unused/PT_7.wav",
+      "sha256": "76407b197b3b6bbd346a1cb9b545b9dff095a4920bdfeee129fd52f6454f9fe8",
+      "resource": "snd_u143_pt_7_fb310e68"
+    },
+    "18e6606dabf5a38499172eb038987f2a": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/Unused/PT_8.wav",
+      "sha256": "80a19865eb5f0d12d190a097fa7edb949cdbc13ca9e8c81f801c0e2d75892b5e",
+      "resource": "snd_u143_pt_8_18e6606d"
+    },
+    "c644218028a860649b1efb751ce46ce8": {
+      "source": "Assets/AudioClip/Characters/Playtime/Numbers/Unused/PT_9.wav",
+      "sha256": "4c589a340bafd0df7eb9e58a24374ca4e6d9dcffe9f317e68f666ec8c718d17c",
+      "resource": "snd_u143_pt_9_c6442180"
+    },
+    "1fe55c89209ab604fba6b4b64af0d3e8": {
+      "source": "Assets/AudioClip/Characters/Playtime/PT_Congrats.wav",
+      "sha256": "63bd2bd3857258af263cb84a18ce7bb22949fd3d68418ba45d2324048b63087f",
+      "resource": "snd_u143_pt_congrats_1fe55c89"
+    },
+    "e2de081bb93d67f49a79d509b264c7e9": {
+      "source": "Assets/AudioClip/Characters/Playtime/PT_Laugh.wav",
+      "sha256": "818ddc87cd9ecf7f8fefb98d796fbf1e4785e095f155ca133cb2ed1e5ed87dc4",
+      "resource": "snd_u143_pt_laugh_e2de081b"
+    },
+    "9b2097aeca5781446b4f708bb6e68a25": {
+      "source": "Assets/AudioClip/Characters/Playtime/PT_LetsPlay.wav",
+      "sha256": "e477501ed9491c35f35061c4571ef79f2a5be5bd575af149d1475b84b531eb33",
+      "resource": "snd_u143_pt_letsplay_9b2097ae"
+    },
+    "496058d454698b247a622166aaaa0d6b": {
+      "source": "Assets/AudioClip/Characters/Playtime/PT_Oops.wav",
+      "sha256": "fa02c460df37adddf5c0483b643fb5c994c75793afe16e385a8862679f746ef9",
+      "resource": "snd_u143_pt_oops_496058d4"
+    },
+    "c6914b6cb1ce8af45a3c23da73e0e751": {
+      "source": "Assets/AudioClip/Characters/Playtime/PT_ReadyGo.wav",
+      "sha256": "82dce497531a9f915642c5d342f2c7fe2c41941790e35d1a7509fe6462a46f2e",
+      "resource": "snd_u143_pt_readygo_c6914b6c"
+    },
+    "cba07be9ed2c97042b7c425d807b864d": {
+      "source": "Assets/AudioClip/Characters/Playtime/PT_Sad.wav",
+      "sha256": "26b903deac9f8acf1da1e8bbff446780d577846bf8d29fa6a59fa3bd224a1fe4",
+      "resource": "snd_u143_pt_sad_cba07be9"
+    },
+    "e8989db841738184eafada7351eba11c": {
+      "source": "Assets/AudioClip/Characters/Playtime/PT_WannaPlay.wav",
+      "sha256": "8ea0bc233d715ea936ec5c74555269c99aa2c498d25326bf0d69514c1834dee7",
+      "resource": "snd_u143_pt_wannaplay_e8989db8"
+    },
+    "83fcb021bcd25dd41825007906929c7c": {
+      "source": "Assets/AudioClip/Characters/Playtime/Unused/PT_Instructions.wav",
+      "sha256": "67b9223ec76977930ef1f7c850c2bb9eccf920f351dd04b4f27f2482bb939cdf",
+      "resource": "snd_u143_pt_instructions_83fcb021"
+    },
+    "ea07dbc2e7b43c1409314b7c066ba033": {
+      "source": "Assets/AudioClip/Characters/Principal/PRI_DetentionForYou.wav",
+      "sha256": "5747296553b041ad0b2c1aaf3c3b6717dd2357c6c2e76f3a1f4b9a5204e33f98",
+      "resource": "snd_src_auddetention"
+    },
+    "e3cc2b2bad78af547ae9f2993c1f1115": {
+      "source": "Assets/AudioClip/Characters/Principal/PRI_Whistle.wav",
+      "sha256": "40def45889404a9da54f881b60287b858a159681410610040a913fba5c8d5f2b",
+      "resource": "snd_u143_pri_whistle_e3cc2b2b"
+    },
+    "a4f817aaffa088245ba3a78a202ac059": {
+      "source": "Assets/AudioClip/Characters/Principal/RuleBroke/PRI_NoBullying.wav",
+      "sha256": "67cbdea0b0ae227d2939ca57bfe04adad462d4adf72f5c54d37e4700aec1c513",
+      "resource": "snd_u143_pri_nobullying_a4f817aa"
+    },
+    "255b0bad60ded5b4d872da1de9f99d14": {
+      "source": "Assets/AudioClip/Characters/Principal/RuleBroke/PRI_NoDrinking.wav",
+      "sha256": "84f09cce8c0d2912fb00f868fbcb0dfa406c77f893835e9f8b4b9b4a1cedf4c4",
+      "resource": "snd_src_audnodrinking"
+    },
+    "766320dd6a6fc8b4ba099a4e35fc866f": {
+      "source": "Assets/AudioClip/Characters/Principal/RuleBroke/PRI_NoEscaping.wav",
+      "sha256": "9ed5a1a39dafe60227f3d88dcd4ff8a8a5442a2b119d998d97fc31176d79be46",
+      "resource": "snd_src_audnoescaping"
+    },
+    "c8159c1b0c3e4fa4eb498a77d5cff05a": {
+      "source": "Assets/AudioClip/Characters/Principal/RuleBroke/PRI_NoFaculty.wav",
+      "sha256": "2190d2b0e4c7c8080b89df3b1efab224a5d15ecc1ff68ee5852400169b22b74b",
+      "resource": "snd_src_audnofaculty"
+    },
+    "ebc462290b9cf7c459292ca152383c70": {
+      "source": "Assets/AudioClip/Characters/Principal/RuleBroke/PRI_NoRunning.wav",
+      "sha256": "d240b4240abae41556a2ee4184fbc0530363e44859282f37cbe7afbca6e57408",
+      "resource": "snd_src_audnorunning"
+    },
+    "266b846d4a4be004799b00597e342daf": {
+      "source": "Assets/AudioClip/Characters/Principal/RuleBroke/Unused/PRI_NoLockers.wav",
+      "sha256": "947d21f6cdaf90b5374c18605c456f6caebf1f355bcf2df30b81685e3a5c919d",
+      "resource": "snd_u143_pri_nolockers_266b846d"
+    },
+    "f55be4704ae2f4c4bb5c903e83638b7d": {
+      "source": "Assets/AudioClip/Characters/Principal/RuleBroke/Unused/PRI_NoStabbing.wav",
+      "sha256": "338366e5c484b7fbf1b1df88793578c7e369347e080a03ada217f118be6d62ac",
+      "resource": "snd_u143_pri_nostabbing_f55be470"
+    },
+    "4630248b6e6ebf847befb6bfda17c0f6": {
+      "source": "Assets/AudioClip/Characters/Principal/Scolds/PRI_KnowBetter.wav",
+      "sha256": "84f91de9d25a7f30bb2d8814395f143e6e3603cb3aa71f3b182d26be2cacb102",
+      "resource": "snd_src_audscolds0"
+    },
+    "cdbaacca400641841b5ba547c05ea007": {
+      "source": "Assets/AudioClip/Characters/Principal/Scolds/PRI_WhenLearn.wav",
+      "sha256": "0875085ceb0d3b828bf9bd276a0f1f3b8d4e92b4f132d49a8e6c7a1e043212e7",
+      "resource": "snd_src_audscolds1"
+    },
+    "7a966a5fa7d63c54a9b46f63638c1a10": {
+      "source": "Assets/AudioClip/Characters/Principal/Scolds/PRI_YourParents.wav",
+      "sha256": "debc33293fd3f4352014b02497e7b9d87bc263fd49501e349907cede04267397",
+      "resource": "snd_src_audscolds2"
+    },
+    "e0d32007008444948addb36500bf2202": {
+      "source": "Assets/AudioClip/Characters/Principal/Times/PRI_15Sec.wav",
+      "sha256": "ccead3f2aa8cc0d8c0faef65f38d1a8055876c6aaf79c536892f07e1f11225d9",
+      "resource": "snd_src_audtimes0"
+    },
+    "f53e522dd468f2d4fa419110d5d4701c": {
+      "source": "Assets/AudioClip/Characters/Principal/Times/PRI_30Sec.wav",
+      "sha256": "af34f161d0d7e9f0b6671716968c40d23d7a14386ab98df5c9cbfe6064eeb90d",
+      "resource": "snd_src_audtimes1"
+    },
+    "432efbf52cfa32a40927aa0ccb27b642": {
+      "source": "Assets/AudioClip/Characters/Principal/Times/PRI_45Sec.wav",
+      "sha256": "1e2bab12386a4e3d155861541e8dd31be60ca4fa55c0b39eaba5c8d54b814559",
+      "resource": "snd_src_audtimes2"
+    },
+    "13248d048d4830d40b23503e9afcbe5a": {
+      "source": "Assets/AudioClip/Characters/Principal/Times/PRI_60Sec.wav",
+      "sha256": "8ca56feb91b7b38d9b23487472793659298733b1041b1f91f671460971d66229",
+      "resource": "snd_src_audtimes3"
+    },
+    "4f2929eb723e2ca4fb6a92398b9b251a": {
+      "source": "Assets/AudioClip/Characters/Principal/Times/PRI_99Sec.wav",
+      "sha256": "40a05eed6d1c73d3742663a2d1ca02b896b448592cbb59755faf64bb634bec64",
+      "resource": "snd_src_audtimes4"
+    },
+    "8906db7d05297324fb0bc9dc83f26b06": {
+      "source": "Assets/AudioClip/Characters/Test.wav",
+      "sha256": "0f8749893c2ce7b04dbf4818b9ab552e8e234289f46efb409cba995edee65433",
+      "resource": "snd_u143_test_8906db7d"
+    },
+    "1ff3fd95ebe94074b8ce50160e599f7b": {
+      "source": "Assets/AudioClip/Music/mus_hang.wav",
+      "sha256": "3847939b3340420c386960b9acec29570036405783e6b72fff611b073bf4f738",
+      "resource": "snd_mus_hang"
+    },
+    "edf2c24b6dc4e884cacb68768ceda25a": {
+      "source": "Assets/AudioClip/Music/mus_Intro.wav",
+      "sha256": "4a35d779191d1f7f2a6f183035d548885a627e8a0a94422d67fece1da30553d2",
+      "resource": "snd_mus_intro"
+    },
+    "75676df6f42a27d4096e9f7cd515b5b9": {
+      "source": "Assets/AudioClip/Music/mus_Learn.wav",
+      "sha256": "916d9772b26da3f9e681e7e93715e45f5349dcd7c29fc25d47a5e76d69358d6d",
+      "resource": "snd_mus_learn"
+    },
+    "2127270b676ec734b83e8d5801dee205": {
+      "source": "Assets/AudioClip/Music/mus_Playtime.wav",
+      "sha256": "0de7a05027d8eb5217ff3e8261b46eec9afe3539515c9dc1df3bbf75b78cf773",
+      "resource": "snd_u143_mus_playtime_2127270b"
+    },
+    "fcc3c9e139cabaf40bf1dc0712b91427": {
+      "source": "Assets/AudioClip/Music/mus_School.wav",
+      "sha256": "1e91d5a20b05bdd0437f29bfb9705aac157a453df78a0a88fdb0ad8af0fed554",
+      "resource": "snd_mus_school"
+    },
+    "26b830b097707014d969d0ad838957f8": {
+      "source": "Assets/AudioClip/Sounds/Ambiences/ambience.wav",
+      "sha256": "b6b1f9da3bddf116128c543357ba451c28b9e10c301603bd99ef2b0bbea5760c",
+      "resource": "snd_u143_ambience_26b830b0"
+    },
+    "2a0767855ff6f4d49bd9a2f00ed08e4e": {
+      "source": "Assets/AudioClip/Sounds/Ambiences/creepy sound.wav",
+      "sha256": "5d657530d6bd014d410b25ba16caf6e717b4f9a5a4300d8a409ab96054c54ba5",
+      "resource": "snd_u143_creepy_sound_2a076785"
+    },
+    "71e3ee6cc968ac64e86b51988e91e04e": {
+      "source": "Assets/AudioClip/Sounds/Ambiences/dulcimer.wav",
+      "sha256": "9d134edd8761e650a1af75cd850bd3a6b7cf001c320df1f9c59ba1275942d314",
+      "resource": "snd_u143_dulcimer_71e3ee6c"
+    },
+    "91733e7ac5d2c624b8b715f865582225": {
+      "source": "Assets/AudioClip/Sounds/Ambiences/fret.wav",
+      "sha256": "2e9788a1462e3019b22d1daeac32de8e489a683c538b3940e487c3026c66f9a5",
+      "resource": "snd_u143_fret_91733e7a"
+    },
+    "978a6a80b26f4f94894753a1853e8d09": {
+      "source": "Assets/AudioClip/Sounds/Ambiences/noise.wav",
+      "sha256": "e5f154b35a260f339c33d9163573ed01bae14d681f91f526225e87d0cfcb15d0",
+      "resource": "snd_u143_noise_978a6a80"
+    },
+    "7d3096bbf012fcd4f8651136da0bc79b": {
+      "source": "Assets/AudioClip/Sounds/Ambiences/tone.wav",
+      "sha256": "480c505c0df7bd56370d14ea75accc6553e6b783baab967c3f9cce626c5fb484",
+      "resource": "snd_u143_tone_7d3096bb"
+    },
+    "5cd6a843ec443064bb554fa34c168589": {
+      "source": "Assets/AudioClip/Sounds/Buzz.wav",
+      "sha256": "f695d21eb6db18e6abad3eb27a0405eb4f4eefb345a4d78724477018b576b4b8",
+      "resource": "snd_u143_buzz_5cd6a843"
+    },
+    "6a96f86bffb774442970da33fd929c06": {
+      "source": "Assets/AudioClip/Sounds/delay.wav",
+      "sha256": "c0ef0f9f67f2ebed85190169cebe1071babbd5df7c476693a93bc1409906648e",
+      "resource": "snd_src_aud_delay"
+    },
+    "bb8257ffc0517bf468f1fb4d57cfe641": {
+      "source": "Assets/AudioClip/Sounds/Doors/door_close.wav",
+      "sha256": "53dd3d40cb2834ae52d5e9f8faf8dfc596bdc31efdf9f4f8c2c2de165b61a66a",
+      "resource": "snd_door_close"
+    },
+    "e914d94d2c0fcab41ac7bd3aa92b5d90": {
+      "source": "Assets/AudioClip/Sounds/Doors/door_open.wav",
+      "sha256": "ff0b6d925f09e860f93f14cb649ad20b7e12602a0aab2226a00bcdce4f20c2dd",
+      "resource": "snd_door_open"
+    },
+    "9e4c1e7855ffe1347a8884c748cc0fb7": {
+      "source": "Assets/AudioClip/Sounds/Doors/swingdoor_open.wav",
+      "sha256": "4cc09f43e4cdd1dea8ef6ef4c2e537f5a5f5e56523956f3b55b4b224898f9ebf",
+      "resource": "snd_swing"
+    },
+    "a2ae6918a76d876419f5f20715ecad5e": {
+      "source": "Assets/AudioClip/Sounds/FinalMode/Loud noise 3.wav",
+      "sha256": "504a031ff54d40b560ab8965cc7f27fcd6c081d1aad243d76a172ccc25281cda",
+      "resource": "snd_src_aud_machinerev"
+    },
+    "73b5e1a2c02427541a0c03391e30e477": {
+      "source": "Assets/AudioClip/Sounds/FinalMode/Loud noise 3_Loop.wav",
+      "sha256": "3b9d1978bd13f246575035978a4ecbd942a39a9b1b9880a82bbd760a121ac0b5",
+      "resource": "snd_src_aud_machineloop"
+    },
+    "05e55664a5cc27b40beb7b40ccde39e4": {
+      "source": "Assets/AudioClip/Sounds/FinalMode/LoudNoiseIntroLoop.wav",
+      "sha256": "683d8d5739107b0afa20ec2b532788b36799edcada971b3037b3ed63c75b77e2",
+      "resource": "snd_src_aud_machinestart"
+    },
+    "8d97f889eeb7c814188323bf60773960": {
+      "source": "Assets/AudioClip/Sounds/FinalMode/quiet noise loop.wav",
+      "sha256": "55bc87d4c9059cdab9be9c64fc06f44795c52e8be097ec32679800a1b94d091d",
+      "resource": "snd_src_aud_machinequiet"
+    },
+    "af02cbddb0caa8046a8324bc06954f54": {
+      "source": "Assets/AudioClip/Sounds/Items/AntiHearing.wav",
+      "sha256": "5fdfc6c917ff9ad35b9387448620763ecbc16c163f52f58e3adbe487173e8a63",
+      "resource": "snd_antihearing"
+    },
+    "ca169d0697713204e9fa73da5b5bcad9": {
+      "source": "Assets/AudioClip/Sounds/Items/bell.wav",
+      "sha256": "7cd620f9d34d535f7a012bf2a231352097b26c91deffce8f641b11021384d8f6",
+      "resource": "snd_bell"
+    },
+    "f3cc7d07867fb7043a9baa417671b876": {
+      "source": "Assets/AudioClip/Sounds/Items/can_spray.wav",
+      "sha256": "eba166ea6d30778619057e4311bb1b8b36cb18511c5a22b9756454ffd865d066",
+      "resource": "snd_nosquee"
+    },
+    "2fb489784b389334aad52da1c7026785": {
+      "source": "Assets/AudioClip/Sounds/Items/clocktick.wav",
+      "sha256": "fe1f7d570050ad7dd4c1a6bf9eeae5e1f4f2b5f9eff4858d13226f181e11a5fa",
+      "resource": "snd_u143_clocktick_2fb48978"
+    },
+    "1416266d16612364d84259cfc4795a11": {
+      "source": "Assets/AudioClip/Sounds/Items/respawn.wav",
+      "sha256": "50e1b86f8fbbee4fb9825ebcf0dffd65a971028745c3d565c0327c99967c40c0",
+      "resource": "snd_u143_respawn_1416266d"
+    },
+    "976c5a7750c892346a6dcf0e36bce818": {
+      "source": "Assets/AudioClip/Sounds/Items/soda_spray.wav",
+      "sha256": "624d3900ad4fe893cdcc22e71f797cd4ebef204d1f146e4a20c2d466024f1b9d",
+      "resource": "snd_soda"
+    },
+    "cf80a140457f5344abf8e1094218e414": {
+      "source": "Assets/AudioClip/Sounds/MEC_SLINGSHOT.wav",
+      "sha256": "aa1c2ac4c4f2f711acd785d4eef2e8adac9d291512f1b03cef63cc1b8308dd02",
+      "resource": "snd_src_aud_switch"
+    },
+    "b1afc731f8fbbae4aac5314ae405e6e0": {
+      "source": "Assets/AudioClip/Sounds/ohno.wav",
+      "sha256": "b627779c4df874a37fe89301365f97cd64e4b6f057065dfee21bdc1ea04b1c42",
+      "resource": "snd_ohno"
+    }
+  },
+  "bindings": {
+    "bal_intro": "97197e75b0d13b740a582f1c2d4858d9",
+    "bal_howto": "f4b92ba06ae550e48a0ce9b0d7befbca",
+    "bal_plus": "4256e9014ca457544a8d4add81035c04",
+    "bal_minus": "3c304cda423f45742a6ba62a95559660",
+    "bal_times": "8ebda5a1d128c10438f26774e94b04c8",
+    "bal_divided": "bc97c92d72daa9e488108d4f2082b511",
+    "bal_equals": "b31ebb0fc77ac05448b9e76637d4bbcb",
+    "bal_screech": "136776f62eb733a46b4ad3d162612aac",
+    "bal_numbers0": "b2887fc8f9f2aa847b7637b116893ee7",
+    "bal_numbers1": "8dcbcee5b8898364c8a8db27ce0e8151",
+    "bal_numbers2": "53f5dc9758c9cc54d83bc05c90db058b",
+    "bal_numbers3": "bec8d2b762e2c4842b4400f93b386dc4",
+    "bal_numbers4": "4222035db6569a94fa4de431a84fae53",
+    "bal_numbers5": "be5a663a543415b4695aeefacc034dbe",
+    "bal_numbers6": "6734f2d82db31ac41893bb32aaea7cb2",
+    "bal_numbers7": "439e7a548089ecd4280c3c040d4c62af",
+    "bal_numbers8": "d0b4eafa2e1b8364882495e84041533b",
+    "bal_numbers9": "47b05c7fefad8d243b01c717fb0cf3b6",
+    "bal_praises0": "9b1c1111e9c86c94e80aeeff3283ffbe",
+    "bal_praises1": "39843fc17220db847ae76c916467cbe0",
+    "bal_praises2": "bffe6d5145b920048b1cd56b89a41ff7",
+    "bal_praises3": "9ee0aea1418bb81479457333fda045e7",
+    "bal_praises4": "7039eec11376b5342900aa1e51188125",
+    "bal_problems0": "d09167bad0fb5b546b0bf4ee5444b198",
+    "bal_problems1": "1a192f1c6ef24fa4eb28afa9fde45a06",
+    "bal_problems2": "5dd789d4f0b9e5a49b1e17d2f0effae9",
+    "aud_buzz": "136776f62eb733a46b4ad3d162612aac",
+    "aud_Hang": "1ff3fd95ebe94074b8ce50160e599f7b",
+    "aud_Prize": "96a81e273fc7ad348a3566872a52d19e",
+    "aud_AllNotebooks": "80ae7b39a843c2d4e9d94d392b9fddce",
+    "aud_Soda": "976c5a7750c892346a6dcf0e36bce818",
+    "aud_Spray": "f3cc7d07867fb7043a9baa417671b876",
+    "aud_Switch": "cf80a140457f5344abf8e1094218e414",
+    "aud_MachineQuiet": "8d97f889eeb7c814188323bf60773960",
+    "aud_MachineStart": "05e55664a5cc27b40beb7b40ccde39e4",
+    "aud_MachineRev": "a2ae6918a76d876419f5f20715ecad5e",
+    "aud_MachineLoop": "73b5e1a2c02427541a0c03391e30e477",
+    "audNoRunning": "ebc462290b9cf7c459292ca152383c70",
+    "audNoFaculty": "c8159c1b0c3e4fa4eb498a77d5cff05a",
+    "audNoDrinking": "255b0bad60ded5b4d872da1de9f99d14",
+    "audNoEscaping": "766320dd6a6fc8b4ba099a4e35fc866f",
+    "audDetention": "ea07dbc2e7b43c1409314b7c066ba033",
+    "aud_Delay": "6a96f86bffb774442970da33fd929c06",
+    "audTimes0": "e0d32007008444948addb36500bf2202",
+    "audTimes1": "f53e522dd468f2d4fa419110d5d4701c",
+    "audTimes2": "432efbf52cfa32a40927aa0ccb27b642",
+    "audTimes3": "13248d048d4830d40b23503e9afcbe5a",
+    "audTimes4": "4f2929eb723e2ca4fb6a92398b9b251a",
+    "audScolds0": "4630248b6e6ebf847befb6bfda17c0f6",
+    "audScolds1": "cdbaacca400641841b5ba547c05ea007",
+    "audScolds2": "7a966a5fa7d63c54a9b46f63638c1a10",
+    "schoolMusic": "fcc3c9e139cabaf40bf1dc0712b91427",
+    "learnMusic": "75676df6f42a27d4096e9f7cd515b5b9"
+  },
+  "resources": {
+    "snd_mus_intro": "edf2c24b6dc4e884cacb68768ceda25a",
+    "snd_mus_school": "fcc3c9e139cabaf40bf1dc0712b91427",
+    "snd_mus_learn": "75676df6f42a27d4096e9f7cd515b5b9",
+    "snd_mus_hang": "1ff3fd95ebe94074b8ce50160e599f7b",
+    "snd_bal_menu": "0fdbe2b1b6a4d3e4c8db49839fbe5551",
+    "snd_bal_hi": "b7189817f52d4c64b9a99131c3c30975",
+    "snd_bal_slap": "affac2acfe66b954cada2dca22605fed",
+    "snd_bal_screech": "136776f62eb733a46b4ad3d162612aac",
+    "snd_swing": "9e4c1e7855ffe1347a8884c748cc0fb7",
+    "snd_door_open": "e914d94d2c0fcab41ac7bd3aa92b5d90",
+    "snd_door_close": "bb8257ffc0517bf468f1fb4d57cfe641",
+    "snd_ohno": "b1afc731f8fbbae4aac5314ae405e6e0",
+    "snd_bell": "ca169d0697713204e9fa73da5b5bcad9",
+    "snd_praise1": "9b1c1111e9c86c94e80aeeff3283ffbe",
+    "snd_praise2": "39843fc17220db847ae76c916467cbe0",
+    "snd_praise3": "bffe6d5145b920048b1cd56b89a41ff7",
+    "snd_praise4": "9ee0aea1418bb81479457333fda045e7",
+    "snd_praise5": "7039eec11376b5342900aa1e51188125",
+    "snd_bal_doors": "f5ed7a21d9f700e4ea24797d5c97b823",
+    "snd_bal_prize": "96a81e273fc7ad348a3566872a52d19e",
+    "snd_soda": "976c5a7750c892346a6dcf0e36bce818",
+    "snd_nosquee": "f3cc7d07867fb7043a9baa417671b876",
+    "snd_antihearing": "af02cbddb0caa8046a8324bc06954f54",
+    "snd_alarm": "ca169d0697713204e9fa73da5b5bcad9",
+    "snd_src_bal_intro": "97197e75b0d13b740a582f1c2d4858d9",
+    "snd_src_bal_howto": "f4b92ba06ae550e48a0ce9b0d7befbca",
+    "snd_src_bal_plus": "4256e9014ca457544a8d4add81035c04",
+    "snd_src_bal_minus": "3c304cda423f45742a6ba62a95559660",
+    "snd_src_bal_times": "8ebda5a1d128c10438f26774e94b04c8",
+    "snd_src_bal_divided": "bc97c92d72daa9e488108d4f2082b511",
+    "snd_src_bal_equals": "b31ebb0fc77ac05448b9e76637d4bbcb",
+    "snd_src_bal_screech": "136776f62eb733a46b4ad3d162612aac",
+    "snd_src_bal_numbers0": "b2887fc8f9f2aa847b7637b116893ee7",
+    "snd_src_bal_numbers1": "8dcbcee5b8898364c8a8db27ce0e8151",
+    "snd_src_bal_numbers2": "53f5dc9758c9cc54d83bc05c90db058b",
+    "snd_src_bal_numbers3": "bec8d2b762e2c4842b4400f93b386dc4",
+    "snd_src_bal_numbers4": "4222035db6569a94fa4de431a84fae53",
+    "snd_src_bal_numbers5": "be5a663a543415b4695aeefacc034dbe",
+    "snd_src_bal_numbers6": "6734f2d82db31ac41893bb32aaea7cb2",
+    "snd_src_bal_numbers7": "439e7a548089ecd4280c3c040d4c62af",
+    "snd_src_bal_numbers8": "d0b4eafa2e1b8364882495e84041533b",
+    "snd_src_bal_numbers9": "47b05c7fefad8d243b01c717fb0cf3b6",
+    "snd_src_bal_praises0": "9b1c1111e9c86c94e80aeeff3283ffbe",
+    "snd_src_bal_praises1": "39843fc17220db847ae76c916467cbe0",
+    "snd_src_bal_praises2": "bffe6d5145b920048b1cd56b89a41ff7",
+    "snd_src_bal_praises3": "9ee0aea1418bb81479457333fda045e7",
+    "snd_src_bal_praises4": "7039eec11376b5342900aa1e51188125",
+    "snd_src_bal_problems0": "d09167bad0fb5b546b0bf4ee5444b198",
+    "snd_src_bal_problems1": "1a192f1c6ef24fa4eb28afa9fde45a06",
+    "snd_src_bal_problems2": "5dd789d4f0b9e5a49b1e17d2f0effae9",
+    "snd_src_aud_buzz": "136776f62eb733a46b4ad3d162612aac",
+    "snd_src_aud_hang": "1ff3fd95ebe94074b8ce50160e599f7b",
+    "snd_src_aud_prize": "96a81e273fc7ad348a3566872a52d19e",
+    "snd_src_aud_allnotebooks": "80ae7b39a843c2d4e9d94d392b9fddce",
+    "snd_src_aud_soda": "976c5a7750c892346a6dcf0e36bce818",
+    "snd_src_aud_spray": "f3cc7d07867fb7043a9baa417671b876",
+    "snd_src_aud_switch": "cf80a140457f5344abf8e1094218e414",
+    "snd_src_aud_machinequiet": "8d97f889eeb7c814188323bf60773960",
+    "snd_src_aud_machinestart": "05e55664a5cc27b40beb7b40ccde39e4",
+    "snd_src_aud_machinerev": "a2ae6918a76d876419f5f20715ecad5e",
+    "snd_src_aud_machineloop": "73b5e1a2c02427541a0c03391e30e477",
+    "snd_src_audnorunning": "ebc462290b9cf7c459292ca152383c70",
+    "snd_src_audnofaculty": "c8159c1b0c3e4fa4eb498a77d5cff05a",
+    "snd_src_audnodrinking": "255b0bad60ded5b4d872da1de9f99d14",
+    "snd_src_audnoescaping": "766320dd6a6fc8b4ba099a4e35fc866f",
+    "snd_src_auddetention": "ea07dbc2e7b43c1409314b7c066ba033",
+    "snd_src_aud_delay": "6a96f86bffb774442970da33fd929c06",
+    "snd_src_audtimes0": "e0d32007008444948addb36500bf2202",
+    "snd_src_audtimes1": "f53e522dd468f2d4fa419110d5d4701c",
+    "snd_src_audtimes2": "432efbf52cfa32a40927aa0ccb27b642",
+    "snd_src_audtimes3": "13248d048d4830d40b23503e9afcbe5a",
+    "snd_src_audtimes4": "4f2929eb723e2ca4fb6a92398b9b251a",
+    "snd_src_audscolds0": "4630248b6e6ebf847befb6bfda17c0f6",
+    "snd_src_audscolds1": "cdbaacca400641841b5ba547c05ea007",
+    "snd_src_audscolds2": "7a966a5fa7d63c54a9b46f63638c1a10",
+    "snd_u143_1pr_amcoming_29ef9992": "29ef99924d409394084ea02a014fbd0e",
+    "snd_u143_1pr_amlooking_44844249": "448442495ada1254388c5458c08c5a37",
+    "snd_u143_1pr_beenprogrammed_494a9c50": "494a9c50cd154b14f8022fb85c05eb68",
+    "snd_u143_1pr_havelost_ceec70c0": "ceec70c0f277c924abd8fd196611f418",
+    "snd_u143_1pr_ihug_ff2d2893": "ff2d289345ad65f47b910d300d78f4e6",
+    "snd_u143_1pr_iseeyou_6d47b23e": "6d47b23efa22e5d419c635878e29cf96",
+    "snd_u143_1pr_marry_6cb058bb": "6cb058bb62335074aa96f418c103fb7e",
+    "snd_u143_1pr_ohno_c51f9a76": "c51f9a76b4039914d822f50b8b365e43",
+    "snd_u143_1pr_motor_eb96ce88": "eb96ce88ea3f5ae459aa943cb0193344",
+    "snd_u143_bang_3b610cea": "3b610cea7c5a8344d8e68e697374f66b",
+    "snd_u143_cft_intro_0bf35167": "0bf3516759302d24e8fa04136989f6c6",
+    "snd_u143_cft_loop_b1a50bf8": "b1a50bf8e9569354d92af5646414b6ab",
+    "snd_u143_bal_getprize_mobile_99c3e7af": "99c3e7afa95ac534c9c236d6372aadfc",
+    "snd_u143_b_donation_99ec318b": "99ec318b52a509448b3b93ad8f0303d6",
+    "snd_u143_b_givegreat_2938dc50": "2938dc505c9374642bbe70c7a7ddcb9d",
+    "snd_u143_b_noitems_ac6e0e35": "ac6e0e350652b8248a67147b49e9e680",
+    "snd_u143_b_takecandy_556073ee": "556073eeb23090b42a3ffd7a36832fa5",
+    "snd_u143_b_takethat_2e992c4d": "2e992c4d083545646a8edb65d655de01",
+    "snd_u143_great_98c2a67b": "98c2a67bc6adb0e488fd4a3ded1441b5",
+    "snd_u143_recording_25590410": "255904102fcfb0c4d8b4023ca587ff7f",
+    "snd_u143_gs_gottasweep_d8827122": "d88271222daebed4b905992173c8c535",
+    "snd_u143_gs_intro_3d90f270": "3d90f27083389114f82243c6a6fcc6b8",
+    "snd_u143_pt_1_260703d9": "260703d9eac480941af71d4455b928ba",
+    "snd_u143_pt_2_8d268d39": "8d268d39bfd1c214ba299b24fac1c5eb",
+    "snd_u143_pt_3_7a7df771": "7a7df771c2f4ef9428fc13b930d8bf06",
+    "snd_u143_pt_4_58c0e4fb": "58c0e4fb35f7f4344ac77d339269e68a",
+    "snd_u143_pt_5_240b673b": "240b673bcb070fb4090e3a0ba150548f",
+    "snd_u143_pt_10_2736ee39": "2736ee393cb8c6142b54afc3d85fb0ae",
+    "snd_u143_pt_6_5c7bddf6": "5c7bddf65a3910b428477026ada5cea0",
+    "snd_u143_pt_7_fb310e68": "fb310e686cd94694dad1fc1545bddf3c",
+    "snd_u143_pt_8_18e6606d": "18e6606dabf5a38499172eb038987f2a",
+    "snd_u143_pt_9_c6442180": "c644218028a860649b1efb751ce46ce8",
+    "snd_u143_pt_congrats_1fe55c89": "1fe55c89209ab604fba6b4b64af0d3e8",
+    "snd_u143_pt_laugh_e2de081b": "e2de081bb93d67f49a79d509b264c7e9",
+    "snd_u143_pt_letsplay_9b2097ae": "9b2097aeca5781446b4f708bb6e68a25",
+    "snd_u143_pt_oops_496058d4": "496058d454698b247a622166aaaa0d6b",
+    "snd_u143_pt_readygo_c6914b6c": "c6914b6cb1ce8af45a3c23da73e0e751",
+    "snd_u143_pt_sad_cba07be9": "cba07be9ed2c97042b7c425d807b864d",
+    "snd_u143_pt_wannaplay_e8989db8": "e8989db841738184eafada7351eba11c",
+    "snd_u143_pt_instructions_83fcb021": "83fcb021bcd25dd41825007906929c7c",
+    "snd_u143_pri_whistle_e3cc2b2b": "e3cc2b2bad78af547ae9f2993c1f1115",
+    "snd_u143_pri_nobullying_a4f817aa": "a4f817aaffa088245ba3a78a202ac059",
+    "snd_u143_pri_nolockers_266b846d": "266b846d4a4be004799b00597e342daf",
+    "snd_u143_pri_nostabbing_f55be470": "f55be4704ae2f4c4bb5c903e83638b7d",
+    "snd_u143_test_8906db7d": "8906db7d05297324fb0bc9dc83f26b06",
+    "snd_u143_mus_playtime_2127270b": "2127270b676ec734b83e8d5801dee205",
+    "snd_u143_ambience_26b830b0": "26b830b097707014d969d0ad838957f8",
+    "snd_u143_creepy_sound_2a076785": "2a0767855ff6f4d49bd9a2f00ed08e4e",
+    "snd_u143_dulcimer_71e3ee6c": "71e3ee6cc968ac64e86b51988e91e04e",
+    "snd_u143_fret_91733e7a": "91733e7ac5d2c624b8b715f865582225",
+    "snd_u143_noise_978a6a80": "978a6a80b26f4f94894753a1853e8d09",
+    "snd_u143_tone_7d3096bb": "7d3096bbf012fcd4f8651136da0bc79b",
+    "snd_u143_buzz_5cd6a843": "5cd6a843ec443064bb554fa34c168589",
+    "snd_u143_clocktick_2fb48978": "2fb489784b389334aad52da1c7026785",
+    "snd_u143_respawn_1416266d": "1416266d16612364d84259cfc4795a11"
+  },
+  "music": {
+    "schoolMusic": {
+      "gain": 0.7,
+      "loop": true
+    },
+    "learnMusic": {
+      "gain": 0.7,
+      "loop": true
+    }
+  }
+}

@@ -7,6 +7,9 @@ function bb_audio_init() {
     global.G.audio_log = [];
     global.G.finale_sound = -1;
     global.G.finale_loop = false;
+    global.G.finale_switch = -1;
+    global.G.finale_remaining = 0;
+    global.G.win_sound = -1;
     global.G.lock_voice_cd = 0;
 }
 
@@ -37,6 +40,7 @@ function bb_voice_clear(_channel) {
 }
 
 function bb_voice_queue(_channel, _clips) {
+    if (_channel == "math" && global.G.spoop_mode) return;
     var _v = global.G.voices[$ _channel];
     for (var _i = 0; _i < array_length(_clips); _i++) array_push(_v.queue, _clips[_i]);
 }
@@ -48,6 +52,9 @@ function bb_voice_replace(_channel, _clips) {
 
 function bb_audio_update(_dt) {
     var _g = global.G;
+    if (_g.win || _g.gameover) return;
+    // Gate at playback too: stale or externally queued math audio must stay silent.
+    if (_g.spoop_mode) bb_voice_clear("math");
     var _channels = (_g.state == "yctp") ? ["math"] : ["tutor", "principal"];
     for (var _i = 0; _i < array_length(_channels); _i++) {
         var _channel = _channels[_i];
@@ -67,8 +74,14 @@ function bb_audio_update(_dt) {
         }
     }
     if (_g.state == "play") {
+        for (var _i=0; _i<array_length(_g.npcs); _i++) {
+            var _n=_g.npcs[_i];
+            if (_n.sound!=-1 && audio_is_playing(_n.sound)) audio_sound_gain(_n.sound,bb_world_gain(_n.x,_n.z,24),0);
+        }
+        _g.finale_remaining = max(0, _g.finale_remaining - _dt);
         _g.lock_voice_cd = max(0, _g.lock_voice_cd - _dt);
-        if (_g.exit_got == 3 && !_g.finale_loop && _g.finale_sound != -1 && !audio_is_playing(_g.finale_sound)) {
+        if (_g.exit_got == 3 && !_g.finale_loop && _g.finale_remaining <= 0 && _g.finale_sound != -1
+            && !audio_is_playing(_g.finale_sound)) {
             _g.finale_sound = bb_sound_play(global.S.aud_MachineLoop, true, 1, 0.8);
             _g.finale_loop = true;
         }
@@ -80,7 +93,8 @@ function bb_math_voice_problem() {
     if (_g.spoop_mode || _g.yctp_end) return;
     bb_voice_queue("math", [global.S[$ "bal_problems" + string(_g.yctp_q-1)]]);
     if (_g.yctp_corrupt) {
-        bb_voice_queue("math", [global.S.bal_screech, global.S.bal_plus, global.S.bal_screech, global.S.bal_equals]);
+        bb_voice_queue("math", [global.S.bal_screech, global.S.bal_plus, global.S.bal_screech,
+            global.S.bal_times, global.S.bal_screech, global.S.bal_equals]);
     } else {
         bb_voice_queue("math", [global.S[$ "bal_numbers" + string(_g.yctp_a)],
             _g.yctp_op == "+" ? global.S.bal_plus : global.S.bal_minus,
@@ -90,14 +104,19 @@ function bb_math_voice_problem() {
 
 function bb_finale_audio(_stage) {
     var _g = global.G;
+    // These cues share Unity's GameController AudioSource.
+    bb_voice_clear("tutor");
     if (_g.finale_sound != -1) audio_stop_sound(_g.finale_sound);
+    if (_g.finale_switch != -1) audio_stop_sound(_g.finale_switch);
+    _g.finale_remaining = 0;
     if (_stage == 1) {
-        bb_sound_play(global.S.aud_Switch, false, 3, 0.8);
+        _g.finale_switch = bb_sound_play(global.S.aud_Switch, false, 3, 0.8);
         _g.finale_sound = bb_sound_play(global.S.aud_MachineQuiet, true, 1, 0.8);
     } else if (_stage == 2) {
         _g.finale_sound = bb_sound_play(global.S.aud_MachineStart, true, 1, 0.8);
     } else {
         _g.finale_sound = bb_sound_play(global.S.aud_MachineRev, false, 1, 0.8);
+        _g.finale_remaining = audio_sound_length(global.S.aud_MachineRev);
         _g.finale_loop = false;
     }
 }

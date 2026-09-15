@@ -10,7 +10,7 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.0,
+  "duration":0.6675736961451247,
   "exportDir":"",
   "name":"snd_src_aud_switch",
   "parent":{
