@@ -1,9 +1,9 @@
 # Windows
 # gm-cli compile
-.gmcache
+.gmcache/
 
 # OpenCode
-.opencode
+.opencode/
 
 # Other
 tools/
