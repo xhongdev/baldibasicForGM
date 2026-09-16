@@ -1,5 +1,15 @@
 # Windows
- 
+# gm-cli compile
+.gmcache
+
+# OpenCode
+.opencode
+
+# Other
+tools/
+folders/
+PORTING.md
+
 # Windows thumbnail cache files
 Thumbs.db
 Thumbs.db:encryptable
@@ -61,14 +71,3 @@ Temporary Items
 # GMRT build directory
 Build
 
-# gm-cli compile
-.gmcache
-
-# OpenCode
-.opencode
-
-# Other
-tools/
-folders/
-
-PORTING.md
