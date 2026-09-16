@@ -35,6 +35,35 @@ function bb_ui_texture(_key, _r) {
     draw_sprite_ext(_spr, 0, _r[0], _r[1], _r[2] / sprite_get_width(_spr), _r[3] / sprite_get_height(_spr), 0, c_white, 1);
 }
 
+function bb_menu_asset_draw(_asset,_r,_preserve=false) {
+    var _spr=global.PS[$ _asset.texture],_src=_asset.crop;
+    var _x=_r[0],_y=_r[1],_w=_r[2],_h=_r[3];
+    if (_preserve) {
+        var _scale=min(_w/_src[2],_h/_src[3]);
+        _x+=(_w-_src[2]*_scale)*.5;_y+=(_h-_src[3]*_scale)*.5;
+        _w=_src[2]*_scale;_h=_src[3]*_scale;
+    }
+    draw_sprite_part_ext(_spr,0,_src[0],_src[1],_src[2],_src[3],
+        _x,_y,_w/_src[2],_h/_src[3],c_white,1);
+}
+
+function bb_menu_button_draw(_key,_selected) {
+    var _node=global.P.menu.buttons[$ _key];
+    bb_menu_asset_draw(_selected?_node.selected:_node.normal,_node.rect,_node.preserve);
+}
+
+function bb_menu_slider_draw() {
+    var _menu=global.P.menu,_slider=_menu.slider,_range=_slider.max-_slider.min;
+    var _amount=clamp((global.mouse_sensitivity-_slider.min)/_range,0,1),_bar=_slider.bar;
+    draw_set_color(c_red);draw_rectangle(_bar[0],_bar[1],_bar[0]+_bar[2],_bar[1]+_bar[3],false);
+    draw_set_color(c_lime);draw_rectangle(_bar[0],_bar[1],lerp(_slider.track[0],_slider.track[1],_amount),_bar[1]+_bar[3],false);
+    draw_set_color(c_white);
+    var _source=_slider.handle_rect;
+    var _handle=[lerp(_slider.track[0],_slider.track[1],_amount)-_source[2]*.5,
+        _source[1],_source[2],_source[3]];
+    bb_menu_asset_draw(_slider.handle,_handle);
+}
+
 function bb_ui_fit_sprite(_spr, _r) {
     var _s = min(_r[2] / sprite_get_width(_spr), _r[3] / sprite_get_height(_spr));
     var _x = _r[0] + (_r[2] - sprite_get_width(_spr)*_s)*0.5;
@@ -111,10 +140,12 @@ function bb_yctp_glyph(_char) {
 function bb_yctp_text_layout(_text, _node, _single = false) {
     var _font = global.P.yctp_font, _r = _node.rect;
     var _scale = _node.font_size / _font.size, _spacing = _node.spacing;
+    var _line_step=_font.line_height*_scale
+        +(variable_struct_exists(_node,"line_spacing")?_node.line_spacing:0);
     var _x = 0, _y = _font.ascent * _scale, _glyphs = [];
     for (var _i = 1; _i <= string_length(_text); _i++) {
         var _ch = string_char_at(_text, _i);
-        if (_ch == "\n") { _x = 0; _y += _font.line_height * _scale; continue; }
+        if (_ch == "\n") { _x = 0; _y += _line_step; continue; }
         if (!_single && _ch != " " && (_i == 1 || string_char_at(_text, _i-1) == " ")) {
             var _word = 0;
             for (var _j = _i; _j <= string_length(_text); _j++) {
@@ -122,10 +153,10 @@ function bb_yctp_text_layout(_text, _node, _single = false) {
                 if (_next == " " || _next == "\n") break;
                 _word += bb_yctp_glyph(_next).advance * _scale + _spacing;
             }
-            if (_x > 0 && _x + _word > _r[2]) { _x = 0; _y += _font.line_height * _scale; }
+            if (_x > 0 && _x + _word > _r[2]) { _x = 0; _y += _line_step; }
         }
         var _glyph = bb_yctp_glyph(_ch), _advance = _glyph.advance * _scale + _spacing;
-        if (!_single && _x > 0 && _x + _advance > _r[2]) { _x = 0; _y += _font.line_height * _scale; }
+        if (!_single && _x > 0 && _x + _advance > _r[2]) { _x = 0; _y += _line_step; }
         if (_ch != " ") array_push(_glyphs, {x:_r[0]+_x+_glyph.bearing[0]*_scale,
             y:_r[1]+_y-_glyph.bearing[1]*_scale, src:_glyph.src, scale:_scale, baseline:_y, right:_r[0]+_x+_advance});
         _x += _advance;
@@ -141,18 +172,23 @@ function bb_yctp_text_layout(_text, _node, _single = false) {
             while (_end+1 < array_length(_glyphs) && _glyphs[_end+1].baseline == _baseline) _end += 1;
             var _width = _glyphs[_end].right - _r[0];
             var _offset = (_r[2] - _width) * (_halign == 2 ? 0.5 : 1);
-            for (var _j = _i; _j <= _end; _j++) _glyphs[_j].x += _offset;
+            for (var _j = _i; _j <= _end; _j++) {
+                _glyphs[_j].x += _offset;_glyphs[_j].right += _offset;
+            }
             _i = _end + 1;
         }
     }
     if ((_node.alignment & 512) != 0) {
         var _height = _y + 7 * _scale;
-        for (var _i = 0; _i < array_length(_glyphs); _i++) _glyphs[_i].y += (_r[3] - _height) * 0.5;
+        var _offset=(_r[3] - _height) * 0.5;
+        for (var _i = 0; _i < array_length(_glyphs); _i++) {
+            _glyphs[_i].y += _offset;_glyphs[_i].baseline += _offset;
+        }
     }
     return _glyphs;
 }
 
-function bb_yctp_text(_text, _node, _single = false, _clip = true) {
+function bb_yctp_text(_text, _node, _single = false, _clip = true, _underline = false) {
     var _glyphs = bb_yctp_text_layout(_text, _node, _single), _r = _node.rect;
     var _spr = global.PS[$ global.P.yctp_font.texture];
     var _c = _node.colour, _colour = make_colour_rgb(_c[0]*255, _c[1]*255, _c[2]*255);
@@ -164,6 +200,16 @@ function bb_yctp_text(_text, _node, _single = false, _clip = true) {
         if (_x2 <= _x1 || _y2 <= _y1) continue;
         draw_sprite_part_ext(_spr, 0, _src[0]+(_x1-_g.x)/_s, _src[1]+(_y1-_g.y)/_s,
             (_x2-_x1)/_s, (_y2-_y1)/_s, _x1, _y1, _s, _s, _colour, _c[3]);
+    }
+    if (_underline && array_length(_glyphs)>0) {
+        draw_set_color(_colour);draw_set_alpha(_c[3]);
+        for (var _i=0;_i<array_length(_glyphs);) {
+            var _end=_i,_baseline=_glyphs[_i].baseline;
+            while (_end+1<array_length(_glyphs) && _glyphs[_end+1].baseline==_baseline) _end+=1;
+            draw_rectangle(_glyphs[_i].x,_r[1]+_baseline+2,_glyphs[_end].right,_r[1]+_baseline+3,false);
+            _i=_end+1;
+        }
+        draw_set_alpha(1);draw_set_color(c_white);
     }
 }
 

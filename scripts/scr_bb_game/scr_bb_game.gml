@@ -1,3 +1,76 @@
+function bb_runtime_doors(_map) {
+    var _result = [], _doors = _map.doors;
+    for (var _i = 0; _i < array_length(_doors); _i++) {
+        var _d = _doors[_i];
+        var _door = {
+            x: _d.x, z: _d.z, side: _d.side, open: false, t: 0,
+            lock_cd: 0, silent_opens: 0, silent_close: false, kind: _d.kind,
+            lock_start: variable_struct_exists(_d, "lock_start") ? _d.lock_start : false,
+            locked: (_d.kind == "swing" && variable_struct_exists(_d, "lock_start") && _d.lock_start),
+            was_touch: false
+        };
+        if (variable_struct_exists(_d, "v")) {
+            _door.v = _d.v; _door.bounds = _d.bounds;
+            _door.cx = _d.cx; _door.cz = _d.cz; _door.w = _d.w;
+            if (variable_struct_exists(_d, "v_inside")) _door.v_inside = _d.v_inside;
+        }
+        if (variable_struct_exists(_d, "material")) {
+            _door.material = _d.material;
+            _door.open_material = _d.open_material;
+        }
+        array_push(_result, _door);
+    }
+    return _result;
+}
+
+function bb_runtime_exits(_map) {
+    var _result = [];
+    if (!variable_struct_exists(_map, "exits")) return _result;
+    for (var _i = 0; _i < array_length(_map.exits); _i++) {
+        var _exit = _map.exits[_i], _source = undefined;
+        for (var _j = 0; _j < array_length(global.P.details.entrances); _j++) {
+            if (global.P.details.entrances[_j].name == _exit.name) _source = global.P.details.entrances[_j];
+        }
+        array_push(_result, {x:_exit.x, z:_exit.z, name:_exit.name, used:false, down:false, source:_source});
+    }
+    return _result;
+}
+
+function bb_movement_keys_down() {
+    return keyboard_check(ord("A")) || keyboard_check(ord("D"))
+        || keyboard_check(ord("W")) || keyboard_check(ord("S"))
+        || keyboard_check(vk_left) || keyboard_check(vk_right)
+        || keyboard_check(vk_up) || keyboard_check(vk_down);
+}
+
+function bb_movement_ready(_held=undefined) {
+    var _g=global.G;
+    if (is_undefined(_held)) _held=bb_movement_keys_down();
+    if (!variable_struct_exists(_g,"move_latched")) _g.move_latched=false;
+    if (_g.move_latched) {
+        if (!_held) _g.move_latched=false;
+        return false;
+    }
+    return true;
+}
+
+function bb_world_load(_map_file, _environment_file) {
+    global.map = json_parse(bb_read_text(_map_file));
+    global.E = json_parse(bb_read_text(_environment_file));
+    global.G.doors = bb_runtime_doors(global.map);
+    global.G.exits = bb_runtime_exits(global.map);
+    global.path_ready = false;
+    global.path_signature = 0;
+    global.path_grids = {};
+    if (variable_global_exists("nav_routes")) global.nav_routes = [];
+    bb3d_build_map(global.map);
+    bb_build_collision(global.map);
+    bb_nav_build();
+    bb_refresh_details();
+    bb_grid_build();
+    global.path_ready = true;
+}
+
 function bb_game_init() {
     global.path_ready=false;
     global.path_signature=0;
@@ -64,9 +137,16 @@ function bb_game_init() {
         pause: false,
         gameover: false,
         gameover_image: "gameover_0",
+        gameover_rare: false,
+        gameover_rare_sound: -1,
         win: false,
+        win_exit_delay: 0,
         over_t: 0,
+        end_requested: false,
+        secret_played: false,
+        secret_sound: -1,
         mouse_ready: false,
+        move_latched: true,
         tutor_x: _t[0],
         tutor_y: _t[1],
         tutor_z: _t[2],
@@ -116,6 +196,8 @@ function bb_game_init() {
         play_cool: 0,
         rope_delay: 0,
         rope_time: 0,
+        rope_wait_sound: -1,
+        rope_wait_time: 0,
         jump_height: 0,
         jump_velocity: 0,
         rope_message: "",
@@ -132,33 +214,8 @@ function bb_game_init() {
     bb_debug_init();
     global.G.craft_inside=array_create(array_length(global.E.craft_triggers),false);
 
-    var _doors = global.map.doors;
+    global.G.doors = bb_runtime_doors(global.map);
     var _i;
-    for (_i = 0; _i < array_length(_doors); _i++) {
-        var _d = _doors[_i];
-        array_push(global.G.doors, {
-            x: _d.x,
-            z: _d.z,
-            side: _d.side,
-            open: false,
-            t: 0,
-            lock_cd: 0,
-            silent_opens: 0,
-            silent_close: false,
-            kind: _d.kind,
-            lock_start: variable_struct_exists(_d, "lock_start") ? _d.lock_start : false,
-            locked: (_d.kind == "swing" && _d.lock_start),
-            was_touch: false
-        });
-        if (variable_struct_exists(_d, "v")) {
-            var _door = global.G.doors[array_length(global.G.doors) - 1];
-            _door.v = _d.v;
-            _door.bounds = _d.bounds;
-            _door.cx = _d.cx;
-            _door.cz = _d.cz;
-            _door.w = _d.w;
-        }
-    }
 
     var _nbs = global.map.notebooks;
     for (_i = 0; _i < array_length(_nbs); _i++) {
@@ -264,18 +321,16 @@ function bb_game_init() {
         }
     }
 
-    if (variable_struct_exists(global.map, "exits")) {
-        var _ex = global.map.exits;
-        for (_i = 0; _i < array_length(_ex); _i++) {
-            var _source = undefined;
-            for (var _j = 0; _j < array_length(global.P.details.entrances); _j++) {
-                if (global.P.details.entrances[_j].name == _ex[_i].name) _source = global.P.details.entrances[_j];
-            }
-            array_push(global.G.exits, {x: _ex[_i].x, z: _ex[_i].z, name: _ex[_i].name, used: false, down: false, source:_source});
-        }
-    }
+    global.G.exits = bb_runtime_exits(global.map);
     bb_refresh_details();
     bb_grid_build();global.path_ready=true;
+    for (_i=0;_i<array_length(global.G.npcs);_i++) {
+        _npc=global.G.npcs[_i];
+        var _safe=bb_grid_recover_position(_npc.x,_npc.z,.3);
+        if (_safe[0]!=_npc.x || _safe[1]!=_npc.z) {
+            _npc.x=_safe[0];_npc.z=_safe[1];_npc.home_x=_safe[0];_npc.home_z=_safe[1];
+        }
+    }
 
     if (variable_global_exists("dump_quit") && global.dump_quit) {
         bb_dump_runtime();
@@ -474,6 +529,7 @@ function bb_build_collision(_map) {
     global.wall_edge = ds_map_create();
     var _i;
     var _quads = _map.quads;
+    var _school_details = !variable_struct_exists(_map, "scene") || _map.scene == "School";
     var _t = 0.08;
     for (_i = 0; _i < array_length(_quads); _i++) {
         var _q = _quads[_i];
@@ -483,7 +539,7 @@ function bb_build_collision(_map) {
         if (_q.k == "floor") {
             ds_map_set(global.floors, bb_key(_q.x, _q.z), _q.m);
         } else if (_q.k == "wall" && variable_struct_exists(_q, "bounds")) {
-            if (variable_struct_exists(global.P.details.dynamic_ids, _q.source_id)) continue;
+            if (_school_details && variable_struct_exists(global.P.details.dynamic_ids, _q.source_id)) continue;
             var _b = _q.bounds;
             // Elevated cafeteria/entrance walls must not become ground-level barriers.
             if (_b[1] < 1 && _b[4] > 1) {
@@ -608,16 +664,8 @@ function bb_game_update(_dt) {
     var _old_x = _g.px, _old_z = _g.pz;
     _dt = clamp(_dt, 0, 0.1);
     if (bb_debug_update()) return;
-    if (_g.gameover || _g.win) {
-        _g.over_t += _dt;
-        if (keyboard_check_pressed(vk_enter) || mouse_check_button_pressed(mb_left) || keyboard_check_pressed(vk_escape)) {
-            window_mouse_set_locked(false);
-            window_set_cursor(cr_default);
-            audio_stop_all();
-            room_goto(rm_title);
-        }
-        return;
-    }
+    if (_g.gameover) { bb_gameover_update(_dt); return; }
+    if (_g.win) { bb_win_update(_dt); return; }
     if (_g.state == "yctp") {
         bb_yctp_update(_dt);
         return;
@@ -654,7 +702,8 @@ function bb_game_update(_dt) {
 
     var _ix = 0;
     var _iz = 0;
-    if (_g.play_lock <= 0) {
+    var _movement_ready=bb_movement_ready();
+    if (_g.play_lock <= 0 && _movement_ready) {
         if (keyboard_check(ord("A")) || keyboard_check(vk_left)) _ix -= 1;
         if (keyboard_check(ord("D")) || keyboard_check(vk_right)) _ix += 1;
         if (keyboard_check(ord("W")) || keyboard_check(vk_up)) _iz -= 1;
@@ -702,6 +751,11 @@ function bb_game_update(_dt) {
     }
     _g.running = _running;
     if (_g.debug.stamina) _g.stamina = _g.stamina_max;
+    if (_g.state == "secret") {
+        bb_update_doors(_dt);
+        bb_secret_update(_dt);
+        return;
+    }
     if (_g.guilt > 0) {
         _g.guilt -= _dt;
     }
@@ -1342,6 +1396,7 @@ function bb_yctp_open() {
     bb_voice_clear("math");
     audio_pause_all();
     _g.state = "yctp";
+    _g.move_latched = true;
     _g.yctp_q = 0;
     _g.yctp_input = "";
     _g.yctp_feedback = 0;
@@ -1511,6 +1566,7 @@ function bb_yctp_close() {
         _g.stamina = 100;
     }
     _g.state = "play";
+    _g.move_latched = true;
     bb_voice_clear("math");
     audio_stop_sound(snd_mus_learn);
     _g.yctp_music = -1;
@@ -1545,7 +1601,10 @@ function bb_gameover() {
     if (_g.gameover) return;
     _g.gameover = true;
     _g.over_t = 0;
-    _g.gameover_image = "gameover_" + string(irandom(4));
+    _g.gameover_rare = (irandom(97) == 97);
+    _g.gameover_image = _g.gameover_rare ? "gameover_rare" : "gameover_" + string(irandom(4));
+    _g.gameover_rare_sound = -1;
+    _g.end_requested = false;
     if (_g.mode == "endless") {
         _g.new_high_score = (_g.notebooks > global.high_books);
         global.high_books = max(global.high_books, _g.notebooks);
@@ -1555,6 +1614,77 @@ function bb_gameover() {
     bb_sound_play(global.S.aud_buzz, false, 5);
     window_mouse_set_locked(false);
     window_set_cursor(cr_default);
+}
+
+function bb_request_game_end() {
+    var _g = global.G;
+    _g.end_requested = true;
+    window_mouse_set_locked(false);
+    window_set_cursor(cr_default);
+    if (!global.bb_selftest) game_end();
+}
+
+function bb_gameover_update(_dt) {
+    var _g = global.G, _previous = _g.over_t;
+    _g.over_t += _dt;
+    // GameController collapses the far clip for one second before loading the
+    // separate GameOver scene. Loading that scene also stops the school audio.
+    if (_previous < 1 && _g.over_t >= 1) audio_stop_all();
+    if (_g.gameover_rare) {
+        if (_g.over_t >= 6 && _g.gameover_rare_sound == -1) {
+            _g.gameover_rare_sound = bb_sound_play(snd_ohno, false, 5);
+        }
+        if (_g.over_t >= 11) bb_request_game_end();
+    } else if (_g.over_t >= 6) {
+        window_mouse_set_locked(false);
+        window_set_cursor(cr_default);
+        if (!global.bb_selftest) room_goto(rm_title);
+    }
+}
+
+function bb_win_update(_dt) {
+    var _g = global.G;
+    _g.over_t += _dt;
+    if (_g.win_sound != -1 && audio_is_playing(_g.win_sound)) {
+        _g.win_exit_delay = 0;
+        return;
+    }
+    _g.win_exit_delay += _dt;
+    if (_g.win_exit_delay >= 1) bb_request_game_end();
+}
+
+function bb_secret_begin() {
+    var _g = global.G, _secret = global.P.details.secret;
+    var _channels = variable_struct_get_names(_g.voices);
+    for (var _i=0; _i<array_length(_channels); _i++) bb_voice_clear(_channels[_i]);
+    audio_stop_all();
+    _g.state = "secret";
+    _g.move_latched = true;
+    _g.win = false; _g.gameover = false; _g.pause = false;
+    _g.final_red = 0; _g.over_t = 0; _g.end_requested = false;
+    _g.secret_played = false; _g.secret_sound = -1;
+    bb_world_load(_secret.map_file, _secret.environment_file);
+    _g.px = global.map.player[0];
+    _g.py = variable_struct_exists(global.map, "camera") ? global.map.camera[1] : global.map.player[1];
+    _g.pz = global.map.player[2];
+    _g.yaw = variable_struct_exists(global.map, "player_yaw") ? global.map.player_yaw : 0;
+    _g.stamina = _g.stamina_max; _g.play_lock = 0; _g.detention = 0;
+    _g.baldi_active = false;
+    for (var _i=0; _i<array_length(_g.npcs); _i++) _g.npcs[_i].live = false;
+    window_mouse_set_locked(true); window_set_cursor(cr_none); _g.mouse_ready = false;
+}
+
+function bb_secret_update(_dt) {
+    var _g = global.G, _secret = global.P.details.secret, _actor = _secret.filename2;
+    if (!_g.secret_played && bb_dist2(_g.px, _g.pz, _actor.x, _actor.z) <= sqr(_secret.trigger_radius)) {
+        _g.secret_played = true;
+        _g.secret_sound = bb_world_sound(global.S.clips[$ _secret.recording_audio], _actor.x, _actor.z, 5, 100);
+    }
+    if (_g.secret_sound != -1 && audio_is_playing(_g.secret_sound)) {
+        audio_sound_gain(_g.secret_sound, bb_world_gain(_actor.x, _actor.z, 100), 0);
+    } else if (_g.secret_played) {
+        bb_request_game_end();
+    }
 }
 
 function bb_check_exits(_old_x = undefined, _old_z = undefined) {
@@ -1579,7 +1709,7 @@ function bb_check_exits(_old_x = undefined, _old_z = undefined) {
                 bb_finale_audio(_g.exit_got);
             }
         } else if (bb_exit_box_hit(_e.source.finish, _old_x, _old_z, _g.px, _g.pz, _g.radius)) {
-            bb_win_game();
+            if (_g.failed_nbs >= 7) bb_secret_begin(); else bb_win_game();
             return;
         }
     }
@@ -1587,12 +1717,17 @@ function bb_check_exits(_old_x = undefined, _old_z = undefined) {
 
 function bb_game_draw() {
     var _g = global.G;
+    if (_g.gameover && _g.over_t >= 1) {
+        draw_clear(c_black);
+        return;
+    }
     var _aspect = bb_base_w() / bb_base_h();
     var _yaw = _g.yaw;
     if (keyboard_check(vk_space) && _g.play_lock <= 0 && _g.state == "play" && !_g.pause) {
         _yaw += pi;
     }
-    bb3d_begin(_g.px, _g.py + _g.jump_height, _g.pz, _yaw, _aspect);
+    var _far = (_g.gameover) ? max(0.081, 40*(1-_g.over_t)) : 220;
+    bb3d_begin(_g.px, _g.py + _g.jump_height, _g.pz, _yaw, _aspect, _far);
     if (_g.final_red > 0) {
         draw_clear(make_colour_rgb(40, 0, 0));
     }
@@ -1638,6 +1773,7 @@ function bb_draw_doors() {
     gpu_set_ztestenable(true);
     gpu_set_alphatestenable(true);
     gpu_set_alphatestref(8);
+    gpu_set_cullmode(cull_clockwise);
     for (_i = 0; _i < array_length(_g.doors); _i++) {
         var _d = _g.doors[_i];
         var _spr = spr_tex_swing0;
@@ -1654,6 +1790,14 @@ function bb_draw_doors() {
         } else {
             _spr = _d.open ? spr_tex_swing60 : spr_tex_swing0;
         }
+        if (variable_struct_exists(_d, "material")
+            && !(_d.kind=="swing" && _d.lock_cd>0
+                && variable_global_exists("spr_swing_locked") && global.spr_swing_locked!=-1)) {
+            var _material_name = _d.open ? _d.open_material : _d.material;
+            if (variable_struct_exists(global.map.materials, _material_name)) {
+                _spr = global.map_textures[$ global.map.materials[$ _material_name].file];
+            }
+        }
         var _hw = bb_door_hw(_d);
         if (!variable_struct_exists(_d, "v") && _d.kind != "swing" && _hw < 0.99) {
             var _jvb = global.vb_bill;
@@ -1664,15 +1808,20 @@ function bb_draw_doors() {
             vertex_submit(_jvb, pr_trianglelist, sprite_get_texture(spr_tex_brick, 0));
         }
         var _vb = global.vb_bill;
+        var _door_uv=bb3d_sprite_uv_transform(_spr);
         vertex_begin(_vb, global.vf_3d);
         if (variable_struct_exists(_d, "v")) {
-            bb3d_emit_vertices(_vb, _d.v, [1, 1, 0, 0], c_white);
+            bb3d_emit_vertices(_vb, _d.v, _door_uv, c_white);
+            if (variable_struct_exists(_d, "v_inside")) {
+                bb3d_emit_vertices(_vb, _d.v_inside, _door_uv, c_white);
+            }
         } else {
             bb3d_emit_door(_vb, _d.side, _d.x, _d.z, _hw, c_white, 1);
         }
         vertex_end(_vb);
         vertex_submit(_vb, pr_trianglelist, sprite_get_texture(_spr, 0));
     }
+    gpu_set_cullmode(cull_noculling);
     gpu_set_texrepeat(true);
 }
 
@@ -1692,6 +1841,13 @@ function bb_draw_notebook_3d(_x, _y, _z, _spr, _phase, _tint) {
 function bb_draw_entities() {
     var _g = global.G;
     var _i;
+    if (_g.state == "secret") {
+        var _secret = global.P.details.secret;
+        var _f = _secret.filename2, _b = _secret.banana;
+        bb3d_draw_billboard(global.PS[$ _f.texture], 0, _f.x, _f.y, _f.z, _f.w, _f.h, _g.px, _g.pz, c_white);
+        bb3d_draw_billboard(global.PS[$ _b.texture], 0, _b.x, _b.y, _b.z, _b.w, _b.h, _g.px, _g.pz, c_white);
+        return;
+    }
     bb_draw_item_world();
     for (_i = 0; _i < array_length(_g.notebooks_list); _i++) {
         var _n = _g.notebooks_list[_i];
@@ -1772,6 +1928,15 @@ function bb_item_spr(_k) {
     }
 }
 
+function bb_draw_finale_red(_w, _h) {
+    draw_set_alpha(1);
+    draw_set_color(c_red);
+    gpu_set_blendmode_ext(bm_dest_colour, bm_zero);
+    draw_rectangle(0, 0, _w, _h, false);
+    gpu_set_blendmode(bm_normal);
+    draw_set_color(c_white);
+}
+
 function bb_game_draw_gui() {
     bb_ui_begin();
     var _g = global.G;
@@ -1784,9 +1949,17 @@ function bb_game_draw_gui() {
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
     if (_g.gameover) {
+        if (_g.over_t < 1) {
+            bb_draw_classic_hud(_g, _gw, _gh);
+            return;
+        }
         var _over_spr = (variable_struct_exists(global.PS, _g.gameover_image))
             ? global.PS[$ _g.gameover_image] : spr_gameover;
-        draw_sprite_stretched(_over_spr, 0, 0, 0, _gw, _gh);
+        draw_set_color(c_black); draw_rectangle(0, 0, _gw, _gh, false);
+        var _size = (_g.gameover_rare && _g.over_t >= 6) ? 2000 : 400;
+        var _tint = (_g.gameover_rare && _g.over_t >= 6) ? c_red : c_white;
+        draw_sprite_ext(_over_spr, 0, (_gw-_size)*.5, (_gh-_size)*.5,
+            _size/sprite_get_width(_over_spr), _size/sprite_get_height(_over_spr), 0, _tint, 1);
         draw_set_font(global.fnt_ui);
         draw_set_halign(fa_center);
         draw_set_color(c_white);
@@ -1805,11 +1978,11 @@ function bb_game_draw_gui() {
         bb_yctp_draw();
         return;
     }
+    if (_g.state == "secret") {
+        return;
+    }
     if (_g.final_red > 0) {
-        draw_set_alpha(0.18 + _g.final_red * 0.12);
-        draw_set_color(make_colour_rgb(180, 0, 0));
-        draw_rectangle(0, 0, _gw, _gh, false);
-        draw_set_alpha(1);
+        bb_draw_finale_red(_gw, _gh);
     }
     bb_draw_classic_hud(_g, _gw, _gh);
     if (_g.exit_open) {

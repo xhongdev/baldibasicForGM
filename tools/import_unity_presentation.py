@@ -9,7 +9,7 @@ import shutil
 import hashlib
 
 from import_unity_gameplay import DEFAULT_UNITY, ROOT, field, ref, vector, load_yy, PROPS
-from import_unity_map import guid, NOTEBOOK_SCRIPT
+from import_unity_map import build_map, guid, NOTEBOOK_SCRIPT
 from unity_scene import UnityScene, gm_point
 from build_from_godot import png_size
 
@@ -66,7 +66,10 @@ def main():
     textures = texture_index(unity)
     school = UnityScene(unity / "Assets/Scene/Scenes/School.unity")
     math = UnityScene(unity / "Assets/PrefabInstance/MathGame.prefab")
-    output = {"textures": {}, "hud": {}, "yctp": {}, "notebooks": {}, "pickups": {}, "props": {}, "exit_signs": []}
+    menu_scene = UnityScene(unity / "Assets/Scene/Scenes/MainMenu.unity")
+    secret = UnityScene(unity / "Assets/Scene/Scenes/Secret.unity")
+    alarm = UnityScene(unity / "Assets/PrefabInstance/AlarmClockDrop.prefab")
+    output = {"textures": {}, "hud": {}, "yctp": {}, "menu": {}, "notebooks": {}, "pickups": {}, "props": {}, "exit_signs": []}
 
     def texture(key, src):
         source = textures.get(src) if isinstance(src, str) else src
@@ -81,6 +84,138 @@ def main():
                 ident = guid(field(component, key))
                 if ident in textures: return textures[ident]
         return None
+
+    menu_rect = rect_reader(menu_scene, (640, 480))
+    menu_assets = {}
+
+    def menu_tid(*path):
+        return next(t for t in menu_scene.transforms.values() if menu_scene.ancestry(t) == list(path))
+
+    def sprite_crop(source):
+        width, height = png_size(source)
+        meta = Path(str(source) + ".meta").read_text(encoding="utf-8")
+        match = re.search(r"rect:\s*\n\s*serializedVersion: \d+\s*\n\s*x: ([-\d.]+)\s*\n\s*y: ([-\d.]+)\s*\n\s*width: ([-\d.]+)\s*\n\s*height: ([-\d.]+)", meta)
+        if not match: return [0, 0, width, height]
+        x, y, w, h = map(float, match.groups())
+        return [round(x, 4), round(height-y-h, 4), round(w, 4), round(h, 4)]
+
+    def menu_asset(source, cropped=True):
+        cache_key = (source, cropped)
+        if cache_key in menu_assets: return menu_assets[cache_key]
+        relative = source.relative_to(unity / "Assets").as_posix()
+        key = "menu_" + re.sub(r"[^a-z0-9]+", "_", relative.lower()).strip("_")
+        if not cropped: key += "_raw"
+        texture(key, source)
+        size = png_size(source)
+        # AssetRipper preserves each UI element's authored transparent canvas.
+        # Unity lays that complete canvas into the RectTransform; stretching the
+        # tight Sprite rect makes labels huge and changes scale on sprite swap.
+        asset = {"texture": key, "crop": [0, 0, size[0], size[1]]}
+        if cropped: asset["sprite_rect"] = sprite_crop(source)
+        menu_assets[cache_key] = asset
+        return asset
+
+    def menu_visible_hit(rect, normal, selected, preserve):
+        bounds = []
+        for asset in (normal, selected):
+            canvas_w, canvas_h = asset["crop"][2:]
+            if preserve:
+                scale = min(rect[2]/canvas_w, rect[3]/canvas_h)
+                x = rect[0] + (rect[2]-canvas_w*scale)*.5
+                y = rect[1] + (rect[3]-canvas_h*scale)*.5
+                sx = sy = scale
+            else:
+                x, y = rect[0], rect[1]
+                sx, sy = rect[2]/canvas_w, rect[3]/canvas_h
+            source = asset["sprite_rect"]
+            bounds.append((x+source[0]*sx, y+source[1]*sy,
+                           x+(source[0]+source[2])*sx, y+(source[1]+source[3])*sy))
+        pad = 4
+        x0 = max(rect[0], min(b[0] for b in bounds)-pad)
+        y0 = max(rect[1], min(b[1] for b in bounds)-pad)
+        x1 = min(rect[0]+rect[2], max(b[2] for b in bounds)+pad)
+        y1 = min(rect[1]+rect[3], max(b[3] for b in bounds)+pad)
+        return [round(x0, 4), round(y0, 4), round(x1-x0, 4), round(y1-y0, 4)]
+
+    def menu_button(key, image_path, state_path=None, hit_path=None):
+        image_tid = menu_tid(*image_path)
+        state_tid = menu_tid(*(state_path or image_path))
+        hit_tid = menu_tid(*(hit_path or image_path))
+        source = renderer_texture(menu_scene, image_tid)
+        graphic = next(b for _, _, b in menu_scene.components(image_tid, 114) if field(b, "m_Sprite"))
+        state = next((b for _, _, b in menu_scene.components(state_tid, 114) if "m_SpriteState:" in b), "")
+        selected_match = re.search(r"m_SelectedSprite: \{fileID: \d+, guid: (\w+)", state)
+        selected = textures.get(selected_match[1]) if selected_match else source
+        rect = menu_rect(image_tid)
+        normal_asset, selected_asset = menu_asset(source), menu_asset(selected)
+        preserve = field(graphic, "m_PreserveAspect", "0") == "1"
+        output["menu"].setdefault("buttons", {})[key] = {
+            "rect": rect,
+            "hit": menu_rect(hit_tid) if hit_path else menu_visible_hit(rect, normal_asset, selected_asset, preserve),
+            "normal": normal_asset, "selected": selected_asset, "preserve": preserve
+        }
+
+    menu_button("start", ("MainMenu", "Start Button"))
+    menu_button("main_menu", ("MainMenu", "Menu Button"))
+    menu_button("exit", ("MainMenu", "Exit Button"))
+    menu_button("story", ("PlayMenu", "StoryButton"))
+    menu_button("endless", ("PlayMenu", "EndlessButton"))
+    menu_button("play_back", ("PlayMenu", "BackButton"))
+    menu_button("how", ("MenuMenu", "HowButton"))
+    menu_button("options", ("MenuMenu", "OptionsButton"))
+    menu_button("credits", ("MenuMenu", "CreditsButton"))
+    menu_button("menu_back", ("MenuMenu", "BackButton"))
+    menu_button("controls", ("OptionsMenu", "ControlsButtonPC"))
+    menu_button("options_back", ("OptionsMenu", "BackButton"))
+    menu_button("story_back", ("Story", "BackButton"))
+    menu_button("credits_back", ("Credits", "BackButton"))
+    menu_button("controls_back", ("Controls", "BackButton"))
+    menu_button("turn", ("OptionsMenu", "TurnSlideImage"), ("OptionsMenu", "TurnSlider"),
+                ("OptionsMenu", "TurnSlider"))
+    menu_button("rumble", ("OptionsMenu", "RumbleToggle", "Background"), ("OptionsMenu", "RumbleToggle"))
+    menu_button("analog", ("OptionsMenu", "AnalogToggle", "Background"), ("OptionsMenu", "AnalogToggle"))
+
+    def menu_raw(path):
+        tid = menu_tid(*path)
+        return {"rect": menu_rect(tid), "asset": menu_asset(renderer_texture(menu_scene, tid), False)}
+
+    output["menu"]["backgrounds"] = {
+        "story": menu_raw(("Story", "RawImage")),
+        "credits": menu_raw(("Credits", "RawImage"))
+    }
+    story_text_tid = menu_tid("PlayMenu", "StoryText")
+    endless_text_tid = menu_tid("PlayMenu", "EndlessText")
+    controls_text_tid = menu_tid("Controls", "Text (TMP)")
+    story_text_scale = abs(vector(menu_scene.blocks[story_text_tid][1], "m_LocalScale", (1, 1, 1))[0])
+    endless_text_scale = abs(vector(menu_scene.blocks[endless_text_tid][1], "m_LocalScale", (1, 1, 1))[0])
+    controls_text_scale = abs(vector(menu_scene.blocks[controls_text_tid][1], "m_LocalScale", (1, 1, 1))[0])
+    output["menu"]["text"] = {
+        "story": {"rect": menu_rect(story_text_tid), "font_size": round(32*story_text_scale, 4),
+                  "alignment": 514, "spacing": 0, "line_spacing": 0, "colour": [0, 0, 0, 1],
+                  "value": "Story Mode:\n\nCollect all 7 notebooks, and then exit the school, to win!"},
+        "endless": {"rect": menu_rect(endless_text_tid), "font_size": round(36*endless_text_scale, 4),
+                    "alignment": 514, "spacing": 0, "line_spacing": 0, "colour": [0, 0, 0, 1],
+                    "value": "Endless Mode:\n\nCollect as many notebooks as you can!"},
+        "controls": {"rect": menu_rect(controls_text_tid), "font_size": round(24*controls_text_scale, 4),
+                     "alignment": 258, "spacing": 0, "line_spacing": round(16*controls_text_scale, 4), "colour": [0, 0, 0, 1],
+                     "value": "Controls:\nWASD - Move\nMouse - Look around\nLeft Click - Pick up objects, open doors, other interactions\nRight Click - Use selected item\nScroll Wheel, 1,2,3 - Change item selection\nShift - Run (Watch your stamina!)\nSpace bar - Look behind you and Jump!"}
+    }
+    slider = menu_scene.components(menu_tid("OptionsMenu", "TurnSlider"), 114)[0][2]
+    handle_tid = menu_tid("OptionsMenu", "TurnSlider", "Handle Slide Area", "Handle")
+    track = menu_rect(menu_tid("OptionsMenu", "TurnSlider", "Handle Slide Area"))
+    output["menu"]["slider"] = {
+        "hit": menu_rect(menu_tid("OptionsMenu", "TurnSlider")),
+        "bar": menu_rect(menu_tid("OptionsMenu", "TurnSlider", "Background")),
+        "track": [track[0], track[0]+track[2]], "handle_rect": menu_rect(handle_tid),
+        "handle": menu_asset(renderer_texture(menu_scene, handle_tid)),
+        "min": float(field(slider, "m_MinValue")), "max": float(field(slider, "m_MaxValue"))
+    }
+    check_source = renderer_texture(menu_scene, menu_tid("OptionsMenu", "RumbleToggle", "Background", "Checkmark"))
+    output["menu"]["checks"] = {
+        "asset": menu_asset(check_source),
+        "rumble": menu_rect(menu_tid("OptionsMenu", "RumbleToggle", "Background", "Checkmark")),
+        "analog": menu_rect(menu_tid("OptionsMenu", "AnalogToggle", "Background", "Checkmark"))
+    }
 
     math_rect = rect_reader(math, (800, 600))
     for tid in math.transforms.values():
@@ -218,15 +353,67 @@ def main():
     base = unity / "Assets/Texture2D"
     for i, filename in enumerate(("0_1.png", "1_1.png", "2_1.png", "3_1.png", "5_1.png")):
         texture("gameover_" + str(i), unity / "Assets/Texture2D/Screens/GameOver" / filename)
+    texture("gameover_rare", unity / "Assets/Texture2D/Screens/GameOver/99_0.png")
     for i, icon in enumerate(ICONS): texture("item" + str(i+1), base / f"SchoolHouse/PickUps/{icon}.png")
     for key, path in {"check": "YCTPTextures/Check.png", "xmark": "YCTPTextures/X.png",
                       "spray": "SchoolHouse/PickUps/Drops/BSODA_Spray.png",
                       "alarm_drop": "SchoolHouse/PickUps/Drops/AlarmClockDrop.png",
+                      "secret_filename2": "Characters/filename2.png",
+                      "secret_banana": "SchoolHouse/Billboards/Banana.png",
                       "slots": "HudTextures/ItemSlots.png"}.items(): texture(key, base / path)
     from import_unity_details import build_details
     output['details'] = build_details(unity, school, texture)
+
+    def source_billboard(scene, object_name, texture_key):
+        tid = next(t for t in scene.transforms.values() if scene.name(t) == object_name)
+        renderer = scene.components(tid, 212)[0][2]
+        size = vector(renderer, "m_Size", (1, 1))
+        matrix = scene.matrix(tid)
+        sx = sum(matrix[i][0]**2 for i in range(3))**0.5
+        sy = sum(matrix[i][1]**2 for i in range(3))**0.5
+        x, y, z = gm_point(scene.point(tid))
+        return {"texture": texture_key, "x": x, "y": y, "z": z,
+                "w": round(size[0]*sx*.2, 5), "h": round(size[1]*sy*.2, 5)}
+
+    alarm_tid = next(iter(alarm.transforms.values()))
+    alarm_renderer = alarm.components(alarm_tid, 212)[0][2]
+    alarm_size = vector(alarm_renderer, "m_Size", (1, 1))
+    alarm_matrix = alarm.matrix(alarm_tid)
+    alarm_sx = sum(alarm_matrix[i][0]**2 for i in range(3))**0.5
+    alarm_sy = sum(alarm_matrix[i][1]**2 for i in range(3))**0.5
+    alarm_audio = alarm.components(alarm_tid, 82)[0][2]
+    alarm_script = next(b for _, _, b in alarm.components(alarm_tid, 114) if field(b, "ring"))
+    output['details']['alarm_drop'] = {
+        "texture": "alarm_drop", "y": .8,
+        "w": round(alarm_size[0]*alarm_sx*.2, 5), "h": round(alarm_size[1]*alarm_sy*.2, 5),
+        "tick_audio": guid(field(alarm_audio, "m_audioClip")),
+        "ring_audio": guid(field(alarm_script, "ring"))
+    }
+
+    secret_player = next(t for t in secret.transforms.values() if secret.name(t) == "Player")
+    filename = next(t for t in secret.transforms.values() if secret.name(t) == "filename2")
+    filename_audio = secret.components(filename, 82)[0][2]
+    trigger = secret.components(filename, 136)[0][2]
+    filename_matrix = secret.matrix(filename)
+    trigger_scale = max(sum(filename_matrix[i][axis]**2 for i in range(3))**0.5 for axis in (0, 2))
+    px, _, pz = gm_point(secret.point(secret_player))
+    output['details']['secret'] = {
+        "player": [px, pz],
+        "filename2": source_billboard(secret, "filename2", "secret_filename2"),
+        "banana": source_billboard(secret, "Banana", "secret_banana"),
+        "trigger_radius": round(float(field(trigger, "m_Radius"))*trigger_scale*.2, 5),
+        "recording_audio": guid(field(filename_audio, "m_audioClip")),
+        "map_file": "secret_map.json",
+        "environment_file": "secret_environment.json"
+    }
     from import_unity_environment import export_environment
     environment = export_environment(unity, school, texture, textures, output['details'])
+    secret_map, _ = build_map(unity, {}, "Secret")
+    secret_actor_ids = set(secret.descendants(filename))
+    banana = next(t for t in secret.transforms.values() if secret.name(t) == "Banana")
+    secret_actor_ids.update(secret.descendants(banana))
+    secret_environment = export_environment(unity, secret, texture, textures, output['details'], secret_map,
+        secret_actor_ids, {'Environment', 'TemplateRoom', 'Hall_2Wall_Door', 'Desk', 'Chair', 'Baldi'})
     output['environment_file'] = 'school_environment.json'
     if args.inspect:
         print('DETAIL HUD', output['details']['hud'])
@@ -240,6 +427,8 @@ def main():
         saved = json.loads((ROOT / "datafiles/presentation.json").read_text(encoding="utf-8"))
         assert saved == output, "Presentation data differs from Unity"
         assert json.loads((ROOT/'datafiles/school_environment.json').read_text(encoding='utf-8')) == environment, 'Environment differs from Unity'
+        assert json.loads((ROOT/'datafiles/secret_map.json').read_text(encoding='utf-8')) == secret_map, 'Secret map differs from Unity'
+        assert json.loads((ROOT/'datafiles/secret_environment.json').read_text(encoding='utf-8')) == secret_environment, 'Secret environment differs from Unity'
         for asset in output["textures"].values():
             assert hashlib.sha256((unity / asset["source"]).read_bytes()).digest() == hashlib.sha256((ROOT / "datafiles" / asset["file"]).read_bytes()).digest(), asset["file"]
         print("Presentation parity OK: UI rectangles, world sprite references and all imported image bytes")
@@ -265,7 +454,18 @@ def main():
         include(path)
     include(Path("presentation.json"))
     include(Path('school_environment.json'))
+    include(Path('secret_map.json'))
+    include(Path('secret_environment.json'))
+    for material in secret_map['materials'].values():
+        path = Path(material['file'])
+        if material['source']:
+            destination = ROOT / 'datafiles' / path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(unity / material['source'], destination)
+        include(path)
     (ROOT/'datafiles/school_environment.json').write_text(json.dumps(environment,separators=(',',':'))+'\n',encoding='utf-8')
+    (ROOT/'datafiles/secret_map.json').write_text(json.dumps(secret_map,separators=(',',':'))+'\n',encoding='utf-8')
+    (ROOT/'datafiles/secret_environment.json').write_text(json.dumps(secret_environment,separators=(',',':'))+'\n',encoding='utf-8')
     (ROOT / "datafiles/presentation.json").write_text(json.dumps(output, indent=2)+"\n", encoding="utf-8")
     project.write_text(text, encoding="utf-8")
     print(f"Imported {len(output['textures'])} sprite references, {len(output['yctp'])} YCTP rectangles, {len(output['exit_signs'])} exit signs")

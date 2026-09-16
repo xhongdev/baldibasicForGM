@@ -12,14 +12,15 @@ function bb_ai_init(_n) {
 }
 
 function bb_ai_sound(_n,_name,_replace=false,_index=-1) {
-    if (!variable_struct_exists(_n.source.audio,_name)) return;
+    if (!variable_struct_exists(_n.source.audio,_name)) return -1;
     if (_n.sound!=-1 && audio_is_playing(_n.sound)) {
-        if (!_replace) return;
+        if (!_replace) return _n.sound;
         audio_stop_sound(_n.sound);
     }
     var _clip=_n.source.audio[$ _name];
     if (is_array(_clip)) _clip=_clip[(_index<0)?irandom(array_length(_clip)-1):clamp(_index,0,array_length(_clip)-1)];
     _n.sound=bb_world_sound(global.S.clips[$ _clip],_n.x,_n.z,2,24);
+    return _n.sound;
 }
 
 function bb_ai_target(_n,_hallway=true) {
@@ -40,6 +41,10 @@ function bb_ai_target(_n,_hallway=true) {
 
 function bb_ai_go(_n,_tx,_tz,_speed,_dt) {
     var _x=_n.x,_z=_n.z;
+    if (bb_blocked_world(_x,_z,.3,true)) {
+        var _recovered=bb_grid_recover_position(_x,_z,.3);
+        _x=_recovered[0];_z=_recovered[1];_n.x=_x;_n.z=_z;
+    }
     bb_npc_touch_doors(_x,_z,.4);
     var _p=bb_nav_advance(_x,_z,_tx,_tz,_speed*_dt,.3,true);
     _n.x=_p[0];_n.z=_p[1];

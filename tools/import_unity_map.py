@@ -6,6 +6,7 @@ import argparse
 from collections import Counter, deque
 import html
 import json
+import math
 from pathlib import Path
 import re
 import shutil
@@ -121,8 +122,8 @@ def guid(value):
     return match.group(1) if match else ""
 
 
-def build_map(unity, previous):
-    scene = UnityScene(unity / "Assets/Scene/Scenes/School.unity")
+def build_map(unity, previous, scene_name="School"):
+    scene = UnityScene(unity / f"Assets/Scene/Scenes/{scene_name}.unity")
     mats = material_names(unity)
     materials = material_data(unity)
     used_materials = {}
@@ -134,7 +135,7 @@ def build_map(unity, previous):
             continue
         name = scene.name(tid)
         path = scene.ancestry(tid)
-        if path[0] != "Environment":
+        if scene_name == "School" and path[0] != "Environment":
             continue
         parent = ref(field(scene.blocks[tid][1], "m_Father"))
         px, py, pz = [clean(v) for v in gm_point(scene.point(tid))]
@@ -174,14 +175,21 @@ def build_map(unity, previous):
             tile_x, _, tile_z = [clean(v) for v in gm_point(scene.point(parent))]
             side = ("e" if cx > tile_x else "w") if box[3]-box[0] < 0.001 else ("s" if cz > tile_z else "n")
             mat = mats.get(guid(field(script, "closed")), "")
+            open_mat = mats.get(guid(field(script, "open")), "")
             kind = "swing" if script_guid == SWING_SCRIPT else "faculty" if "Faculty" in mat else "class"
             # Use outside renderer geometry for UV orientation, barrier for collision.
+            in_block = scene.blocks[ref(field(script, "inside"))][1]
+            in_tid = scene.transforms[ref(field(in_block, "m_GameObject"))]
             out_block = scene.blocks[ref(field(script, "outside"))][1]
             out_tid = scene.transforms[ref(field(out_block, "m_GameObject"))]
             doors.append({"x": tile_x, "z": tile_z, "cx": cx, "cz": cz, "side": side,
                           "w": max(box[3]-box[0], box[5]-box[2]), "h": box[4]-box[1],
                           "kind": kind, "lock_start": kind == "swing", "v": plane(scene, out_tid),
+                          "v_inside": plane(scene, in_tid),
                           "bounds": box, "source_id": ident, "source_name": scene.name(parent)})
+            doors[-1].update(material=mat, open_material=open_mat)
+            used_materials[mat] = materials[mat]
+            used_materials[open_mat] = materials[open_mat]
     quads.sort(key=lambda q: (q["k"], q["z"], q["x"], q["bounds"][1], q["source_id"]))
     doors.sort(key=lambda d: (d["kind"], d["z"], d["x"]))
     notebooks.sort(key=lambda n: (n["z"], n["x"]), reverse=True)
@@ -189,7 +197,19 @@ def build_map(unity, previous):
     for i, notebook in enumerate(notebooks):
         notebook["spr"] = "spr_nb_" + colours[i % 7]
     result = dict(previous)
-    result.update(schema=2, source="Unity Classic 1.4.3 mesh planes (parent TRS)", quads=quads, doors=doors, notebooks=notebooks, exits=exits, materials=used_materials)
+    if "player" not in result:
+        player = next(t for t in scene.transforms.values() if scene.name(t) == "Player")
+        result["player"] = list(gm_point(scene.point(player)))
+    if scene_name == "Secret":
+        player = next(t for t in scene.transforms.values() if scene.name(t) == "Player")
+        camera = next(t for t in scene.transforms.values() if scene.name(t) == "Main Camera")
+        origin = gm_point(scene.point(player))
+        forward = gm_point(scene.point(player, (0, 0, 1)))
+        result["camera"] = list(gm_point(scene.point(camera)))
+        result["player_yaw"] = round(math.atan2(origin[0]-forward[0], origin[2]-forward[2]), 6)
+    result.update(schema=2, scene=scene_name,
+                  source=f"Unity Classic 1.4.3 {scene_name}.unity mesh planes (parent TRS)",
+                  quads=quads, doors=doors, notebooks=notebooks, exits=exits, materials=used_materials)
     result["nav_edges"] = build_nav_edges(result)
     return result, source_counts
 
@@ -229,18 +249,21 @@ def build_nav_edges(data):
     return edges
 
 
-def validate(data):
+def validate(data, school=True):
     floors = {(q["x"], q["z"]) for q in data["quads"] if q["k"] == "floor"}
     walls = wall_boxes(data)
-    assert len(floors) > 600
-    assert len(data["doors"]) == 23, f"Unexpected scripted door count: {len(data['doors'])}"
-    assert len(data["notebooks"]) == 7
-    assert len(data["exits"]) == 4
+    assert floors, "Scene has no walkable floor geometry"
+    if school:
+        assert len(floors) > 600
+        assert len(data["doors"]) == 23, f"Unexpected scripted door count: {len(data['doors'])}"
+        assert len(data["notebooks"]) == 7
+        assert len(data["exits"]) == 4
     for d in data["doors"]:
         dx, dz = DELTA[d["side"]]
         assert (d["x"], d["z"]) in floors and (d["x"]+dx, d["z"]+dz) in floors, ("door faces missing floor", d)
         assert not hits_wall(d["cx"], d["cz"], walls), ("door blocked by wall", d)
         assert abs(d["w"]-(2 if d["kind"] == "swing" else 1)) < 0.001, d
+        assert bounds(d["v"]) == bounds(d["v_inside"]), ("door faces do not coincide", d)
     graph = {p: [] for p in floors}
     for e in data["nav_edges"]:
         graph[tuple(e["a"])].append(tuple(e["b"]))
@@ -252,6 +275,8 @@ def validate(data):
             if nb not in seen: seen.add(nb); queue.append(nb)
     for n in data["notebooks"]:
         assert (round(n["x"]/2)*2, round(n["z"]/2)*2) in seen, ("unreachable notebook", n)
+    if not school:
+        assert start in seen, ("unreachable player spawn", data["player"])
     return {"floors": len(floors), "reachable_floors": len(seen), "wall_surfaces": sum(q["k"] == "wall" for q in data["quads"]),
             "collision_walls": len(walls), "doors": len(data["doors"]), "notebooks": len(data["notebooks"]), "nav_edges": len(data["nav_edges"])}
 
@@ -289,15 +314,16 @@ def main():
     parser.add_argument("--write", action="store_true", help="Write only after all geometry checks pass")
     parser.add_argument("--check", action="store_true", help="Assert the checked-in map matches Unity")
     parser.add_argument("--verbose", action="store_true", help="Print all door coordinates and source material counts")
+    parser.add_argument("--scene", choices=("School", "Secret"), default="School")
     args = parser.parse_args()
-    target = ROOT / "datafiles/school_map.json"
-    old = json.loads(target.read_text(encoding="utf-8"))
-    data, counts = build_map(args.unity, old)
+    target = ROOT / ("datafiles/school_map.json" if args.scene == "School" else "datafiles/secret_map.json")
+    old = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
+    data, counts = build_map(args.unity, old, args.scene)
     if args.verbose:
         for d in data["doors"]:
             print(f'{d["kind"]:7} {d["source_name"]:30} tile=({d["x"]:5},{d["z"]:6}) face={d["side"]} center=({d["cx"]:5},{d["cz"]:6}) width={d["w"]}')
         print("Source:", dict(counts))
-    stats = validate(data)
+    stats = validate(data, args.scene == "School")
     print("Validated:", json.dumps(stats))
     if args.check:
         assert old == data, "Map differs from source; run --write to regenerate"
@@ -305,10 +331,11 @@ def main():
     if args.write:
         copy_materials(data, args.unity)
         preview = ROOT / "tools/unity_map_comparison.svg"
-        if old.get("schema") != 2 or not preview.exists():
+        if args.scene == "School" and (old.get("schema") != 2 or not preview.exists()):
             write_preview(data, old, preview)
         target.write_text(json.dumps(data, separators=(",", ":")) + "\n", encoding="utf-8")
-        (ROOT / "tools/unity_map_report.json").write_text(json.dumps(stats, indent=2) + "\n", encoding="utf-8")
+        report = "unity_map_report.json" if args.scene == "School" else "unity_secret_map_report.json"
+        (ROOT / "tools" / report).write_text(json.dumps(stats, indent=2) + "\n", encoding="utf-8")
         print("Wrote source-derived map and comparison SVG")
 
 

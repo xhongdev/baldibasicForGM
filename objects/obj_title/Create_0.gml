@@ -1,9 +1,10 @@
 menu_page = "title";
 test_title_frames = 0;
-menu_selection = 0;
+menu_selection = -1;
 menu_buttons = bb_menu_layout(menu_page);
 menu_mouse_x = device_mouse_x_to_gui(0);
 menu_mouse_y = device_mouse_y_to_gui(0);
+menu_drag_slider = false;
 audio_stop_all();
 audio_play_sound(snd_mus_intro, 1, false);
 audio_play_sound(snd_bal_menu, 2, false);

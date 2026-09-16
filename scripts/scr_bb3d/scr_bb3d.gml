@@ -173,6 +173,7 @@ function bb3d_mat_alpha(_m) {
 
 function bb3d_build_map(_map) {
     bb3d_free_batches();
+    var _school_details = !variable_struct_exists(_map, "scene") || _map.scene == "School";
     if (variable_struct_exists(_map, "materials")) {
         if (!variable_global_exists("map_textures")) global.map_textures = {};
         var _materials = variable_struct_get_names(_map.materials);
@@ -188,7 +189,8 @@ function bb3d_build_map(_map) {
     var _i;
     for (_i = 0; _i < array_length(_quads); _i++) {
         var _q = _quads[_i];
-        if (variable_struct_exists(_q, "source_id") && variable_struct_exists(global.P.details.dynamic_ids, _q.source_id)) continue;
+        if (_school_details && variable_struct_exists(_q, "source_id")
+            && variable_struct_exists(global.P.details.dynamic_ids, _q.source_id)) continue;
         var _key = variable_struct_exists(_q, "material") ? _q.material : _q.m + (_q.d ? "_d" : "");
         if (!variable_struct_exists(_groups, _key)) {
             _groups[$ _key] = [];
@@ -234,6 +236,11 @@ function bb3d_build_map(_map) {
     }
 }
 
+function bb3d_sprite_uv_transform(_spr) {
+    var _uv=sprite_get_uvs(_spr,0);
+    return [_uv[2]-_uv[0],_uv[3]-_uv[1],_uv[0],_uv[1]];
+}
+
 function bb3d_emit_vertices(_vb, _v, _uv, _col) {
     if (array_length(_v[0]) >= 5) {
         var _order = [0, 1, 2, 0, 2, 3];
@@ -253,7 +260,7 @@ function bb3d_emit_vertices(_vb, _v, _uv, _col) {
         _v[3][0], _v[3][1], _v[3][2], _u0, _v0, _col, 1);
 }
 
-function bb3d_begin(_px, _py, _pz, _yaw, _aspect) {
+function bb3d_begin(_px, _py, _pz, _yaw, _aspect, _far = 220) {
     if (!variable_global_exists("matrix_stack")) global.matrix_stack = [];
     array_push(global.matrix_stack, [matrix_get(matrix_world), matrix_get(matrix_view), matrix_get(matrix_projection)]);
     // GM 3D frame (not Unity): Y up, yaw 0 looks -Z, +X is right.
@@ -270,7 +277,7 @@ function bb3d_begin(_px, _py, _pz, _yaw, _aspect) {
     gpu_set_alphatestref(16);
     draw_clear(make_colour_rgb(140, 190, 230));
     var _fov = 75;
-    var _proj = matrix_build_projection_perspective_fov(_fov, -_aspect, 0.08, 220);
+    var _proj = matrix_build_projection_perspective_fov(_fov, -_aspect, 0.08, _far);
     matrix_set(matrix_projection, _proj);
     var _fx = -sin(_yaw);
     var _fz = -cos(_yaw);

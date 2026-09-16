@@ -11,6 +11,8 @@ class PresentationTests(unittest.TestCase):
     def setUpClass(cls):
         cls.p = json.loads((ROOT / "datafiles/presentation.json").read_text(encoding="utf-8"))
         cls.map = json.loads((ROOT / "datafiles/school_map.json").read_text(encoding="utf-8"))
+        cls.secret_map = json.loads((ROOT / "datafiles/secret_map.json").read_text(encoding="utf-8"))
+        cls.secret_environment = json.loads((ROOT / "datafiles/secret_environment.json").read_text(encoding="utf-8"))
 
     def test_wall_text_runs_left_to_right_on_visible_face(self):
         checked = set()
@@ -66,6 +68,42 @@ class PresentationTests(unittest.TestCase):
             self.assertGreaterEqual(y, 0)
             self.assertLessEqual(x+w, 640)
             self.assertLessEqual(y+h, 480)
+
+    def test_main_menu_uses_source_pages_and_sprite_crops(self):
+        menu = self.p['menu']
+        self.assertEqual(len(menu['buttons']), 18)
+        self.assertEqual(menu['buttons']['start']['rect'], [192, 392, 256, 128])
+        self.assertEqual(menu['buttons']['exit']['rect'], [543.9999, -32, 128, 128])
+        self.assertTrue(menu['buttons']['start']['preserve'])
+        self.assertEqual(menu['buttons']['start']['normal']['crop'], [0, 0, 256, 128])
+        self.assertEqual(menu['buttons']['start']['normal']['sprite_rect'],
+                         [77.0761, 51.0268, 102.8478, 26.9465])
+        self.assertNotEqual(menu['buttons']['start']['normal'], menu['buttons']['start']['selected'])
+        self.assertEqual(menu['buttons']['start']['hit'], [262.0761, 439.0267, 113.8478, 42.8971])
+        self.assertEqual(menu['buttons']['exit']['hit'], [575.0499, -.9239, 66.8739, 72.8478])
+        self.assertLess(menu['buttons']['story']['hit'][0] + menu['buttons']['story']['hit'][2], 240)
+        self.assertGreater(menu['buttons']['endless']['hit'][0], 400)
+        for button in menu['buttons'].values():
+            normal = self.p['textures'][button['normal']['texture']]['size']
+            selected = self.p['textures'][button['selected']['texture']]['size']
+            self.assertEqual(button['normal']['crop'], [0, 0, *normal])
+            self.assertEqual(button['selected']['crop'], [0, 0, *selected])
+            self.assertEqual(normal, selected)
+            self.assertAlmostEqual(button['normal']['sprite_rect'][1],
+                                   button['selected']['sprite_rect'][1], places=3)
+            self.assertLessEqual(button['hit'][2], button['rect'][2])
+            self.assertLessEqual(button['hit'][3], button['rect'][3])
+        self.assertEqual(menu['buttons']['turn']['hit'], [240, 102, 160, 20])
+        self.assertEqual((menu['slider']['min'], menu['slider']['max']), (.1, 10))
+        self.assertEqual(menu['slider']['track'], [250, 390])
+        for page in ('story', 'credits'):
+            self.assertEqual(menu['backgrounds'][page]['rect'], [0, 0, 640, 480])
+            texture = menu['backgrounds'][page]['asset']['texture']
+            self.assertEqual(self.p['textures'][texture]['size'], [640, 480])
+        self.assertAlmostEqual(menu['text']['story']['font_size'], 32 * .8435828, places=3)
+        self.assertAlmostEqual(menu['text']['endless']['font_size'], 36 * .8435828, places=3)
+        self.assertEqual(menu['text']['controls']['font_size'], 24)
+        self.assertEqual(menu['text']['controls']['line_spacing'], 16)
 
     def test_think_pad_opaque_layers_and_text_styles(self):
         ui = self.p['yctp']
@@ -129,6 +167,28 @@ class PresentationTests(unittest.TestCase):
         self.assertEqual(hud['rope_instruction']['text'], 'Time to jump rope!')
         self.assertEqual(hud['rope_count']['rect'], [240, 288, 160, 40])
         self.assertEqual(len(self.p['details']['rope_frames']), 16)
+
+    def test_secret_uses_its_own_source_scene(self):
+        secret = self.p['details']['secret']
+        self.assertEqual((secret['map_file'], secret['environment_file']),
+                         ('secret_map.json', 'secret_environment.json'))
+        self.assertEqual(self.secret_map['scene'], 'Secret')
+        self.assertEqual(self.secret_environment['source_scene'], 'Secret')
+        self.assertEqual(self.secret_map['player'], [0, .8, -11])
+        self.assertEqual(self.secret_map['camera'], [0, 1, -11])
+        self.assertAlmostEqual(self.secret_map['player_yaw'], 3.141593)
+        self.assertEqual(sum(q['k'] == 'floor' for q in self.secret_map['quads']), 28)
+        self.assertEqual((len(self.secret_map['doors']), len(self.secret_map['notebooks']),
+                          len(self.secret_map['exits'])), (1, 0, 0))
+        door = self.secret_map['doors'][0]
+        self.assertEqual((door['material'], door['open_material']), ('BaldiDoor', 'BaldiDoorOpen'))
+        self.assertEqual((len(self.secret_environment['meshes']), len(self.secret_environment['billboards']),
+                          len(self.secret_environment['colliders'])), (2, 1, 2))
+        self.assertTrue(self.p['textures'][self.secret_environment['billboards'][0]['texture']]['source']
+                        .endswith('/Characters/Baldi/Angry/Baldi_Slap0024.png'))
+        self.assertNotIn('message', secret)
+        self.assertEqual((secret['filename2']['x'], secret['filename2']['z']), (.964, -34.654))
+        self.assertEqual((secret['banana']['x'], secret['banana']['z']), (.412, -33.864))
 
 
 if __name__ == "__main__": unittest.main()

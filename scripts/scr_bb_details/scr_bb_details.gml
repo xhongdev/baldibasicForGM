@@ -1,7 +1,8 @@
 function bb_detail_meshes(_meshes, _dy = 0, _wall = "", _map = undefined) {
     if (array_length(_meshes)==0) return;
     if (!variable_global_exists("detail_cache")) global.detail_cache={};
-    var _key=_meshes[0].source_id+"|"+_wall+"|"+(is_undefined(_map)?"":_map.texture);
+    var _scene=variable_struct_exists(global.E,"source_scene")?global.E.source_scene:"School";
+    var _key=_scene+"|"+_meshes[0].source_id+"|"+_wall+"|"+(is_undefined(_map)?"":_map.texture);
     if (!variable_struct_exists(global.detail_cache,_key)) {
         var _groups={};
         for (var _i=0; _i<array_length(_meshes); _i++) {
@@ -57,14 +58,17 @@ function bb_detail_wall(_b, _dy, _furniture=false) {
 
 function bb_refresh_details() {
     global.walls = variable_clone(global.static_walls);
-    var _keys = variable_struct_get_names(global.P.details.props);
-    for (var _i = 0; _i < array_length(_keys); _i++) {
-        var _prop = global.P.details.props[$ _keys[_i]];
-        for (var _j = 0; _j < array_length(_prop.colliders); _j++) bb_detail_wall(_prop.colliders[_j], 0);
-    }
-    for (var _i = 0; _i < array_length(global.G.exits); _i++) {
-        var _e = global.G.exits[_i];
-        for (var _j = 0; _j < array_length(_e.source.colliders); _j++) bb_detail_wall(_e.source.colliders[_j], _e.down ? -2 : 0);
+    var _school_details = !variable_struct_exists(global.map, "scene") || global.map.scene == "School";
+    if (_school_details) {
+        var _keys = variable_struct_get_names(global.P.details.props);
+        for (var _i = 0; _i < array_length(_keys); _i++) {
+            var _prop = global.P.details.props[$ _keys[_i]];
+            for (var _j = 0; _j < array_length(_prop.colliders); _j++) bb_detail_wall(_prop.colliders[_j], 0);
+        }
+        for (var _i = 0; _i < array_length(global.G.exits); _i++) {
+            var _e = global.G.exits[_i];
+            for (var _j = 0; _j < array_length(_e.source.colliders); _j++) bb_detail_wall(_e.source.colliders[_j], _e.down ? -2 : 0);
+        }
     }
     for (var _i=0; _i<array_length(global.E.colliders); _i++) bb_detail_wall(global.E.colliders[_i],0,true);
     bb_spatial_build();
@@ -113,6 +117,7 @@ function bb_win_game() {
     var _g = global.G;
     if (_g.win) return;
     _g.win = true; _g.over_t = 0;
+    _g.win_exit_delay = 0; _g.end_requested = false;
     var _channels = variable_struct_get_names(_g.voices);
     for (var _i = 0; _i < array_length(_channels); _i++) bb_voice_clear(_channels[_i]);
     audio_stop_all();

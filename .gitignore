@@ -68,7 +68,7 @@ Build
 .opencode
 
 # Other
-tools
-folders
+tools/
+folders/
 
 PORTING.md

@@ -2,6 +2,7 @@
 function bb_debug_init() {
     global.G.debug = {
         open:false, tab:0, page:0, buttons:[], pages:1,
+        actor:-1,
         god:false, noclip:false, stamina:false, items:false, no_rules:false,
         freeze_baldi:false, freeze_npcs:false, free_doors:false, fast:false,
         status:"Choose a tab. Changes apply immediately."
@@ -179,6 +180,55 @@ function bb_debug_baldi_here() {
     _g.debug.status = _found ? "Baldi placed ahead. Close menu to test." : "Face an open corridor with at least 2 units of space.";
 }
 
+function bb_debug_actor_name(_actor) {
+    if (_actor < 0) return "Baldi";
+    var _kind = global.G.npcs[_actor].kind;
+    switch (_kind) {
+        case "principal": return "Principal";
+        case "playtime": return "Playtime";
+        case "bully": return "Bully";
+        case "sweep": return "Gotta Sweep";
+        case "crafters": return "Arts and Crafters";
+        case "prize": return "1st Prize";
+    }
+    return _kind;
+}
+
+function bb_debug_actor_position(_actor) {
+    var _g = global.G;
+    if (_actor < 0) return [_g.baldi_x, _g.baldi_z];
+    return [_g.npcs[_actor].x, _g.npcs[_actor].z];
+}
+
+function bb_debug_place_actor(_actor, _x, _z) {
+    var _g = global.G;
+    if (!_g.spoop_mode) bb_activate_spoop();
+    if (_actor < 0) {
+        _g.baldi_x = _x; _g.baldi_z = _z; _g.baldi_move = 0; _g.baldi_cd = 1;
+        _g.baldi_sprayed = false; _g.hear_x = _g.px; _g.hear_z = _g.pz; _g.hear_pri = 0;
+    } else {
+        var _n = _g.npcs[_actor];
+        _n.x = _x; _n.z = _z; _n.live = true; _n.visible = true;
+        _n.target_ready = false; _n.stuck = 0; _n.sprayed = false;
+        if (_n.kind == "bully") { _n.mode = "active"; _n.active_time = 0; }
+        if (_n.kind == "crafters") _n.force_show = 5;
+    }
+    _g.debug.status = bb_debug_actor_name(_actor) + " moved to X="
+        + string_format(_x, 0, 2) + " Z=" + string_format(_z, 0, 2);
+}
+
+function bb_debug_actor_ahead(_actor) {
+    var _g = global.G, _fx = -sin(_g.yaw), _fz = -cos(_g.yaw);
+    for (var _distance=3; _distance>=1; _distance-=.5) {
+        var _x = _g.px+_fx*_distance, _z = _g.pz+_fz*_distance;
+        if (!bb_blocked_world(_x, _z, .3, true)) {
+            bb_debug_place_actor(_actor, _x, _z);
+            return;
+        }
+    }
+    bb_debug_place_actor(_actor, _g.px, _g.pz);
+}
+
 function bb_debug_action(_action, _value = 0) {
     var _g = global.G, _d = _g.debug;
     switch (_action) {
@@ -214,6 +264,13 @@ function bb_debug_action(_action, _value = 0) {
         case "prop": var _p = _g.props[_value]; bb_debug_focus(_p.x, _p.z); break;
         case "exit": var _e = global.P.exit_signs[_value]; bb_debug_focus(_e.x, _e.z); break;
         case "door": var _door = _g.doors[_value]; var _face = bb_door_face(_door); bb_debug_teleport(_door.x, _door.z, _face[0], _face[1]); break;
+        case "actor": _d.actor = _value; _d.status = "Selected " + bb_debug_actor_name(_value) + "."; break;
+        case "actor_here": bb_debug_place_actor(_d.actor, _g.px, _g.pz); break;
+        case "actor_ahead": bb_debug_actor_ahead(_d.actor); break;
+        case "actor_go":
+            var _actor_position = bb_debug_actor_position(_d.actor);
+            bb_debug_focus(_actor_position[0], _actor_position[1]);
+            break;
         case "chase": bb_activate_spoop(); _d.status = "Pursuit active."; break;
         case "baldi_here": bb_debug_baldi_here(); break;
         case "soda_test":
@@ -304,6 +361,13 @@ function bb_debug_layout() {
             break;
         case 2:
             array_push(_rows, ["Spawn", "spawn", 0], ["Principal's office", "office", 0]);
+            array_push(_rows, [(_d.actor == -1 ? "[SELECTED] " : "Select ")+"Baldi", "actor", -1]);
+            for (var _i=0; _i<array_length(_g.npcs); _i++) {
+                array_push(_rows, [(_d.actor == _i ? "[SELECTED] " : "Select ")+bb_debug_actor_name(_i), "actor", _i]);
+            }
+            array_push(_rows, ["Bring selected actor here", "actor_here", 0],
+                ["Place selected actor ahead", "actor_ahead", 0],
+                ["Teleport player to selected actor", "actor_go", 0]);
             for (var _i = 0; _i < array_length(_g.notebooks_list); _i++) array_push(_rows, ["Notebook " + string(_i+1), "notebook", _i]);
             for (var _i = 0; _i < array_length(_g.props); _i++) array_push(_rows, [_g.props[_i].name + " " + string(_i+1), "prop", _i]);
             for (var _i = 0; _i < array_length(global.P.exit_signs); _i++) array_push(_rows, ["Exit sign " + string(_i+1), "exit", _i]);

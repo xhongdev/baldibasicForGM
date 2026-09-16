@@ -62,9 +62,12 @@ def main():
         raise SystemExit("gm-cli Runner checks failed; see .gmcache/build-gms2-windows-VM/selftest_combined.log")
     saves = Path(os.environ["LOCALAPPDATA"]) / "baldibasicForGM"
     for name in ("bb_hud_check.png", "bb_yctp_check.png", "bb_yctp_corrupt_check.png", "bb_school_window.png",
-                 "bb_yctp_window.png", "bb_cheat_menu.png", "bb_boots_check.png", "bb_rope_check.png",
-                 "bb_detention_check.png", "bb_exit_map_check.png", "bb_vending_check.png", "bb_menu_title.png",
-                 "bb_menu_modes.png", "bb_menu_options.png", "bb_menu_controls.png"):
+                  "bb_yctp_window.png", "bb_cheat_menu.png", "bb_boots_check.png", "bb_rope_check.png",
+                  "bb_detention_check.png", "bb_exit_map_check.png", "bb_vending_check.png", "bb_menu_title.png",
+                   "bb_menu_modes.png", "bb_menu_menu.png", "bb_menu_options.png", "bb_menu_story_info.png",
+                   "bb_menu_credits.png", "bb_menu_controls.png", "bb_secret_front_check.png",
+                  "bb_secret_back_check.png", "bb_secret_door_check.png", "bb_door_out_check.png",
+                  "bb_door_in_check.png"):
         if (saves / name).exists():
             shutil.copy2(saves / name, CACHE / name)
     print("Presentation captures: .gmcache/build-gms2-windows-VM/bb_*check.png and bb_*window.png")

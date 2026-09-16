@@ -31,6 +31,10 @@ function bb_world_sound(_clip, _x, _z, _priority = 2, _range = 24) {
     return bb_sound_play(_clip, false, _priority, bb_world_gain(_x, _z, _range));
 }
 
+function bb_world_loop(_clip, _x, _z, _priority = 2, _range = 24) {
+    return bb_sound_play(_clip, true, _priority, bb_world_gain(_x, _z, _range));
+}
+
 function bb_voice_clear(_channel) {
     var _v = global.G.voices[$ _channel];
     if (_v.handle != -1) audio_stop_sound(_v.handle);
@@ -104,8 +108,8 @@ function bb_math_voice_problem() {
 
 function bb_finale_audio(_stage) {
     var _g = global.G;
-    // These cues share Unity's GameController AudioSource.
-    bb_voice_clear("tutor");
+    // Unity uses PlayOneShot for these cues, so Baldi's AllNotebooks line
+    // continues over the first exit switch and machine loop.
     if (_g.finale_sound != -1) audio_stop_sound(_g.finale_sound);
     if (_g.finale_switch != -1) audio_stop_sound(_g.finale_switch);
     _g.finale_remaining = 0;

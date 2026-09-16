@@ -7,6 +7,45 @@ function bb_test_assert(_ok, _message) {
     }
 }
 
+function bb_test_menu_source() {
+    var _menu=global.P.menu,_keys=variable_struct_get_names(_menu.buttons);
+    bb_test_assert(sprite_get_width(spr_title)==640 && sprite_get_height(spr_title)==480,
+        "original spr_title remains the 640x480 main-menu background");
+    bb_test_assert(array_length(_keys)==18,"source main menu imports all 18 interactive visual states");
+    for (var _i=0;_i<array_length(_keys);_i++) {
+        var _button=_menu.buttons[$ _keys[_i]];
+        var _normal=global.PS[$ _button.normal.texture],_selected=global.PS[$ _button.selected.texture];
+        bb_test_assert(sprite_exists(_normal) && sprite_exists(_selected)
+            && _button.normal.crop[2]==sprite_get_width(_normal)
+            && _button.normal.crop[3]==sprite_get_height(_normal)
+            && _button.selected.crop[2]==sprite_get_width(_selected)
+            && _button.selected.crop[3]==sprite_get_height(_selected),
+            "menu button preserves full source canvas across visual states "+_keys[_i]);
+    }
+    var _start=_menu.buttons.start.rect,_exit=_menu.buttons.exit.rect;
+    var _start_hit=_menu.buttons.start.hit,_exit_hit=_menu.buttons.exit.hit;
+    bb_test_assert(_start[0]==192 && _start[1]==392 && _start[2]==256 && _start[3]==128,
+        "START uses the source MainMenu RectTransform");
+    bb_test_assert(_exit[0]>543 && _exit[1]==-32 && _menu.buttons.start.preserve
+        && _start_hit[2]<_start[2]*.5 && _start_hit[3]<_start[3]*.5
+        && _exit_hit[2]<_exit[2]*.6 && _exit_hit[3]<_exit[3]*.6,
+        "main buttons draw at source alignment but only visible art is interactive");
+    var _story_bg=_menu.backgrounds.story.rect,_credits_bg=_menu.backgrounds.credits.rect;
+    var _story_hit=_menu.buttons.story.hit,_endless_hit=_menu.buttons.endless.hit;
+    bb_test_assert(_story_bg[0]==0 && _story_bg[1]==0 && _story_bg[2]==640 && _story_bg[3]==480
+        && _credits_bg[0]==0 && _credits_bg[1]==0 && _credits_bg[2]==640 && _credits_bg[3]==480,
+        "Story and Credits retain full 640x480 source pages");
+    bb_test_assert(_story_hit[0]+_story_hit[2]<240 && _endless_hit[0]>400,
+        "mode selection hit regions stay on their visible left and right artwork");
+    bb_test_assert(_menu.slider.min==.1 && _menu.slider.max==10
+        && _menu.slider.track[0]==250 && _menu.slider.track[1]==390,
+        "options sensitivity slider retains source range and track");
+    bb_test_assert(abs(_menu.text.story.font_size-26.9946)<.001
+        && abs(_menu.text.endless.font_size-30.369)<.001
+        && _menu.text.controls.font_size==24 && _menu.text.controls.line_spacing==16,
+        "menu TMP sizes include each source RectTransform scale");
+}
+
 function bb_run_selftests() {
     global.test_total = 0;
     global.test_failed = 0;
@@ -16,6 +55,7 @@ function bb_run_selftests() {
     bb_test_assert(array_length(_g.doors) == 23, "23 authored doors");
     bb_test_assert(array_length(_g.notebooks_list) == 7, "7 authored notebooks");
     bb_test_assert(ds_map_size(global.floors) == 682, "682 floor tiles");
+    bb_test_menu_source();
     var _tex = variable_struct_get_names(global.map_textures);
     for (var _i = 0; _i < array_length(_tex); _i++) {
         bb_test_assert(sprite_exists(global.map_textures[$ _tex[_i]]), "texture loaded: " + _tex[_i]);
@@ -96,11 +136,15 @@ function bb_run_selftests() {
     bb_test_assert(bb_use_item() && _g.stamina == 200 && _g.inv[0] == -1, "zesty consumption");
     _g.inv[0] = 7;
     bb_use_item();
+    var _alarm_tick = _g.alarms[0].sound;
+    bb_test_assert(_alarm_tick != -1 && audio_is_playing(_alarm_tick)
+        && global.P.details.alarm_drop.w == 2.56, "dropped alarm uses source size and ticking loop");
     _g.baldi_active = true; _g.hear_pri = 0;
     bb_update_item_effects(29);
     bb_test_assert(!_g.alarms[0].rang, "alarm waits 30 seconds");
     bb_update_item_effects(1);
-    bb_test_assert(_g.alarms[0].rang && _g.hear_pri == 8, "alarm hearing priority");
+    bb_test_assert(_g.alarms[0].rang && _g.hear_pri == 8 && !audio_is_playing(_alarm_tick)
+        && _g.alarms[0].sound != _alarm_tick, "alarm stops ticking, rings, and gets hearing priority");
     _g.anti_hear = 30;
     var _hear_x = _g.hear_x;
     bb_hear_pri(100, 100, 9);
@@ -108,6 +152,14 @@ function bb_run_selftests() {
     bb_start_playtime();
     bb_rope_tick(2.1, false);
     bb_test_assert(_g.play_need == 5 && _g.rope_delay > 1, "missed rope resets progress");
+    var _oops = _g.rope_wait_sound, _oops_delay = _g.rope_delay, _oops_time = _g.rope_wait_time;
+    bb_rope_tick(1, false);
+    bb_test_assert(_g.rope_wait_sound == _oops && _g.rope_delay == _oops_delay
+        && _g.rope_wait_time <= _oops_time && _g.rope_wait_time > 0,
+        "missed rope waits for the complete Oops instance");
+    if (_oops != -1) audio_stop_sound(_oops); else _g.rope_wait_time = .01;
+    bb_rope_tick(.02, false);
+    bb_test_assert(_g.rope_wait_sound == -1 && _g.rope_time > .9, "rope restarts after Oops finishes");
     _g.inv[0] = 9;
     bb_test_assert(bb_use_item() && _g.play_lock == 0, "scissors release rope");
     bb_test_soda_audio();
@@ -118,6 +170,7 @@ function bb_run_selftests() {
     bb_test_scene_details();
     bb_test_stationary_navigation();
     bb_test_restored_gameplay();
+    bb_test_end_states();
     bb_test_ai_profile();
     audio_stop_all();
     window_mouse_set_locked(false);
@@ -249,6 +302,115 @@ function bb_test_stationary_navigation() {
     }
     var _pos = bb_nav_advance(0, -2, 0, -4, 0.25, 0.28, true);
     bb_test_assert(_pos[0] == 0 && abs(_pos[1]+2.25) < 0.0001, "navigation resumes normally toward a new target after arrival");
+    var _center_checked = 0, _keys = ds_map_keys_to_array(global.nav_n);
+    for (var _i=0; _i<array_length(_keys) && _center_checked<16; _i++) {
+        var _parts = string_split(_keys[_i], ","), _cx0 = real(_parts[0]), _cz0 = real(_parts[1]);
+        var _corridor = bb_nav_corridor(_cx0, _cz0), _old_x = _cx0, _old_z = _cz0;
+        if (_corridor[0] == 1) _old_x += .3; else if (_corridor[0] == 2) _old_z += .3; else continue;
+        var _near_door=false;
+        for (var _di=0;_di<array_length(global.G.doors);_di++) {
+            if (bb_dist2(_cx0,_cz0,global.G.doors[_di].cx,global.G.doors[_di].cz)<4) {_near_door=true;break;}
+        }
+        if (_near_door || bb_blocked_world(_old_x, _old_z, .28, true)
+            || bb_walls_segment(_old_x,_old_z,_cx0,_cz0,.28)) continue;
+        var _neighbors=ds_map_find_value(global.nav_n,_keys[_i]);
+        if (array_length(_neighbors)==0) continue;
+        var _target_parts=string_split(_neighbors[0],",");
+        var _target_x=real(_target_parts[0]),_target_z=real(_target_parts[1]);
+        var _weighted_start=bb_grid_nearest(_old_x,_old_z);
+        var _weighted_wp=bb_grid_step(_old_x,_old_z,_target_x,_target_z);
+        var _center = bb_nav_advance(_old_x,_old_z,_target_x,_target_z,.3,.28,true);
+        var _before = (_corridor[0] == 1) ? abs(_old_x-_cx0) : abs(_old_z-_cz0);
+        var _after = (_corridor[0] == 1) ? abs(_center[0]-_cx0) : abs(_center[1]-_cz0);
+        bb_test_assert(_after<.08 && _after<_before
+            && bb_dist2(_old_x,_old_z,_center[0],_center[1])>0,
+            "weighted NPC route enters corridor center "+string(_center_checked)
+            +" axis="+string(_corridor[0])+" from="+string([_old_x,_old_z])
+            +" grid="+string([global.path_grid.xs[_weighted_start],global.path_grid.zs[_weighted_start]])
+            +" waypoint="+string(_weighted_wp)+" target="+string([_target_x,_target_z])
+            +" result="+string(_center));
+        var _slap=bb_nav_advance(_old_x,_old_z,
+            _target_x,_target_z,3,.28,true);
+        var _slap_offset=(_corridor[0]==1)?abs(_slap[0]-_cx0):abs(_slap[1]-_cz0);
+        bb_test_assert(_slap_offset < .01 && !bb_blocked_world(_slap[0],_slap[1],.28,true),
+            "weighted Baldi route stays on corridor center "+string(_center_checked));
+        _center_checked+=1;
+    }
+    bb_test_assert(_center_checked>=12, "weighted centering covers representative school corridors");
+    // Locker.png occupies x=5.0..5.4 along this source hallway. A westbound
+    // spray may displace Baldi up to its collision edge, then route recovery
+    // must pull him back to the x=6 road center without entering the lockers.
+    var _locker_push=bb_move_slide(6,-46.4,-.8,0,.28,true);
+    bb_test_assert(_locker_push[0]<6 && _locker_push[0]>5.6
+        && !bb_blocked_world(_locker_push[0],_locker_push[1],.28,true),
+        "BSODA displacement stops outside the Locker.png collision strip");
+    var _locker_recover=bb_nav_advance(_locker_push[0],_locker_push[1],6,-44,3,.28,true);
+    bb_test_assert(abs(_locker_recover[0]-6)<.01
+        && !bb_blocked_world(_locker_recover[0],_locker_recover[1],.28,true),
+        "AI route returns from Locker.png to the road center at full movement speed");
+    var _playtime=undefined;
+    for (var _i=0;_i<array_length(global.G.npcs);_i++) {
+        if (global.G.npcs[_i].kind=="playtime") {_playtime=global.G.npcs[_i];break;}
+    }
+    var _play_spawn_x=_playtime.source.spawn[0],_play_spawn_z=_playtime.source.spawn[1];
+    bb_test_assert(bb_blocked_world(_play_spawn_x,_play_spawn_z,.3,true)
+        && !bb_blocked_world(_playtime.x,_playtime.z,.3,true),
+        "Playtime source spawn is recovered from the long-corridor wall margin");
+    _playtime.x=_play_spawn_x;_playtime.z=_play_spawn_z;
+    for (var _step=0;_step<120;_step++) bb_ai_go(_playtime,-22,-48,4,1/60);
+    bb_test_assert(!bb_blocked_world(_playtime.x,_playtime.z,.3,true)
+        && bb_dist2(_playtime.x,_playtime.z,_play_spawn_x,_play_spawn_z)>16,
+        "Playtime escapes the authored wall overlap and travels down the long corridor");
+    // Classroom chairs are dense enough that a continuous position can round
+    // to a grid node on the chair's far side. Verify that AI selects a locally
+    // reachable start node and routes around representative source chairs.
+    var _chairs_checked=0;
+    for (var _ci=0;_ci<array_length(global.E.colliders) && _chairs_checked<8;_ci++) {
+        var _chair=global.E.colliders[_ci];
+        if (abs(_chair[1]-.07)>.02 || abs(_chair[4]-.73)>.02
+            || abs((_chair[3]-_chair[0])-.6)>.03 || abs((_chair[5]-_chair[2])-.6)>.03) continue;
+        var _cx=(_chair[0]+_chair[3])*.5,_cz=(_chair[2]+_chair[5])*.5;
+        var _sx=0,_sz=0,_tx=0,_tz=0,_pair=false;
+        for (var _axis=0;_axis<2 && !_pair;_axis++) {
+            for (var _gap=.35;_gap<=1.15;_gap+=.2) {
+                if (_axis==0) {
+                    _sx=_chair[0]-_gap;_sz=_cz;_tx=_chair[3]+_gap;_tz=_cz;
+                } else {
+                    _sx=_cx;_sz=_chair[2]-_gap;_tx=_cx;_tz=_chair[5]+_gap;
+                }
+                _pair=bb_on_floor(_sx,_sz) && bb_on_floor(_tx,_tz)
+                    && !bb_blocked_world(_sx,_sz,.3,true) && !bb_blocked_world(_tx,_tz,.3,true);
+                if (_pair) break;
+            }
+        }
+        if (!_pair) continue;
+        var _x=_sx,_z=_sz;
+        for (var _step=0;_step<1200;_step++) {
+            var _around=bb_nav_advance(_x,_z,_tx,_tz,.05,.3,true);
+            _x=_around[0];_z=_around[1];
+            if (bb_dist2(_x,_z,_tx,_tz)<.04) break;
+        }
+        bb_test_assert(bb_dist2(_x,_z,_tx,_tz)<.04 && !bb_blocked_world(_x,_z,.3,true),
+            "NPC independently routes around classroom chair "+string(_chairs_checked)
+            +" from="+string([_sx,_sz])+" to="+string([_tx,_tz])+" result="+string([_x,_z]));
+        _chairs_checked+=1;
+    }
+    bb_test_assert(_chairs_checked>=6,
+        "chair navigation covers representative classroom furniture count="+string(_chairs_checked));
+    var _door_index = -1;
+    for (var _i=0; _i<array_length(global.G.doors); _i++) {
+        if (global.G.doors[_i].kind == "class") { _door_index = _i; break; }
+    }
+    var _door = global.G.doors[_door_index], _box = bb_door_box(_door);
+    var _cx = (_box[0]+_box[2])*.5, _cz = (_box[1]+_box[3])*.5;
+    var _nx = ((_box[2]-_box[0]) < (_box[3]-_box[1])) ? 1 : 0, _nz = 1-_nx;
+    _door.open = false; _door.locked = false; _door.lock_cd = 0;
+    bb_npc_open_path_doors(_cx-_nx, _cz-_nz, _cx+_nx, _cz+_nz, .3);
+    bb_test_assert(_door.open, "NPC path proactively opens an unlocked blue or brown door");
+    _door.open = false; _door.locked = true;
+    bb_npc_open_path_doors(_cx-_nx, _cz-_nz, _cx+_nx, _cz+_nz, .3);
+    bb_test_assert(!_door.open, "NPC path respects a genuinely locked door");
+    _door.locked = false;
     // IEEE values from a buffer exercise invalid movement without dividing by zero.
     var _buffer = buffer_create(8, buffer_fixed, 1);
     buffer_poke(_buffer, 0, buffer_u32, 0);
@@ -274,6 +436,20 @@ function bb_test_stationary_navigation() {
         show_debug_message("BB_TEST_NAV_ERROR: " + _error.message);
     }
     bb_test_assert(_ok, "Baldi can arrive at his hearing target without NaN");
+    _g.baldi_move = 0; _g.baldi_cd = 0; _g.baldi_cool = 0;
+    _g.baldi_prev_x = _g.baldi_x; _g.baldi_prev_z = _g.baldi_z;
+    _g.hear_x = _g.baldi_x; _g.hear_z = _g.baldi_z;
+    var _hidden_player = false, _floor_keys = ds_map_keys_to_array(global.floors);
+    for (var _i=0; _i<array_length(_floor_keys); _i++) {
+        var _parts=string_split(_floor_keys[_i],","), _hx=real(_parts[0]), _hz=real(_parts[1]);
+        if (bb_dist2(_hx,_hz,_g.baldi_x,_g.baldi_z)>100 && !bb_los(_g.baldi_x,_g.baldi_z,_hx,_hz)) {
+            _g.px=_hx; _g.pz=_hz; _hidden_player=true; break;
+        }
+    }
+    random_set_seed(143);
+    bb_update_baldi(1/60);
+    bb_test_assert(_hidden_player && (_g.hear_x != _g.baldi_x || _g.hear_z != _g.baldi_z),
+        "Baldi resumes wandering when a stationary cooldown lands exactly on zero");
     global.G = _original;
 }
 
@@ -309,6 +485,12 @@ function bb_test_yctp_state() {
     _g.yctp_input = string(_g.yctp_ans); bb_yctp_submit(); bb_audio_update(0.01);
     bb_test_assert(array_length(_g.audio_log) == 0, "correct answer after failure stays silent");
     bb_yctp_close();
+    bb_test_assert(_g.move_latched,"leaving the learning scene latches held movement keys");
+    bb_test_assert(!bb_movement_ready(true) && _g.move_latched,
+        "a held movement key remains blocked after a scene switch");
+    bb_test_assert(!bb_movement_ready(false) && !_g.move_latched,
+        "releasing all movement keys clears the scene-switch latch without moving");
+    bb_test_assert(bb_movement_ready(true),"a fresh movement-key press works after release");
     var _alarm = bb_sound_play(snd_alarm);
     _g.audio_log = [];
     bb_collect_notebook(1); bb_audio_update(0.01); bb_yctp_face_update(0.01);
@@ -370,6 +552,16 @@ function bb_test_debug_menu() {
     _g.px = -1; _g.pz = -4.5;
     bb_debug_action("toggle", "noclip");
     bb_test_assert(!bb_blocked_world(_g.px, _g.pz, _g.radius, true), "disabling noclip resolves wall overlap");
+    bb_debug_action("actor", 0);
+    bb_debug_action("actor_here");
+    bb_test_assert(_g.npcs[0].live && _g.npcs[0].visible && _g.npcs[0].x == _g.px && _g.npcs[0].z == _g.pz,
+        "cheat menu brings a selected NPC to the player's arbitrary position");
+    bb_debug_action("actor_ahead");
+    bb_test_assert(bb_dist2(_g.npcs[0].x, _g.npcs[0].z, _g.px, _g.pz) >= 1,
+        "cheat menu places a selected NPC ahead on clear ground");
+    bb_debug_action("actor_go");
+    bb_test_assert(bb_dist2(_g.px, _g.pz, _g.npcs[0].x, _g.npcs[0].z) < 4,
+        "cheat menu teleports the player to a selected NPC");
     bb_debug_action("slot", 1);
     for (var _i = 1; _i <= 10; _i++) {
         bb_debug_action("item", _i);
@@ -440,6 +632,66 @@ function bb_test_debug_menu() {
     bb_refresh_details();
 }
 
+function bb_test_end_states() {
+    var _original = global.G;
+    global.G = variable_clone(_original);
+    var _g = global.G;
+    audio_stop_all();
+
+    _g.mode = "story"; _g.state = "yctp"; _g.spoop_mode = true;
+    _g.failed_nbs = 6; _g.yctp_wrong = 3; _g.yctp_q = 3;
+    bb_yctp_make();
+    bb_test_assert(_g.failed_nbs == 7 && _g.yctp_end, "three wrong answers count one fully failed notebook");
+
+    bb_secret_begin();
+    var _secret = global.P.details.secret;
+    bb_test_assert(_g.state == "secret" && _g.px == _secret.player[0] && _g.pz == _secret.player[1],
+        "Secret spawn uses the source position");
+    bb_test_assert(_g.move_latched,"entering the Secret scene latches held movement keys");
+    bb_test_assert(abs(_g.yaw-pi) < .001,
+        "Secret spawn faces secretwall");
+    bb_test_assert(global.map.scene == "Secret" && global.E.source_scene == "Secret"
+        && ds_map_size(global.floors) == 28 && array_length(_g.doors) == 1,
+        "seven failed notebooks rebuild the complete Secret room");
+    bb_test_assert(_g.doors[0].material == "BaldiDoor"
+        && variable_struct_exists(global.map_textures, global.map.materials.BaldiDoor.file),
+        "Secret connecting door uses its source green texture");
+    var _secret_door = _g.doors[0];
+    bb_door_try_open(_secret_door, true);
+    bb_test_assert(_secret_door.open && !bb_blocked_world(_secret_door.cx,_secret_door.cz,.28,true),
+        "Secret connecting door opens and permits access to the room");
+    _secret_door.open = false;
+    bb_test_assert(array_length(global.E.meshes) == 2 && array_length(global.E.billboards) == 1
+        && variable_struct_exists(global.PS, "secret_filename2"),
+        "Secret room includes its furniture and source actors");
+    _g.px = _secret.filename2.x; _g.pz = _secret.filename2.z;
+    bb_secret_update(.01);
+    bb_test_assert(_g.secret_played && _g.secret_sound != -1 && audio_is_playing(_g.secret_sound),
+        "approaching filename2 starts the source recording");
+    audio_stop_sound(_g.secret_sound); bb_secret_update(.01);
+    bb_test_assert(_g.end_requested, "Secret recording completion requests application exit");
+
+    global.G = variable_clone(_original); _g = global.G;
+    bb_world_load("school_map.json", global.P.environment_file);
+    audio_stop_all(); bb_win_game();
+    audio_stop_sound(_g.win_sound);
+    bb_win_update(.99);
+    bb_test_assert(!_g.end_requested, "victory waits one second after its sound");
+    bb_win_update(.01);
+    bb_test_assert(_g.end_requested, "victory exits one second after its sound completes");
+
+    global.G = variable_clone(_original); _g = global.G;
+    audio_stop_all(); _g.debug.god = false; bb_gameover();
+    _g.gameover_rare = false; _g.gameover_image = "gameover_0";
+    bb_gameover_update(.9);
+    bb_test_assert(_g.over_t < 1 && !_g.end_requested, "Baldi catch keeps the one-second far-clip transition");
+    bb_gameover_update(.1);
+    bb_test_assert(_g.over_t >= 1 && variable_struct_exists(global.PS, _g.gameover_image),
+        "catch transition reveals a source 2048px game-over image in the 400px frame");
+
+    audio_stop_all(); global.G = _original; bb_refresh_details();
+}
+
 function bb_test_scene_details() {
     var _original = global.G;
     global.G = variable_clone(_original);
@@ -456,6 +708,11 @@ function bb_test_scene_details() {
         bb_test_assert(_e.down && bb_blocked_world((_b[0]+_b[3])*0.5, (_b[2]+_b[5])*0.5, .28, true), "wrong-answer wall blocks exit " + _e.name);
     }
     bb_debug_notebooks(7);
+    bb_voice_replace("tutor", [global.S.aud_AllNotebooks]); bb_audio_update(.01);
+    var _all_notebooks_voice = _g.voices.tutor.handle;
+    bb_finale_audio(1);
+    bb_test_assert(_g.voices.tutor.handle == _all_notebooks_voice && audio_is_playing(_all_notebooks_voice),
+        "first exit machine audio overlaps the full AllNotebooks speech");
     for (var _i = 0; _i < array_length(_g.exits); _i++) {
         var _e = _g.exits[_i], _b = _e.source.wall_bounds;
         bb_test_assert(!_e.down && !bb_blocked_world((_b[0]+_b[3])*0.5, (_b[2]+_b[5])*0.5, .28, true), "seven books restore exit " + _e.name);
@@ -639,6 +896,13 @@ function bb_test_presentation_render() {
     // Explicit top-left GUI projection, independent of the window's letterboxing.
     matrix_set(matrix_view, matrix_build( -320, -240, 0, 0, 0, 0, 1, 1, 1));
     matrix_set(matrix_projection, matrix_build_projection_ortho(640, -480, 0, 100));
+    var _start_button=global.P.menu.buttons.start;
+    surface_set_target(_expected);bb_ui_begin();draw_clear(c_fuchsia);
+    bb_menu_asset_draw(_start_button.normal,_start_button.rect,_start_button.preserve);surface_reset_target();
+    surface_set_target(_actual);bb_ui_begin();draw_clear(c_fuchsia);
+    bb_menu_asset_draw(_start_button.selected,_start_button.rect,_start_button.preserve);surface_reset_target();
+    bb_test_assert(bb_test_surface_difference(_expected,_actual,2)>20,
+        "source START normal and selected crops render distinct pixels");
     surface_set_target(_expected); bb_ui_begin(); draw_clear_alpha(c_black, 0);
     bb_ui_texture("slots", global.P.hud.ItemSlots.rect);
     surface_reset_target();
@@ -744,6 +1008,11 @@ function bb_test_presentation_render() {
     global.G.play_lock = 0; global.G.boot_anim = 1;
     surface_set_target(_actual); draw_clear(make_colour_rgb(180,180,180)); bb_draw_hud_effects(); surface_reset_target();
     surface_save(_actual, "bb_boots_check.png");
+    surface_set_target(_actual); bb_ui_begin(); draw_clear(make_colour_rgb(80,120,160));
+    bb_draw_finale_red(640,480); surface_reset_target();
+    var _red_pixel = surface_getpixel(_actual,320,240);
+    bb_test_assert(colour_get_red(_red_pixel) == 80 && colour_get_green(_red_pixel) == 0
+        && colour_get_blue(_red_pixel) == 0, "first finale exit multiplies the rendered scene to full red");
     surface_free(_expected); surface_free(_actual);
     global.G = _saved;
     _actual = surface_create(128, 128);
@@ -757,6 +1026,89 @@ function bb_test_presentation_render() {
     }
     bb_test_assert(_pixels > 10, "authored entrance sign renders in spawn camera");
     surface_free(_actual);
+    var _door=global.G.doors[0],_door_bounds=bb_door_box(_door);
+    var _door_x=(_door_bounds[0]+_door_bounds[2])*.5;
+    var _door_z=(_door_bounds[1]+_door_bounds[3])*.5;
+    var _door_x_axis=(_door_bounds[2]-_door_bounds[0])<(_door_bounds[3]-_door_bounds[1]);
+    var _face_a=surface_create(128,128),_face_b=surface_create(128,128);
+    var _cam_ax=_door_x+(_door_x_axis?-2:0),_cam_az=_door_z+(_door_x_axis?0:-2);
+    var _cam_bx=_door_x+(_door_x_axis?2:0),_cam_bz=_door_z+(_door_x_axis?0:2);
+    _door.open=false;
+    var _door_spr=global.map_textures[$ global.map.materials[$ _door.material].file];
+    surface_set_target(_face_a); bb3d_begin(_cam_ax,1,_cam_az,
+        arctan2(_cam_ax-_door_x,_cam_az-_door_z),1); draw_clear(c_fuchsia);
+    var _door_uv=bb3d_sprite_uv_transform(_door_spr);
+    gpu_set_cullmode(cull_clockwise);vertex_begin(global.vb_bill,global.vf_3d);
+    bb3d_emit_vertices(global.vb_bill,_door.v,_door_uv,c_white);
+    bb3d_emit_vertices(global.vb_bill,_door.v_inside,_door_uv,c_white);vertex_end(global.vb_bill);
+    vertex_submit(global.vb_bill,pr_trianglelist,sprite_get_texture(_door_spr,0));
+    surface_reset_target(); bb3d_end();
+    surface_set_target(_face_b); bb3d_begin(_cam_bx,1,_cam_bz,
+        arctan2(_cam_bx-_door_x,_cam_bz-_door_z),1); draw_clear(c_fuchsia);
+    gpu_set_cullmode(cull_clockwise);vertex_begin(global.vb_bill,global.vf_3d);
+    bb3d_emit_vertices(global.vb_bill,_door.v,_door_uv,c_white);
+    bb3d_emit_vertices(global.vb_bill,_door.v_inside,_door_uv,c_white);vertex_end(global.vb_bill);
+    vertex_submit(global.vb_bill,pr_trianglelist,sprite_get_texture(_door_spr,0));
+    surface_reset_target(); bb3d_end();
+    var _door_pixels=0,_door_pixels_b=0;
+    for (var _y=0;_y<128;_y+=4) for (var _x=0;_x<128;_x+=4) {
+        if (surface_getpixel(_face_a,_x,_y)!=c_fuchsia) _door_pixels+=1;
+        if (surface_getpixel(_face_b,_x,_y)!=c_fuchsia) _door_pixels_b+=1;
+    }
+    var _door_face_difference=bb_test_surface_difference(_face_a,_face_b,2);
+    var _door_mirror_difference=0;
+    for (var _y=0;_y<128;_y+=2) for (var _x=0;_x<128;_x+=2) {
+        if (!bb_test_pixel_near(surface_getpixel(_face_a,_x,_y),
+            surface_getpixel(_face_b,127-_x,_y))) _door_mirror_difference+=1;
+    }
+    bb_test_assert(_door_pixels>100,
+        "outside authored door face renders pixels="+string(_door_pixels));
+    bb_test_assert(_door_pixels_b>100,
+        "inside authored door face renders pixels="+string(_door_pixels_b));
+    bb_test_assert(_door_face_difference<_door_mirror_difference*.5,
+        "both source door faces use the same non-mirrored orientation direct="
+        +string(_door_face_difference)+" mirrored="+string(_door_mirror_difference));
+    surface_save(_face_a,"bb_door_out_check.png");
+    surface_save(_face_b,"bb_door_in_check.png");
+    surface_free(_face_a);surface_free(_face_b);
+    bb_secret_begin();
+    _actual = surface_create(320, 240);
+    surface_set_target(_actual); bb3d_begin(global.G.px, global.G.py, global.G.pz, global.G.yaw, 4/3);
+    draw_clear(c_fuchsia); bb3d_draw_world(); bb_draw_environment(); bb_draw_doors(); bb_draw_entities();
+    surface_reset_target(); bb3d_end();
+    bb_test_assert(surface_getpixel(_actual, 160, 120) != c_fuchsia,
+        "Secret spawn view renders secretwall");
+    surface_save(_actual, "bb_secret_front_check.png");
+    surface_set_target(_actual); bb3d_begin(global.G.px, global.G.py, global.G.pz, 0, 4/3);
+    draw_clear(c_fuchsia); bb3d_draw_world(); bb_draw_environment(); bb_draw_doors(); bb_draw_entities();
+    surface_reset_target(); bb3d_end();
+    var _secret_back_pixels = 0;
+    for (var _y=0; _y<240; _y+=8) for (var _x=0; _x<320; _x+=8) {
+        if (surface_getpixel(_actual,_x,_y) != c_fuchsia) _secret_back_pixels += 1;
+    }
+    bb_test_assert(_secret_back_pixels > 100,
+        "turning around at Secret spawn renders the corridor and room");
+    surface_save(_actual, "bb_secret_back_check.png");
+    surface_free(_actual);
+    _expected = surface_create(320,240); _actual = surface_create(320,240);
+    global.G.px=0; global.G.pz=-23;
+    surface_set_target(_expected); bb3d_begin(0,1,-23,0,4/3); draw_clear(c_fuchsia);
+    bb3d_draw_world(); bb_draw_environment(); surface_reset_target(); bb3d_end();
+    surface_set_target(_actual); bb3d_begin(0,1,-23,0,4/3); draw_clear(c_fuchsia);
+    bb3d_draw_world(); bb_draw_environment(); bb_draw_doors(); surface_reset_target(); bb3d_end();
+    bb_test_assert(bb_test_surface_difference(_actual,_expected,2) > 20,
+        "Secret room renders the source green connecting door");
+    surface_save(_actual, "bb_secret_door_check.png");
+    surface_free(_expected); surface_free(_actual);
+    _actual = surface_create(320,240); surface_set_target(_actual); draw_clear(c_fuchsia);
+    bb_game_draw_gui(); surface_reset_target();
+    var _secret_gui_pixels=0;
+    for (var _y=0; _y<240; _y+=8) for (var _x=0; _x<320; _x+=8) {
+        if (surface_getpixel(_actual,_x,_y) != c_fuchsia) _secret_gui_pixels += 1;
+    }
+    bb_test_assert(_secret_gui_pixels == 0, "Secret ending has no added four-line overlay");
+    surface_free(_actual);
+    global.G = _saved; bb_world_load("school_map.json", global.P.environment_file);
     matrix_set(matrix_world, _mat[0]); matrix_set(matrix_view, _mat[1]); matrix_set(matrix_projection, _mat[2]);
     bb_ui_begin();
     bb_test_world_details_render();

@@ -87,8 +87,24 @@ function bb_nav_nearest(_sx, _sz) {
     return _best;
 }
 
-function bb_nav_step(_sx, _sz, _gx, _gz) {
-    return bb_grid_step(_sx,_sz,_gx,_gz);
+function bb_nav_step(_sx, _sz, _gx, _gz, _r=.3) {
+    return bb_grid_step(_sx, _sz, _gx, _gz, _r);
+}
+
+function bb_nav_corridor(_x, _z) {
+    var _key = bb_nav_nearest(_x, _z);
+    if (_key == "") return [0, _x, _z];
+    var _center = string_split(_key, ","), _cx = real(_center[0]), _cz = real(_center[1]);
+    var _neighbors = ds_map_find_value(global.nav_n, _key);
+    var _horizontal = false, _vertical = false;
+    for (var _i=0; _i<array_length(_neighbors); _i++) {
+        var _p = string_split(_neighbors[_i], ",");
+        if (abs(real(_p[0])-_cx) > .1) _horizontal = true;
+        if (abs(real(_p[1])-_cz) > .1) _vertical = true;
+    }
+    if (_vertical && !_horizontal) return [1, _cx, _cz];
+    if (_horizontal && !_vertical) return [2, _cx, _cz];
+    return [0, _cx, _cz];
 }
 
 function bb_nav_portal_nearest(_x,_z,_tx,_tz) {
@@ -256,7 +272,7 @@ function bb_nav_advance(_x, _z, _tx, _tz, _dist, _r, _doors_block) {
     var _guard = 0;
     while (_remain > 0.00001 && _guard < 24) {
         _guard += 1;
-        var _wp = bb_nav_step(_x, _z, _tx, _tz);
+        var _wp=bb_grid_step(_x,_z,_tx,_tz,_r);
         var _dx = _wp[0] - _x;
         var _dz = _wp[1] - _z;
         if (is_nan(_dx) || is_nan(_dz) || is_infinity(_dx) || is_infinity(_dz)) break;
@@ -267,6 +283,7 @@ function bb_nav_advance(_x, _z, _tx, _tz, _dist, _r, _doors_block) {
             break;
         }
         var _use = min(_remain, _len);
+        if (_doors_block) bb_npc_open_path_doors(_x, _z, _wp[0], _wp[1], _r);
         var _sl = bb_move_slide(_x, _z, (_dx / _len) * _use, (_dz / _len) * _use, _r, _doors_block);
         var _moved = sqrt(sqr(_sl[0] - _x) + sqr(_sl[1] - _z));
         _x = _sl[0];
@@ -277,6 +294,20 @@ function bb_nav_advance(_x, _z, _tx, _tz, _dist, _r, _doors_block) {
         _remain -= _moved;
     }
     return [_x, _z];
+}
+
+function bb_npc_open_path_doors(_x, _z, _tx, _tz, _r) {
+    var _dx = _tx-_x, _dz = _tz-_z;
+    if (abs(_dx)+abs(_dz) <= 0.000001) return;
+    for (var _i=0; _i<array_length(global.G.doors); _i++) {
+        var _d = global.G.doors[_i];
+        if (_d.open) continue;
+        var _b = bb_door_box(_d), _padding = _r+0.16;
+        if (bb_ray_box(_x, _z, _dx, _dz, _b[0]-_padding, _b[1]-_padding,
+            _b[2]+_padding, _b[3]+_padding) <= 1) {
+            bb_door_try_open(_d, false);
+        }
+    }
 }
 
 function bb_los(_ax, _az, _bx, _bz) {
@@ -379,7 +410,8 @@ function bb_update_baldi(_dt) {
         var _move_dt = min(_dt, _g.baldi_move);
         _g.baldi_move -= _move_dt;
         bb_npc_touch_doors(_g.baldi_x, _g.baldi_z, 0.4);
-        var _pos = bb_nav_advance(_g.baldi_x, _g.baldi_z, _g.hear_x, _g.hear_z, 15 * _move_dt, 0.28, true);
+        var _pos = bb_nav_advance(_g.baldi_x, _g.baldi_z, _g.hear_x, _g.hear_z,
+            15 * _move_dt, 0.28, true);
         var _spray = bb_spray_contact(_g.baldi_x, _g.baldi_z, _pos[0], _pos[1], 1.28);
         if (_spray != -1) {
             bb_soda_push_baldi(_g.sprays[_spray], _dt);
@@ -393,7 +425,7 @@ function bb_update_baldi(_dt) {
     if (_g.baldi_cd > 0) {
         _g.baldi_cd -= _dt;
     } else {
-        if (bb_dist2(_g.baldi_x, _g.baldi_z, _g.baldi_prev_x, _g.baldi_prev_z) < 0.04 && _g.baldi_cool < 0) {
+        if (bb_dist2(_g.baldi_x, _g.baldi_z, _g.baldi_prev_x, _g.baldi_prev_z) < 0.04 && _g.baldi_cool <= 0) {
             bb_baldi_wander();
             _g.hear_pri = 0;
         }

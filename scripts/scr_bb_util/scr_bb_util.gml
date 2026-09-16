@@ -91,8 +91,10 @@ function bb_load_png_rb(_rel) {
 function bb_settings_init() {
     global.game_mode = "story";
     ini_open("baldi_settings.ini");
-    global.mouse_sensitivity = clamp(ini_read_real("Options", "MouseSensitivity", 1), 0.1, 3);
+    global.mouse_sensitivity = clamp(ini_read_real("Options", "MouseSensitivity", 2), 0.1, 10);
     global.master_volume = clamp(ini_read_real("Options", "Volume", 1), 0, 1);
+    global.rumble_enabled = ini_read_real("Options", "Rumble", 1) >= 0.5;
+    global.analog_movement = ini_read_real("Options", "AnalogMove", 1) >= 0.5;
     global.high_books = max(0, floor(ini_read_real("Scores", "HighBooks", 0)));
     ini_close();
     audio_master_gain(global.master_volume);
@@ -103,6 +105,8 @@ function bb_settings_save() {
     ini_open("baldi_settings.ini");
     ini_write_real("Options", "MouseSensitivity", global.mouse_sensitivity);
     ini_write_real("Options", "Volume", global.master_volume);
+    ini_write_real("Options", "Rumble", global.rumble_enabled ? 1 : 0);
+    ini_write_real("Options", "AnalogMove", global.analog_movement ? 1 : 0);
     ini_write_real("Scores", "HighBooks", global.high_books);
     ini_close();
 }
@@ -113,18 +117,31 @@ function bb_start_mode(_mode) {
     room_goto(rm_school);
 }
 
-function bb_menu_button(_label,_action,_x,_y,_w=240,_h=44) {
-    return {label:_label,action:_action,x1:_x-_w*.5,y1:_y-_h*.5,x2:_x+_w*.5,y2:_y+_h*.5};
+function bb_menu_button(_key,_action) {
+    var _node=global.P.menu.buttons[$ _key],_r=_node.hit;
+    return {key:_key,action:_action,x1:_r[0],y1:_r[1],x2:_r[0]+_r[2],y2:_r[1]+_r[3]};
 }
 
 function bb_menu_layout(_page) {
     switch (_page) {
-        case "title": return [bb_menu_button("START","modes",360,444,120),bb_menu_button("MENU","menu",555,444,110)];
-        case "modes": return [bb_menu_button("STORY MODE","story",320,110),bb_menu_button("ENDLESS MODE","endless",320,240),bb_menu_button("BACK","title",80,444,120)];
-        case "menu": return [bb_menu_button("HOW TO PLAY","controls",320,140),bb_menu_button("OPTIONS","options",320,220),bb_menu_button("QUIT","quit",320,300),bb_menu_button("BACK","title",80,444,120)];
-        case "options": return [bb_menu_button("-","sensitivity_down",220,155,50),bb_menu_button("+","sensitivity_up",420,155,50),
-            bb_menu_button("-","volume_down",220,260,50),bb_menu_button("+","volume_up",420,260,50),
-            bb_menu_button("TOGGLE FULLSCREEN","fullscreen",320,345,300),bb_menu_button("BACK","menu",80,444,120)];
-        default: return [bb_menu_button("BACK","menu",80,444,120)];
+        case "title": return [bb_menu_button("start","modes"),bb_menu_button("main_menu","menu"),bb_menu_button("exit","quit")];
+        case "modes": return [bb_menu_button("story","story"),bb_menu_button("endless","endless"),bb_menu_button("play_back","title")];
+        case "menu": return [bb_menu_button("how","story_info"),bb_menu_button("options","options"),
+            bb_menu_button("credits","credits"),bb_menu_button("menu_back","title")];
+        case "options": return [bb_menu_button("controls","controls"),bb_menu_button("turn","sensitivity"),
+            bb_menu_button("rumble","rumble"),bb_menu_button("analog","analog"),bb_menu_button("options_back","menu")];
+        case "story_info": return [bb_menu_button("story_back","menu")];
+        case "credits": return [bb_menu_button("credits_back","menu")];
+        case "controls": return [bb_menu_button("controls_back","options")];
+        default: return [];
     }
+}
+
+function bb_menu_back_page(_page) {
+    switch (_page) {
+        case "modes": case "menu": return "title";
+        case "options": case "story_info": case "credits": return "menu";
+        case "controls": return "options";
+    }
+    return _page;
 }

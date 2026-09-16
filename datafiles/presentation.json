@@ -1,5 +1,261 @@
 {
   "textures": {
+    "menu_texture2d_menutextures_buttontextures_start_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Start.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Start.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_start_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Start_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Start_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_menu_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Menu.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Menu.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_menu_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Menu_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Menu_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_exitbutton_exit_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_ExitButton_Exit.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/ExitButton/Exit.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_exitbutton_exit_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_ExitButton_Exit_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/ExitButton/Exit_Selected.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_modebuttons_story_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_ModeButtons_Story.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/ModeButtons/Story.png",
+      "size": [
+        1024,
+        256
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_modebuttons_story_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_ModeButtons_Story_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/ModeButtons/Story_Selected.png",
+      "size": [
+        1024,
+        256
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_modebuttons_endless_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_ModeButtons_Endless.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/ModeButtons/Endless.png",
+      "size": [
+        1024,
+        256
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_modebuttons_endless_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_ModeButtons_Endless_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/ModeButtons/Endless_Selected.png",
+      "size": [
+        1024,
+        256
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_back_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Back.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Back.png",
+      "size": [
+        256,
+        51
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_back_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Back_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Back_Selected.png",
+      "size": [
+        256,
+        51
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_how_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_How.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/How.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_how_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_How_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/How_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_buttons_options_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Buttons_Options.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Buttons/Options.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_buttons_options_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Buttons_Options_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Buttons/Options_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_credits_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Credits.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Credits.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_credits_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Credits_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Credits_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_controls_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Controls.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Controls.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_controls_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Controls_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Controls_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_back_white_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Back_White.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Back_White.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_buttontextures_back_white_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Back_White_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Back_White_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_buttons_turn_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Buttons_Turn.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Buttons/Turn.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_buttons_turn_sensitivity_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Buttons_Turn_Sensitivity.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Buttons/Turn_Sensitivity.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_buttons_rumble_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Buttons_Rumble.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Buttons/Rumble.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_buttons_rumble_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Buttons_Rumble_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Buttons/Rumble_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_buttons_analog_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Buttons_Analog.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Buttons/Analog.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_buttons_analog_selected_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Buttons_Analog_Selected.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Buttons/Analog_Selected.png",
+      "size": [
+        256,
+        128
+      ]
+    },
+    "menu_texture2d_menutextures_story_0_png_raw": {
+      "file": "tex/presentation/Texture2D_MenuTextures_Story_0.png",
+      "source": "Assets/Texture2D/MenuTextures/Story_0.png",
+      "size": [
+        640,
+        480
+      ]
+    },
+    "menu_texture2d_menutextures_credits_0_png_raw": {
+      "file": "tex/presentation/Texture2D_MenuTextures_Credits_0.png",
+      "source": "Assets/Texture2D/MenuTextures/Credits_0.png",
+      "size": [
+        640,
+        480
+      ]
+    },
+    "menu_texture2d_menutextures_optionstextures_stick_png": {
+      "file": "tex/presentation/Texture2D_MenuTextures_OptionsTextures_Stick.png",
+      "source": "Assets/Texture2D/MenuTextures/OptionsTextures/Stick.png",
+      "size": [
+        64,
+        64
+      ]
+    },
+    "menu_texture2d_yctptextures_check_png": {
+      "file": "tex/presentation/Texture2D_YCTPTextures_Check.png",
+      "source": "Assets/Texture2D/YCTPTextures/Check.png",
+      "size": [
+        32,
+        32
+      ]
+    },
     "yctp_BaldiFeed": {
       "file": "tex/presentation/Texture2D_Characters_Baldi_MathGame_Frown_Bald_Frown0000.png",
       "source": "Assets/Texture2D/Characters/Baldi/MathGame/Frown/Bald_Frown0000.png",
@@ -1200,6 +1456,14 @@
         2048
       ]
     },
+    "gameover_rare": {
+      "file": "tex/presentation/Texture2D_Screens_GameOver_99_0.png",
+      "source": "Assets/Texture2D/Screens/GameOver/99_0.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
     "item1": {
       "file": "tex/presentation/Texture2D_SchoolHouse_PickUps_EnergyFlavoredZestyBar.png",
       "source": "Assets/Texture2D/SchoolHouse/PickUps/EnergyFlavoredZestyBar.png",
@@ -1310,6 +1574,22 @@
       "size": [
         128,
         128
+      ]
+    },
+    "secret_filename2": {
+      "file": "tex/presentation/Texture2D_Characters_filename2.png",
+      "source": "Assets/Texture2D/Characters/filename2.png",
+      "size": [
+        1839,
+        1740
+      ]
+    },
+    "secret_banana": {
+      "file": "tex/presentation/Texture2D_SchoolHouse_Billboards_Banana.png",
+      "source": "Assets/Texture2D/SchoolHouse/Billboards/Banana.png",
+      "size": [
+        64,
+        64
       ]
     },
     "slots": {
@@ -2359,6 +2639,14 @@
         64,
         109
       ]
+    },
+    "decor_sprite_363": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_Angry_Baldi_Slap0024.png",
+      "source": "Assets/Texture2D/Characters/Baldi/Angry/Baldi_Slap0024.png",
+      "size": [
+        106,
+        256
+      ]
     }
   },
   "hud": {
@@ -2813,6 +3101,985 @@
         0.0,
         0.0,
         1.0
+      ]
+    }
+  },
+  "menu": {
+    "buttons": {
+      "start": {
+        "rect": [
+          192.0,
+          392.0,
+          256.0,
+          128.0
+        ],
+        "hit": [
+          262.0761,
+          439.0267,
+          113.8478,
+          42.8971
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_start_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            77.0761,
+            51.0268,
+            102.8478,
+            26.9465
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_start_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            74.0761,
+            51.0267,
+            105.8478,
+            34.8971
+          ]
+        },
+        "preserve": true
+      },
+      "main_menu": {
+        "rect": [
+          384.0,
+          392.0,
+          256.0,
+          128.0
+        ],
+        "hit": [
+          461.0761,
+          438.0429,
+          102.8478,
+          42.881
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_menu_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            82.0429,
+            50.0429,
+            91.881,
+            27.881
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_menu_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            81.0761,
+            50.0429,
+            94.8478,
+            34.881
+          ]
+        },
+        "preserve": true
+      },
+      "exit": {
+        "rect": [
+          543.9999,
+          -32.0,
+          128.0,
+          128.0
+        ],
+        "hit": [
+          575.0499,
+          -0.9239,
+          66.8739,
+          72.8478
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_exitbutton_exit_png",
+          "crop": [
+            0,
+            0,
+            128,
+            128
+          ],
+          "sprite_rect": [
+            35.05,
+            35.0761,
+            58.8739,
+            59.8478
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_exitbutton_exit_selected_png",
+          "crop": [
+            0,
+            0,
+            128,
+            128
+          ],
+          "sprite_rect": [
+            35.05,
+            35.0761,
+            58.8739,
+            64.8478
+          ]
+        },
+        "preserve": true
+      },
+      "story": {
+        "rect": [
+          0.0,
+          0.0,
+          863.8312,
+          215.9578
+        ],
+        "hit": [
+          0.0,
+          7.8745,
+          215.6756,
+          208.0833
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_modebuttons_story_png",
+          "crop": [
+            0,
+            0,
+            1024,
+            256
+          ],
+          "sprite_rect": [
+            16.0129,
+            14.0762,
+            223.911,
+            227.8477
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_modebuttons_story_selected_png",
+          "crop": [
+            0,
+            0,
+            1024,
+            256
+          ],
+          "sprite_rect": [
+            4.0761,
+            14.0762,
+            246.8477,
+            238.8477
+          ]
+        },
+        "preserve": false
+      },
+      "endless": {
+        "rect": [
+          -223.8287,
+          264.0428,
+          863.8287,
+          215.9572
+        ],
+        "hit": [
+          423.4814,
+          284.571,
+          216.5186,
+          195.429
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_modebuttons_endless_png",
+          "crop": [
+            0,
+            0,
+            1024,
+            256
+          ],
+          "sprite_rect": [
+            777.0761,
+            29.0762,
+            246.9239,
+            180.8477
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_modebuttons_endless_selected_png",
+          "crop": [
+            0,
+            0,
+            1024,
+            256
+          ],
+          "sprite_rect": [
+            772.0761,
+            29.0762,
+            251.9239,
+            223.8477
+          ]
+        },
+        "preserve": false
+      },
+      "play_back": {
+        "rect": [
+          -53.9893,
+          436.9772,
+          215.9578,
+          43.0228
+        ],
+        "hit": [
+          14.6232,
+          439.7484,
+          76.202,
+          37.4386
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            89.0761,
+            8.0267,
+            77.8478,
+            28.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            86.0761,
+            8.0267,
+            80.8478,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "how": {
+        "rect": [
+          192.0,
+          20.0,
+          256.0,
+          128.0
+        ],
+        "hit": [
+          206.0761,
+          66.0267,
+          227.8477,
+          42.8971
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_how_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            20.0761,
+            50.0267,
+            216.8726,
+            27.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_how_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            18.0761,
+            50.0267,
+            219.8477,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "options": {
+        "rect": [
+          191.9996,
+          111.9998,
+          256.0008,
+          128.0004
+        ],
+        "hit": [
+          241.0759,
+          159.0267,
+          156.8482,
+          42.8972
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_optionstextures_buttons_options_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            55.0267,
+            51.0268,
+            145.9465,
+            26.9465
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_optionstextures_buttons_options_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            53.0761,
+            51.0267,
+            148.8477,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "credits": {
+        "rect": [
+          191.9996,
+          207.9998,
+          256.0008,
+          128.0004
+        ],
+        "hit": [
+          247.0759,
+          255.0267,
+          146.8481,
+          42.8972
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_credits_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            60.0267,
+            51.0268,
+            136.9465,
+            26.9465
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_credits_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            59.0761,
+            51.0267,
+            138.8477,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "menu_back": {
+        "rect": [
+          191.9996,
+          428.9998,
+          256.0008,
+          51.0002
+        ],
+        "hit": [
+          274.076,
+          433.0265,
+          88.8481,
+          42.8972
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            89.0761,
+            8.0267,
+            77.8478,
+            28.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            86.0761,
+            8.0267,
+            80.8478,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "controls": {
+        "rect": [
+          192.0,
+          112.0,
+          256.0,
+          128.0
+        ],
+        "hit": [
+          231.0761,
+          159.0267,
+          178.8477,
+          42.8971
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_controls_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            44.0267,
+            51.0268,
+            168.9465,
+            26.9465
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_controls_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            43.0761,
+            51.0267,
+            170.8477,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "options_back": {
+        "rect": [
+          191.9996,
+          428.9998,
+          256.0008,
+          51.0002
+        ],
+        "hit": [
+          274.076,
+          433.0265,
+          88.8481,
+          42.8972
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            89.0761,
+            8.0267,
+            77.8478,
+            28.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            86.0761,
+            8.0267,
+            80.8478,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "story_back": {
+        "rect": [
+          212.0211,
+          436.9772,
+          215.9578,
+          43.0228
+        ],
+        "hit": [
+          280.6336,
+          439.7484,
+          76.202,
+          37.4386
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            89.0761,
+            8.0267,
+            77.8478,
+            28.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            86.0761,
+            8.0267,
+            80.8478,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "credits_back": {
+        "rect": [
+          -64.0,
+          404.0211,
+          215.9578,
+          107.9789
+        ],
+        "hit": [
+          4.6125,
+          442.2229,
+          76.202,
+          37.4387
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_white_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            89.0761,
+            50.0267,
+            77.8478,
+            28.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_white_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            86.0761,
+            50.0267,
+            80.8478,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "controls_back": {
+        "rect": [
+          192.0,
+          429.0,
+          256.0,
+          51.0
+        ],
+        "hit": [
+          274.0761,
+          433.0267,
+          88.8478,
+          42.8971
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            89.0761,
+            8.0267,
+            77.8478,
+            28.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_buttontextures_back_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            51
+          ],
+          "sprite_rect": [
+            86.0761,
+            8.0267,
+            80.8478,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "turn": {
+        "rect": [
+          192.0,
+          -16.0,
+          256.0,
+          128.0
+        ],
+        "hit": [
+          240.0,
+          102.0,
+          160.0,
+          20.0
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_optionstextures_buttons_turn_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            22.0761,
+            29.0267,
+            212.8726,
+            70.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_optionstextures_buttons_turn_sensitivity_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            19.0761,
+            29.0267,
+            216.8477,
+            77.8971
+          ]
+        },
+        "preserve": false
+      },
+      "rumble": {
+        "rect": [
+          192.0,
+          208.0,
+          256.0,
+          128.0
+        ],
+        "hit": [
+          234.0761,
+          254.0267,
+          169.8477,
+          42.8971
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_optionstextures_buttons_rumble_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            48.0761,
+            50.0267,
+            159.8477,
+            27.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_optionstextures_buttons_rumble_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            46.0761,
+            50.0267,
+            161.8477,
+            34.8971
+          ]
+        },
+        "preserve": false
+      },
+      "analog": {
+        "rect": [
+          192.0004,
+          304.0002,
+          255.9993,
+          127.9996
+        ],
+        "hit": [
+          207.0764,
+          329.0268,
+          225.8472,
+          85.8969
+        ],
+        "normal": {
+          "texture": "menu_texture2d_menutextures_optionstextures_buttons_analog_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            20.0429,
+            29.0267,
+            216.881,
+            70.8971
+          ]
+        },
+        "selected": {
+          "texture": "menu_texture2d_menutextures_optionstextures_buttons_analog_selected_png",
+          "crop": [
+            0,
+            0,
+            256,
+            128
+          ],
+          "sprite_rect": [
+            19.0761,
+            29.0267,
+            217.8477,
+            77.8971
+          ]
+        },
+        "preserve": false
+      }
+    },
+    "backgrounds": {
+      "story": {
+        "rect": [
+          0.0,
+          0.0,
+          640.0,
+          480.0
+        ],
+        "asset": {
+          "texture": "menu_texture2d_menutextures_story_0_png_raw",
+          "crop": [
+            0,
+            0,
+            640,
+            480
+          ]
+        }
+      },
+      "credits": {
+        "rect": [
+          0.0,
+          0.0,
+          640.0,
+          480.0
+        ],
+        "asset": {
+          "texture": "menu_texture2d_menutextures_credits_0_png_raw",
+          "crop": [
+            0,
+            0,
+            640,
+            480
+          ]
+        }
+      }
+    },
+    "text": {
+      "story": {
+        "rect": [
+          220.0,
+          -30.0,
+          384.6738,
+          258.1363
+        ],
+        "font_size": 26.9946,
+        "alignment": 514,
+        "spacing": 0,
+        "line_spacing": 0,
+        "colour": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "value": "Story Mode:\n\nCollect all 7 notebooks, and then exit the school, to win!"
+      },
+      "endless": {
+        "rect": [
+          -0.6738,
+          281.2834,
+          384.6738,
+          168.7166
+        ],
+        "font_size": 30.369,
+        "alignment": 514,
+        "spacing": 0,
+        "line_spacing": 0,
+        "colour": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "value": "Endless Mode:\n\nCollect as many notebooks as you can!"
+      },
+      "controls": {
+        "rect": [
+          0.0,
+          0.5,
+          640.0,
+          428.0
+        ],
+        "font_size": 24.0,
+        "alignment": 258,
+        "spacing": 0,
+        "line_spacing": 16.0,
+        "colour": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "value": "Controls:\nWASD - Move\nMouse - Look around\nLeft Click - Pick up objects, open doors, other interactions\nRight Click - Use selected item\nScroll Wheel, 1,2,3 - Change item selection\nShift - Run (Watch your stamina!)\nSpace bar - Look behind you and Jump!"
+      }
+    },
+    "slider": {
+      "hit": [
+        240.0,
+        102.0,
+        160.0,
+        20.0
+      ],
+      "bar": [
+        240.0,
+        107.0,
+        160.0,
+        10.0
+      ],
+      "track": [
+        250.0,
+        390.0
+      ],
+      "handle_rect": [
+        235.0,
+        97.0,
+        30.0,
+        30.0
+      ],
+      "handle": {
+        "texture": "menu_texture2d_menutextures_optionstextures_stick_png",
+        "crop": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "sprite_rect": [
+          0,
+          0,
+          64,
+          64
+        ]
+      },
+      "min": 0.1,
+      "max": 10.0
+    },
+    "checks": {
+      "asset": {
+        "texture": "menu_texture2d_yctptextures_check_png",
+        "crop": [
+          0,
+          0,
+          32,
+          32
+        ],
+        "sprite_rect": [
+          3.0761,
+          0.0429,
+          26.8478,
+          31.9571
+        ]
+      },
+      "rumble": [
+        372.0,
+        252.0,
+        32.0,
+        32.0
+      ],
+      "analog": [
+        400.9998,
+        370.0,
+        31.9999,
+        31.9999
       ]
     }
   },
@@ -16108,6 +17375,40 @@
     "win_audio": {
       "guid": "98c2a67bc6adb0e488fd4a3ded1441b5",
       "gain": 1.0
+    },
+    "alarm_drop": {
+      "texture": "alarm_drop",
+      "y": 0.8,
+      "w": 2.56,
+      "h": 2.56,
+      "tick_audio": "2fb489784b389334aad52da1c7026785",
+      "ring_audio": "ca169d0697713204e9fa73da5b5bcad9"
+    },
+    "secret": {
+      "player": [
+        0.0,
+        -11.0
+      ],
+      "filename2": {
+        "texture": "secret_filename2",
+        "x": 0.964,
+        "y": 0.8,
+        "z": -34.654,
+        "w": 1.839,
+        "h": 1.74
+      },
+      "banana": {
+        "texture": "secret_banana",
+        "x": 0.412,
+        "y": 1.366,
+        "z": -33.864,
+        "w": 0.64,
+        "h": 0.64
+      },
+      "trigger_radius": 6.0,
+      "recording_audio": "255904102fcfb0c4d8b4023ca587ff7f",
+      "map_file": "secret_map.json",
+      "environment_file": "secret_environment.json"
     }
   },
   "environment_file": "school_environment.json"

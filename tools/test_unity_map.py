@@ -45,6 +45,15 @@ class MapGeometryTests(unittest.TestCase):
         self.assertEqual(stats["reachable_floors"], stats["floors"])
         self.assertEqual(stats["doors"], 23)
 
+    def test_doors_keep_distinct_source_faces(self):
+        for door in self.data["doors"]:
+            self.assertEqual(
+                tuple(min(p[i] for p in door["v"]) for i in range(3))
+                + tuple(max(p[i] for p in door["v"]) for i in range(3)),
+                tuple(min(p[i] for p in door["v_inside"]) for i in range(3))
+                + tuple(max(p[i] for p in door["v_inside"]) for i in range(3)))
+            self.assertNotEqual(door["v"], door["v_inside"])
+
     def test_material_uv_scale_and_files(self):
         self.assertEqual(self.data["materials"]["WhiteBrickWall"]["uv"][:2], [2, 2])
         self.assertEqual(self.data["materials"]["WhiteBrickWallThin"]["uv"][:2], [1, 2])

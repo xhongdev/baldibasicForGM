@@ -180,7 +180,10 @@ function bb_use_item() {
             }
             break;
         case 7:
-            array_push(_g.alarms, {x: _g.px, z: _g.pz, time: 30, life: 35, rang: false});
+            var _alarm = global.P.details.alarm_drop;
+            var _tick = global.S.clips[$ _alarm.tick_audio];
+            array_push(_g.alarms, {x: _g.px, z: _g.pz, time: 30, life: 35, rang: false,
+                sound: bb_world_loop(_tick, _g.px, _g.pz, 2, 100)});
             _used = true;
             break;
         case 8:
@@ -225,12 +228,20 @@ function bb_update_item_effects(_dt) {
         var _a = _g.alarms[_i];
         _a.time -= _dt;
         _a.life -= _dt;
+        if (_a.sound != -1 && audio_is_playing(_a.sound)) {
+            audio_sound_gain(_a.sound, bb_world_gain(_a.x, _a.z, 100), 0);
+        }
         if (!_a.rang && _a.time <= 0) {
             _a.rang = true;
+            if (_a.sound != -1) audio_stop_sound(_a.sound);
             if (_g.baldi_active) bb_hear_pri(_a.x, _a.z, 8);
-            bb_world_sound(snd_alarm, _a.x, _a.z, 3, 100);
+            var _ring = global.P.details.alarm_drop.ring_audio;
+            _a.sound = bb_world_sound(global.S.clips[$ _ring], _a.x, _a.z, 3, 100);
         }
-        if (_a.life <= 0) array_delete(_g.alarms, _i, 1);
+        if (_a.life <= 0) {
+            if (_a.sound != -1) audio_stop_sound(_a.sound);
+            array_delete(_g.alarms, _i, 1);
+        }
     }
 }
 
@@ -258,7 +269,9 @@ function bb_draw_item_world() {
     }
     for (var _i = 0; _i < array_length(_g.alarms); _i++) {
         var _a = _g.alarms[_i];
-        bb3d_draw_billboard(global.PS.alarm_drop, 0, _a.x, 0.18, _a.z, 0.35, 0.35, _g.px, _g.pz, c_white);
+        var _drop = global.P.details.alarm_drop;
+        bb3d_draw_billboard(global.PS[$ _drop.texture], 0, _a.x, _drop.y, _a.z,
+            _drop.w, _drop.h, _g.px, _g.pz, c_white);
     }
 }
 
@@ -268,6 +281,8 @@ function bb_start_playtime() {
     _g.play_need = 5;
     _g.rope_delay = 1;
     _g.rope_time = 0;
+    _g.rope_wait_sound = -1;
+    _g.rope_wait_time = 0;
     _g.jump_height = 0;
     _g.jump_velocity = 0;
     _g.rope_message = "Ready? Jump with SPACE!";
@@ -277,13 +292,16 @@ function bb_start_playtime() {
 function bb_playtime_sound(_name, _index=-1) {
     for (var _i=0; _i<array_length(global.G.npcs); _i++) {
         var _n=global.G.npcs[_i];
-        if (_n.kind=="playtime") { bb_ai_sound(_n,_name,true,_index);return; }
+        if (_n.kind=="playtime") return bb_ai_sound(_n,_name,true,_index);
     }
+    return -1;
 }
 
 function bb_end_playtime(_reason="release") {
     var _g = global.G;
     _g.play_lock = 0;
+    _g.rope_wait_sound = -1;
+    _g.rope_wait_time = 0;
     _g.jump_height = 0;
     _g.jump_velocity = 0;
     for (var _i = 0; _i < array_length(_g.npcs); _i++) {
@@ -297,6 +315,17 @@ function bb_rope_tick(_dt, _jump) {
     var _g = global.G;
     // CameraScript: velocity 5, gravity 10 in Unity's five-times-larger world.
     if (_jump && _g.jump_height <= 0) _g.jump_velocity = 1;
+    if (_g.rope_wait_time > 0) {
+        if (_g.rope_wait_sound != -1) {
+            if (audio_is_playing(_g.rope_wait_sound)) return;
+            _g.rope_wait_time = 0;
+        } else {
+            _g.rope_wait_time = max(0, _g.rope_wait_time-_dt);
+        }
+        if (_g.rope_wait_time > 0) return;
+        _g.rope_wait_sound = -1;
+        _g.rope_delay = 0.01;
+    }
     while (_dt > 0.000001 && _g.play_lock > 0) {
         var _step = min(_dt, 0.01);
         _dt -= _step;
@@ -319,9 +348,10 @@ function bb_rope_tick(_dt, _jump) {
                     else bb_playtime_sound("aud_Numbers",4-_g.play_need);
                 } else {
                     _g.play_need = 5;
-                    _g.rope_delay = 2;
+                    _g.rope_wait_time = audio_sound_length(global.S.clips[$ global.E.npcs.playtime.audio.aud_Oops]);
+                    _g.rope_delay = _g.rope_wait_time;
                     _g.rope_message = "Oops! Try again!";
-                    bb_playtime_sound("aud_Oops");
+                    _g.rope_wait_sound = bb_playtime_sound("aud_Oops");
                 }
             }
         }
@@ -330,7 +360,7 @@ function bb_rope_tick(_dt, _jump) {
 
 function bb_draw_rope(_w, _h) {
     var _g = global.G;
-    if (_g.rope_delay > 0) return;
+    if (_g.rope_delay > 0 || _g.rope_wait_sound != -1) return;
     var _phase = 1 - clamp(_g.rope_time, 0, 1);
     var _frames = global.P.details.rope_frames, _texture = _frames[0].texture;
     for (var _i = 1; _i < array_length(_frames); _i++) {
