@@ -89,6 +89,15 @@ function bb_draw_environment() {
     for (var _i=0; _i<array_length(global.E.billboards); _i++) {
         var _b=global.E.billboards[_i];
         if (bb_dist2(global.G.px,global.G.pz,_b.x,_b.z)>1600) continue;
+        if (variable_struct_exists(_b,"deform")) {
+            var _texture=_b.frames[0].texture;
+            for (var _fi=1;_fi<array_length(_b.frames);_fi++) {
+                if (_b.frames[_fi].time>global.G.secret_time) break;
+                _texture=_b.frames[_fi].texture;
+            }
+            bb3d_draw_deformed_billboard(global.PS[$ _texture],_b.deform,global.G.yaw);
+            continue;
+        }
         bb3d_draw_billboard(global.PS[$ _b.texture],0,_b.x,_b.y,_b.z,_b.w,_b.h,global.G.px,global.G.pz,c_white);
     }
 }

@@ -1,12 +1,10 @@
 if (global.bb_selftest) {
     var _pages=["title","modes","menu","options","story_info","credits","controls"];
+    if (variable_global_exists("test_loading_mode") && global.test_loading_mode=="story") {
+        global.test_loading_mode="endless";bb_start_mode("endless");exit;
+    }
     if (test_title_frames>=array_length(_pages)) {
-        bb_game_init();
-        bb_test_assert(ds_map_size(global.floors)==682 && array_length(global.G.doors)==23
-            && !bb_blocked_world(global.G.px,global.G.pz,global.G.radius,true),"school restarts safely after returning to title");
-        bb_game_cleanup();
-        show_debug_message("BB_TEST_RESULT: "+string(global.test_total)+" checks, "+string(global.test_failed)+" failures");
-        game_end();
+        global.test_loading_mode="story";bb_start_mode("story");
     } else {
         menu_page=_pages[test_title_frames++];menu_buttons=bb_menu_layout(menu_page);menu_selection=-1;
     }

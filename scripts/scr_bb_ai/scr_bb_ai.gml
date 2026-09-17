@@ -41,15 +41,24 @@ function bb_ai_target(_n,_hallway=true) {
 
 function bb_ai_go(_n,_tx,_tz,_speed,_dt) {
     var _x=_n.x,_z=_n.z;
-    if (bb_blocked_world(_x,_z,.3,true)) {
-        var _recovered=bb_grid_recover_position(_x,_z,.3);
+    // The principal's office exit must not unlock or visually open the blue
+    // detention door. Only his movement ignores that barrier while it is locked.
+    var _ignore_door=-1;
+    if (_n.kind=="principal" && global.G.detention>0) {
+        var _office=bb_office_door();
+        if (_office>=0 && global.G.doors[_office].locked) _ignore_door=_office;
+    }
+    if (bb_blocked_world(_x,_z,.3,true,_ignore_door)) {
+        var _recovered=bb_grid_recover_position(_x,_z,.3,_ignore_door);
         _x=_recovered[0];_z=_recovered[1];_n.x=_x;_n.z=_z;
     }
     bb_npc_touch_doors(_x,_z,.4);
-    var _p=bb_nav_advance(_x,_z,_tx,_tz,_speed*_dt,.3,true);
+    var _p=bb_nav_advance(_x,_z,_tx,_tz,_speed*_dt,.3,true,_ignore_door);
     _n.x=_p[0];_n.z=_p[1];
     _n.vx=(_n.x-_x)/max(_dt,.0001);_n.vz=(_n.z-_z)/max(_dt,.0001);
-    if (bb_dist2(_x,_z,_n.x,_n.z)<.000001) _n.stuck+=_dt; else _n.stuck=0;
+    // Include equality: GM's comparison epsilon treats 0 and .000001 as
+    // equal, so a strict '<' never counted a completely stationary NPC.
+    if (bb_dist2(_x,_z,_n.x,_n.z)<=.000001) _n.stuck+=_dt; else _n.stuck=0;
     bb_npc_touch_doors(_n.x,_n.z,.4);
 }
 
@@ -102,21 +111,31 @@ function bb_ai_principal(_n,_dt) {
 
 function bb_ai_playtime(_n,_dt) {
     var _g=global.G;
-    if (_g.play_lock>0) { _n.cool=15;return; }
+    if (_g.play_lock>0) {
+        _n.cool=15;
+        _n.touch=bb_dist2(_n.x,_n.z,_g.px,_g.pz)<.49;
+        return;
+    }
     _n.cool=max(0,_n.cool-_dt);
     if (_n.sees && _n.cool<=0 && bb_dist2(_n.x,_n.z,_g.px,_g.pz)<=256) {
         if (_n.mode!="chase") bb_ai_sound(_n,"aud_LetsPlay",true);
         _n.mode="chase";
         bb_ai_go(_n,_g.px,_g.pz,4,_dt);
-        if (bb_dist2(_n.x,_n.z,_g.px,_g.pz)<.49 && bb_los(_n.x,_n.z,_g.px,_g.pz)) {
-            bb_start_playtime();
-            var _dx=_n.x-_g.px,_dz=_n.z-_g.pz,_len=max(.001,sqrt(_dx*_dx+_dz*_dz));
-            var _p=bb_move_slide(_n.x,_n.z,_dx/_len*2,_dz/_len*2,.3,true);
-            _n.x=_p[0];_n.z=_p[1];_n.cool=15;
-        }
     } else {
         if (_n.mode=="chase") { _n.target_ready=false;_n.mode="wander"; }
         bb_ai_wander(_n,_dt,3);
+    }
+    // PlayerScript uses OnTriggerEnter: contact made during playCool cannot fire
+    // later unless the colliders separate and enter again.
+    var _touch=bb_dist2(_n.x,_n.z,_g.px,_g.pz)<.49;
+    var _entered=_touch && !_n.touch;
+    _n.touch=_touch;
+    if (_entered && _n.cool<=0) {
+        bb_start_playtime();
+        var _dx=_n.x-_g.px,_dz=_n.z-_g.pz,_len=max(.001,sqrt(_dx*_dx+_dz*_dz));
+        var _p=bb_move_slide(_n.x,_n.z,_dx/_len*2,_dz/_len*2,.3,true);
+        _n.x=_p[0];_n.z=_p[1];_n.cool=15;
+        _n.touch=bb_dist2(_n.x,_n.z,_g.px,_g.pz)<.49;
     }
 }
 

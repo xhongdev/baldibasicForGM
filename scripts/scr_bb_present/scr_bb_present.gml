@@ -14,6 +14,24 @@ function bb_presentation_init() {
     global.A = json_parse(bb_read_text("audio_manifest.json"));
 }
 
+function bb_loading_texture(_time) {
+    var _load=global.P.menu.loading,_frames=_load.frames;
+    var _phase=max(0,_time) mod _load.duration,_texture=_frames[0].texture;
+    for (var _i=1;_i<array_length(_frames);_i++) {
+        if (_frames[_i].time>_phase) break;
+        _texture=_frames[_i].texture;
+    }
+    return _texture;
+}
+
+function bb_loading_draw(_time) {
+    bb_ui_begin();
+    var _load=global.P.menu.loading;
+    draw_set_color(c_white);draw_rectangle(0,0,640,480,false);
+    bb_ui_texture(bb_loading_texture(_time),_load.rect);
+    bb_yctp_text(_load.text.value,_load.text,false,false);
+}
+
 function bb_ui_begin() {
     shader_reset();
     gpu_set_ztestenable(false);
@@ -186,6 +204,31 @@ function bb_yctp_text_layout(_text, _node, _single = false) {
         }
     }
     return _glyphs;
+}
+
+function bb_yctp_text_fit_node(_text, _node, _rect) {
+    var _fit=variable_clone(_node);
+    _fit.rect=_rect;
+    for (var _attempt=0;_attempt<8;_attempt++) {
+        var _glyphs=bb_yctp_text_layout(_text,_fit),_top=1000000,_bottom=-1000000;
+        for (var _i=0;_i<array_length(_glyphs);_i++) {
+            var _glyph=_glyphs[_i];
+            _top=min(_top,_glyph.y);
+            _bottom=max(_bottom,_glyph.y+_glyph.src[3]*_glyph.scale);
+        }
+        if (array_length(_glyphs)==0 || (_top>=_rect[1]+1 && _bottom<=_rect[1]+_rect[3]-1)) break;
+        var _height=max(1,_bottom-_top);
+        _fit.font_size=max(12,_fit.font_size*clamp((_rect[3]-2)/_height*.99,.75,.98));
+    }
+    return _fit;
+}
+
+function bb_menu_endless_text_node(_text) {
+    var _menu=global.P.menu,_source=_menu.text.endless,_story=_menu.text.story.rect;
+    var _back_top=_menu.buttons.play_back.hit[1];
+    var _top=_story[1]+_story[3]+4;
+    var _rect=[_source.rect[0],_top,_source.rect[2],max(1,_back_top-_top-4)];
+    return bb_yctp_text_fit_node(_text,_source,_rect);
 }
 
 function bb_yctp_text(_text, _node, _single = false, _clip = true, _underline = false) {

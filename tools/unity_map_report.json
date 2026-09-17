@@ -1,9 +1,0 @@
-{
-  "floors": 682,
-  "reachable_floors": 682,
-  "wall_surfaces": 883,
-  "collision_walls": 698,
-  "doors": 23,
-  "notebooks": 7,
-  "nav_edges": 1031
-}

@@ -81,17 +81,17 @@ function bb_grid_nearest(_x,_z) {
     return -1;
 }
 
-function bb_grid_node_reachable(_x,_z,_id,_r) {
+function bb_grid_node_reachable(_x,_z,_id,_r,_ignore_door=-1) {
     if (_id<0) return false;
     var _n=global.path_grid,_tx=_n.xs[_id],_tz=_n.zs[_id];
-    if (bb_dist2(_x,_z,_tx,_tz)<.000001) return !bb_blocked_world(_x,_z,_r,true);
-    var _p=bb_move_slide(_x,_z,_tx-_x,_tz-_z,_r,true);
+    if (bb_dist2(_x,_z,_tx,_tz)<.000001) return !bb_blocked_world(_x,_z,_r,true,_ignore_door);
+    var _p=bb_move_slide(_x,_z,_tx-_x,_tz-_z,_r,true,_ignore_door);
     return bb_dist2(_p[0],_p[1],_tx,_tz)<.0001;
 }
 
-function bb_grid_start(_x,_z,_r=.3) {
+function bb_grid_start(_x,_z,_r=.3,_ignore_door=-1) {
     var _n=global.path_grid,_nearest=bb_grid_nearest(_x,_z);
-    if (bb_grid_node_reachable(_x,_z,_nearest,_r)) return _nearest;
+    if (bb_grid_node_reachable(_x,_z,_nearest,_r,_ignore_door)) return _nearest;
     var _base_x=round((_x-_n.x0)*2),_base_z=round((_z-_n.z0)*2);
     for (var _ring=1;_ring<=8;_ring++) {
         var _best=-1,_best_d=1000000;
@@ -101,7 +101,7 @@ function bb_grid_start(_x,_z,_r=.3) {
                 var _ix=_base_x+_ox,_iz=_base_z+_oz;
                 if (_ix<0 || _iz<0 || _ix>=_n.w || _iz>=_n.h) continue;
                 var _id=_n.cells[_iz*_n.w+_ix];
-                if (_id<0 || !bb_grid_node_reachable(_x,_z,_id,_r)) continue;
+                if (_id<0 || !bb_grid_node_reachable(_x,_z,_id,_r,_ignore_door)) continue;
                 var _d=bb_dist2(_x,_z,_n.xs[_id],_n.zs[_id])+_n.center[_id]*.001;
                 if (_d<_best_d) {_best_d=_d;_best=_id;}
             }
@@ -111,8 +111,8 @@ function bb_grid_start(_x,_z,_r=.3) {
     return _nearest;
 }
 
-function bb_grid_recover_position(_x,_z,_r=.3) {
-    if (!bb_blocked_world(_x,_z,_r,true)) return [_x,_z];
+function bb_grid_recover_position(_x,_z,_r=.3,_ignore_door=-1) {
+    if (!bb_blocked_world(_x,_z,_r,true,_ignore_door)) return [_x,_z];
     var _n=global.path_grid,_base_x=round((_x-_n.x0)*2),_base_z=round((_z-_n.z0)*2);
     for (var _ring=0;_ring<=12;_ring++) {
         var _best=-1,_best_d=1000000;
@@ -126,7 +126,7 @@ function bb_grid_recover_position(_x,_z,_r=.3) {
                 // A tiny probe rejects candidates across a real wall while still
                 // allowing an authored spawn that only overlaps the actor-radius margin.
                 var _tx=_n.xs[_id],_tz=_n.zs[_id];
-                var _probe=bb_move_slide(_x,_z,_tx-_x,_tz-_z,.01,true);
+                var _probe=bb_move_slide(_x,_z,_tx-_x,_tz-_z,.01,true,_ignore_door);
                 if (bb_dist2(_probe[0],_probe[1],_tx,_tz)>=.0001) continue;
                 var _d=bb_dist2(_x,_z,_tx,_tz)+_n.center[_id]*.001;
                 if (_d<_best_d) {_best_d=_d;_best=_id;}
@@ -139,6 +139,11 @@ function bb_grid_recover_position(_x,_z,_r=.3) {
 }
 
 function bb_grid_build() {
+    bb_grid_begin();
+    bb_grid_build_step(0);
+}
+
+function bb_grid_begin() {
     var _keys=ds_map_keys_to_array(global.floors);
     var _x0=1000,_z0=1000,_x1=-1000,_z1=-1000;
     for (var _i=0; _i<array_length(_keys); _i++) {
@@ -146,27 +151,37 @@ function bb_grid_build() {
         _x0=min(_x0,_x-1);_x1=max(_x1,_x+1);_z0=min(_z0,_z-1);_z1=max(_z1,_z+1);
     }
     var _w=round((_x1-_x0)*2)+1,_h=round((_z1-_z0)*2)+1;
-    global.path_grid={x0:_x0,z0:_z0,w:_w,h:_h,cells:array_create(_w*_h,-1),xs:[],zs:[],neighbors:[],door:[],center:[],routes:[],mask:-1,searches:0};
+    global.path_grid={x0:_x0,z0:_z0,w:_w,h:_h,cells:array_create(_w*_h,-1),xs:[],zs:[],neighbors:[],door:[],center:[],routes:[],mask:-1,searches:0,build_phase:0,build_cursor:0};
+}
+
+function bb_grid_build_step(_budget_us) {
     var _n=global.path_grid;
-    for (var _iz=0; _iz<_h; _iz++) {
-        for (var _ix=0; _ix<_w; _ix++) {
-            var _x=_x0+_ix*.5,_z=_z0+_iz*.5;
-            if (!bb_on_floor(_x,_z) || bb_walls_point(_x,_z,.3)) continue;
-            var _id=array_length(_n.xs);
-            _n.cells[_iz*_w+_ix]=_id;array_push(_n.xs,_x);array_push(_n.zs,_z);array_push(_n.neighbors,[]);
-            array_push(_n.center,min(abs(_x-bb_tile_snap(_x)),abs(_z-bb_tile_snap(_z))));
-            var _door=-1;
-            for (var _di=0; _di<array_length(global.G.doors); _di++) {
-                var _box=bb_door_box(global.G.doors[_di]);
-                if (bb_aabb_hit(_x,_z,.3,_box[0],_box[1],_box[2],_box[3])) { _door=_di;break; }
+    var _begin=get_timer(),_processed=0;
+    // Yield between cells/edges so LoadScreen remains animated while building
+    // the same graph used by synchronous scene switches and regression tests.
+    while (_n.build_phase<2) {
+        if (_budget_us>0 && _processed>=32 && get_timer()-_begin>=_budget_us) return false;
+        _processed+=1;
+        if (_n.build_phase==0) {
+            if (_n.build_cursor>=_n.w*_n.h) {_n.build_phase=1;_n.build_cursor=0;continue;}
+            var _cell=_n.build_cursor++;
+            var _x=_n.x0+(_cell mod _n.w)*.5,_z=_n.z0+floor(_cell/_n.w)*.5;
+            if (bb_on_floor(_x,_z) && !bb_walls_point(_x,_z,.3)) {
+                var _id=array_length(_n.xs);
+                _n.cells[_cell]=_id;array_push(_n.xs,_x);array_push(_n.zs,_z);array_push(_n.neighbors,[]);
+                array_push(_n.center,min(abs(_x-bb_tile_snap(_x)),abs(_z-bb_tile_snap(_z))));
+                var _door=-1;
+                for (var _di=0; _di<array_length(global.G.doors); _di++) {
+                    var _box=bb_door_box(global.G.doors[_di]);
+                    if (bb_aabb_hit(_x,_z,.3,_box[0],_box[1],_box[2],_box[3])) { _door=_di;break; }
+                }
+                array_push(_n.door,_door);
             }
-            array_push(_n.door,_door);
+            continue;
         }
-    }
-    // Actors use the floor-center lattice and take axis-aligned turns. This
-    // prevents a diagonal corner cut from entering furniture colliders.
-    var _dirs=[[.5,0],[-.5,0],[0,.5],[0,-.5]];
-    for (var _id=0; _id<array_length(_n.xs); _id++) {
+        if (_n.build_cursor>=array_length(_n.xs)) {_n.build_phase=2;break;}
+        // Axis-aligned edges keep actors from cutting through furniture.
+        var _dirs=[[.5,0],[-.5,0],[0,.5],[0,-.5]],_id=_n.build_cursor++;
         var _x=_n.xs[_id],_z=_n.zs[_id],_links=[];
         for (var _i=0; _i<4; _i++) {
             var _dx=_dirs[_i][0],_dz=_dirs[_i][1],_nb=bb_grid_id(_x+_dx,_z+_dz);
@@ -184,27 +199,31 @@ function bb_grid_build() {
         _n.neighbors[_id]=_links;
     }
     global.path_grids[$ string(global.path_signature)] = _n;
+    return true;
 }
 
-function bb_grid_step(_x,_z,_tx,_tz,_r=.3) {
-    var _n=global.path_grid,_start=bb_grid_start(_x,_z,_r),_goal=bb_grid_start(_tx,_tz,_r);
+function bb_grid_step(_x,_z,_tx,_tz,_r=.3,_ignore_door=-1) {
+    var _n=global.path_grid,_start=bb_grid_start(_x,_z,_r,_ignore_door),_goal=bb_grid_start(_tx,_tz,_r,_ignore_door);
     if (_start<0 || _goal<0) return [_x,_z];
     if (_start==_goal) {
-        if (!bb_blocked_world(_tx,_tz,_r,true)) {
-            var _direct=bb_move_slide(_x,_z,_tx-_x,_tz-_z,_r,true);
+        if (!bb_blocked_world(_tx,_tz,_r,true,_ignore_door)) {
+            var _direct=bb_move_slide(_x,_z,_tx-_x,_tz-_z,_r,true,_ignore_door);
             if (bb_dist2(_direct[0],_direct[1],_tx,_tz)<.0001) return [_tx,_tz];
         }
         return [_n.xs[_goal],_n.zs[_goal]];
     }
-    var _mask=0;
+    var _locked_mask=0;
     for (var _i=0; _i<array_length(global.G.doors); _i++) {
         var _d=global.G.doors[_i];
-        if (_d.locked || _d.lock_cd>0) _mask |= (1<<_i);
+        if (_d.locked) _locked_mask |= (1<<_i);
     }
-    if (_mask!=_n.mask) { _n.mask=_mask; _n.routes=[]; }
+    if (_locked_mask!=_n.mask) { _n.mask=_locked_mask; _n.routes=[]; }
+    var _mask=(_ignore_door<0)?_locked_mask:(_locked_mask & ~(1<<_ignore_door));
+    // Keep both actor permissions cached during detention. Alternating between
+    // the principal and other NPCs must not flush every route each frame.
     var _next=undefined,_route_index=-1;
     for (var _i=0; _i<array_length(_n.routes); _i++) {
-        if (_n.routes[_i].goal!=_goal) continue;
+        if (_n.routes[_i].goal!=_goal || _n.routes[_i].mask!=_mask) continue;
         _route_index=_i;
         if (_n.routes[_i].settled[_start]) {_next=_n.routes[_i].next;break;}
     }
@@ -244,10 +263,10 @@ function bb_grid_step(_x,_z,_tx,_tz,_r=.3) {
                 }
             }
         }
-        if (_route_index>=0) _n.routes[_route_index]={goal:_goal,next:_next,settled:_settled};
+        if (_route_index>=0) _n.routes[_route_index]={goal:_goal,mask:_mask,next:_next,settled:_settled};
         else {
             if (array_length(_n.routes)>=32) array_delete(_n.routes,0,1);
-            array_push(_n.routes,{goal:_goal,next:_next,settled:_settled});
+            array_push(_n.routes,{goal:_goal,mask:_mask,next:_next,settled:_settled});
         }
     }
     var _id=_next[_start];
@@ -263,7 +282,7 @@ function bb_grid_step(_x,_z,_tx,_tz,_r=.3) {
         _projection=[clamp(_x,min(_sx,_wx),max(_sx,_wx)),_sz];
     }
     if (!is_undefined(_projection)
-        && !bb_blocked_world(_projection[0],_projection[1],.3,true)
+        && !bb_blocked_world(_projection[0],_projection[1],.3,true,_ignore_door)
         && !bb_walls_segment(_x,_z,_projection[0],_projection[1],.29)) return _projection;
     if (bb_walls_segment(_x,_z,_wx,_wz,.29)) return [_n.xs[_start],_n.zs[_start]];
     return [_wx,_wz];

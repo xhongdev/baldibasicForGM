@@ -7,6 +7,21 @@ function bb_test_assert(_ok, _message) {
     }
 }
 
+function bb_test_loading_complete(_load) {
+    var _g=global.G;
+    bb_test_assert(_g.mode==global.test_loading_mode,"loading preserves selected mode "+global.test_loading_mode);
+    bb_test_assert(ds_map_size(global.floors)==682 && array_length(_g.doors)==23
+        && !bb_blocked_world(_g.px,_g.pz,_g.radius,true),"school restarts safely after animated loading "+_g.mode);
+    bb_test_assert(global.path_ready && global.path_grid.build_phase==2
+        && array_length(_g.npcs)==6 && _g.move_latched,"loading completes navigation and actors before gameplay "+_g.mode);
+    bb_test_assert(_load.presented>4 && _load.frame_changes>1,
+        "loading animation advances during actual school construction "+_g.mode
+        +" draws="+string(_load.presented)+" changes="+string(_load.frame_changes));
+    bb_test_assert(_g.nb_t==0 && !_g.spoop_mode && _g.notebooks==0,
+        "gameplay remains stopped while loading "+_g.mode);
+    show_debug_message("BB_PROFILE_LOAD: "+_g.mode+" seconds="+string(_load.time)+" peak_us="+string(_load.peak_us));
+}
+
 function bb_test_menu_source() {
     var _menu=global.P.menu,_keys=variable_struct_get_names(_menu.buttons);
     bb_test_assert(sprite_get_width(spr_title)==640 && sprite_get_height(spr_title)==480,
@@ -22,8 +37,8 @@ function bb_test_menu_source() {
             && _button.selected.crop[3]==sprite_get_height(_selected),
             "menu button preserves full source canvas across visual states "+_keys[_i]);
     }
-    var _start=_menu.buttons.start.rect,_exit=_menu.buttons.exit.rect;
-    var _start_hit=_menu.buttons.start.hit,_exit_hit=_menu.buttons.exit.hit;
+    var _start=_menu.buttons.start.rect,_exit=_menu.buttons[$ "exit"].rect;
+    var _start_hit=_menu.buttons.start.hit,_exit_hit=_menu.buttons[$ "exit"].hit;
     bb_test_assert(_start[0]==192 && _start[1]==392 && _start[2]==256 && _start[3]==128,
         "START uses the source MainMenu RectTransform");
     bb_test_assert(_exit[0]>543 && _exit[1]==-32 && _menu.buttons.start.preserve
@@ -44,6 +59,25 @@ function bb_test_menu_source() {
         && abs(_menu.text.endless.font_size-30.369)<.001
         && _menu.text.controls.font_size==24 && _menu.text.controls.line_spacing==16,
         "menu TMP sizes include each source RectTransform scale");
+    var _endless_value=_menu.text.endless.value+"\nHigh Score: 999999 Notebooks";
+    var _endless_fit=bb_menu_endless_text_node(_endless_value);
+    var _endless_glyphs=bb_yctp_text_layout(_endless_value,_endless_fit),_endless_bottom=-1000000;
+    for (var _i=0;_i<array_length(_endless_glyphs);_i++) {
+        var _glyph=_endless_glyphs[_i];
+        _endless_bottom=max(_endless_bottom,_glyph.y+_glyph.src[3]*_glyph.scale);
+    }
+    bb_test_assert(_endless_bottom<=_menu.buttons.play_back.hit[1]-4
+        && _endless_fit.rect[1]>=_menu.text.story.rect[1]+_menu.text.story.rect[3]+4,
+        "Endless description and high score stay clear of Story text and Back button");
+    var _load=_menu.loading;
+    bb_test_assert(array_length(_load.frames)==47 && abs(_load.duration-1.0208334)<=.00001
+        && _load.text.value=="LOAD","loading imports source spin loop and LOAD label");
+    bb_test_assert(abs(_load.rect[0]+_load.rect[2]*.5-320)<.001
+        && abs(_load.rect[1]+_load.rect[3]*.5-240)<.001
+        && abs(_load.rect[2]-166.0321)<.001,"loading head retains centered source scale");
+    bb_test_assert(bb_loading_texture(0)!=bb_loading_texture(.25)
+        && bb_loading_texture(.25)==bb_loading_texture(.25+_load.duration),
+        "loading animation changes frames and loops at original duration");
 }
 
 function bb_run_selftests() {
@@ -169,6 +203,8 @@ function bb_run_selftests() {
     bb_test_debug_menu();
     bb_test_scene_details();
     bb_test_stationary_navigation();
+    bb_test_principal_routes();
+    bb_test_detention();
     bb_test_restored_gameplay();
     bb_test_end_states();
     bb_test_ai_profile();
@@ -235,6 +271,25 @@ function bb_test_restored_gameplay() {
     bb_test_assert(_g.audio_log[array_length(_g.audio_log)-1].clip==global.S.clips[$ _playtime.source.audio.aud_Oops],"missed rope plays Oops voice");
     _g.inv=[9,-1,-1];_g.inv_sel=0;bb_use_item();
     bb_test_assert(_g.play_lock==0 && _g.audio_log[array_length(_g.audio_log)-1].clip==global.S.clips[$ _playtime.source.audio.aud_Sad],"cut rope releases player and disappoints Playtime");
+    bb_test_assert(abs(_playtime.cool-15)<.001,"Playtime keeps the source fifteen-second post-rope cooldown");
+    var _contact=bb_grid_recover_position(_g.px,_g.pz,.3);
+    _g.px=_contact[0];_g.pz=_contact[1];
+    var _away=_contact;
+    for (var _angle=0;_angle<360;_angle+=45) {
+        var _candidate=[_contact[0]+lengthdir_x(2,_angle),_contact[1]+lengthdir_y(2,_angle)];
+        if (!bb_blocked_world(_candidate[0],_candidate[1],.3,true)) {_away=_candidate;break;}
+    }
+    bb_test_assert(bb_dist2(_away[0],_away[1],_contact[0],_contact[1])>1,
+        "Playtime cooldown check finds a legal separation point");
+    _playtime.x=_g.px;_playtime.z=_g.pz;_playtime.cool=.01;_playtime.touch=false;_playtime.sees=false;
+    bb_ai_playtime(_playtime,.005);
+    _playtime.x=_g.px;_playtime.z=_g.pz;
+    bb_ai_playtime(_playtime,.01);
+    bb_test_assert(_g.play_lock==0,"Playtime contact made during cooldown does not trigger when cooldown expires");
+    _playtime.x=_away[0];_playtime.z=_away[1];bb_ai_playtime(_playtime,0);
+    _playtime.x=_g.px;_playtime.z=_g.pz;bb_ai_playtime(_playtime,0);
+    bb_test_assert(_g.play_lock==1,"Playtime triggers after leaving and re-entering contact");
+    bb_end_playtime();
     _g.mode="endless";_g.spoop_mode=false;_g.notebooks=1;_g.baldi_active=false;
     bb_yctp_open();
     for (var _i=0;_i<3;_i++) { _g.yctp_input=string(_g.yctp_ans);bb_yctp_submit(); }
@@ -267,6 +322,119 @@ function bb_test_restored_gameplay() {
     bb_test_assert(_g.new_high_score && global.high_books==_high+1,"Endless death records notebook high score");
     bb_test_assert(variable_struct_exists(global.PS,_g.gameover_image),"game-over selects an imported source failure image");
     audio_stop_all();global.high_books=_high;global.G=_original;bb_refresh_details();
+}
+
+function bb_test_principal_routes() {
+    var _original=global.G;
+    global.G=variable_clone(_original);
+    var _g=global.G;
+    _g.notebooks=7;_g.detention=0;
+    for (var _i=0;_i<array_length(_g.doors);_i++) {
+        _g.doors[_i].locked=false;_g.doors[_i].lock_cd=0;_g.doors[_i].open=true;
+    }
+    var _principal=undefined;
+    for (var _i=0;_i<array_length(_g.npcs);_i++) if (_g.npcs[_i].kind=="principal") _principal=_g.npcs[_i];
+    var _book=_g.notebooks_list[6];
+    bb_debug_focus(_book.x,_book.z);
+    var _spawn=[_g.px,_g.pz];
+    show_debug_message("BB_TEST_NOTEBOOK7: "+string([_book.x,_book.z])+" teleport="+string(_spawn));
+    for (var _ti=0;_ti<array_length(global.E.targets);_ti++) {
+        var _target=global.E.targets[_ti];
+        _principal.x=_spawn[0];_principal.z=_spawn[1];
+        var _last=[];
+        var _goal=bb_grid_start(_target[0],_target[2]);
+        var _tx=global.path_grid.xs[_goal],_tz=global.path_grid.zs[_goal];
+        for (var _step=0;_step<2400;_step++) {
+            bb_ai_go(_principal,_target[0],_target[2],_principal.source.speed,1/30);
+            if (_step>=2394) array_push(_last,[_principal.x,_principal.z]);
+            if (bb_dist2(_principal.x,_principal.z,_tx,_tz)<.26) break;
+        }
+        bb_test_assert(bb_dist2(_principal.x,_principal.z,_tx,_tz)<.26,
+            "principal leaves Notebook7 for patrol target "+string(_ti)+" target="+string(_target)+" last="+string(_last));
+    }
+    var _rates=[30,60,144];
+    for (var _ri=0;_ri<array_length(_rates);_ri++) {
+        random_set_seed(143);
+        _principal.x=_spawn[0];_principal.z=_spawn[1];
+        _principal.target_x=14;_principal.target_z=-60;_principal.target_ready=true;
+        _principal.stuck=0;_principal.wander_cool=0;_principal.cool=0;
+        _principal.sees=false;_g.guilt=0;_g.prin_chase=false;
+        for (var _step=0;_step<_rates[_ri]*12;_step++) bb_ai_principal(_principal,1/_rates[_ri]);
+        bb_test_assert((_principal.target_x!=14 || _principal.target_z!=-60)
+            && bb_dist2(_principal.x,_principal.z,14,-60)>4,
+            "principal resumes patrol after Notebook7 chair endpoint "+string(_rates[_ri])+"fps");
+    }
+    _principal.x=14;_principal.z=-60.5;_principal.live=true;
+    _principal.target_x=14;_principal.target_z=-60;_principal.target_ready=true;_principal.stuck=0;
+    _g.sprays=[{x:14,z:-60.5,dx:0,dz:-1,life:30}];
+    for (var _step=0;_step<15;_step++) bb_update_sprays(1/60);
+    bb_test_assert(_principal.sprayed && _principal.z<-60.6,"BSODA displaces principal from Notebook7 chair endpoint");
+    _g.sprays=[];bb_update_sprays(1/60);
+    for (var _step=0;_step<720;_step++) bb_ai_principal(_principal,1/60);
+    bb_test_assert((_principal.target_x!=14 || _principal.target_z!=-60)
+        && bb_dist2(_principal.x,_principal.z,14,-60)>4,
+        "principal does not remain at Notebook7 chair endpoint after BSODA wears off");
+    global.G=_original;
+}
+
+function bb_test_detention() {
+    var _original=global.G;
+    global.G=variable_clone(_original);
+    var _g=global.G;
+    _g.notebooks=7;_g.debug.no_rules=false;_g.debug.god=true;
+    _g.debug.freeze_npcs=true;_g.debug.freeze_baldi=true;
+    _g.state="play";_g.pause=false;_g.det_n=0;_g.gameover=false;_g.win=false;
+    var _principal=undefined;
+    for (var _i=0;_i<array_length(_g.npcs);_i++) if (_g.npcs[_i].kind=="principal") _principal=_g.npcs[_i];
+    var _door=_g.doors[bb_office_door()];
+    bb_give_detention(_principal);
+    bb_test_assert(_g.detention==15 && _g.px==1 && _g.pz==-31
+        && _principal.x==1 && _principal.z==-33,"detention uses source player/principal warp coordinates");
+    for (var _i=0;_i<299;_i++) bb_ai_principal(_principal,1/60);
+    bb_test_assert(_principal.x==1 && _principal.z==-33,"principal pauses for source five-second cooldown");
+    _principal.target_x=6;_principal.target_z=-32;_principal.target_ready=true;
+    _principal.wander_cool=0;_principal.sees=false;_g.guilt=0;
+    var _door_stayed_closed=true;
+    for (var _i=0;_i<240;_i++) {
+        bb_ai_principal(_principal,1/60);
+        _door_stayed_closed=_door_stayed_closed && !_door.open && _door.locked;
+        if (!bb_region_contains(global.E.office,_principal.x,_principal.z)) break;
+    }
+    bb_test_assert(!bb_region_contains(global.E.office,_principal.x,_principal.z)
+        && _g.detention>0,"principal leaves while player is still in detention");
+    bb_test_assert(_door_stayed_closed && bb_blocked_world(_door.cx,_door.cz,_g.radius,true),
+        "principal leaves without opening blue door or releasing player collision");
+    var _other={kind:"playtime",x:4,z:-31.5,stuck:0};
+    for (var _i=0;_i<120;_i++) bb_ai_go(_other,6,-31.5,4,1/60);
+    bb_test_assert(_other.x<5 && !_door.open,"office exit permission does not leak to other NPC paths");
+    var _office_index=bb_office_door();
+    bb_grid_step(4,-31.5,6,-31.5,.3,_office_index);
+    bb_grid_step(4,-31.5,6,-31.5,.3);
+    var _cached_searches=global.path_grid.searches;
+    bb_grid_step(4,-31.5,6,-31.5,.3,_office_index);
+    bb_grid_step(4,-31.5,6,-31.5,.3);
+    // Unreachable searches need not be cached, but the principal's settled
+    // route must survive another actor's different locked-door permission.
+    bb_test_assert(global.path_grid.searches<=_cached_searches+1,
+        "principal office permission does not flush other actor route caches");
+    _g.px=4;_g.pz=-31.5;_g.yaw=-pi/2;_g.inv=[3,-1,-1];_g.inv_sel=0;
+    var _time=_g.detention,_lock=_door.lock_cd;
+    bb_test_assert(bb_use_item() && _g.inv[0]==-1 && _door.open && !_door.locked,
+        "office key unlocks and opens the targeted door");
+    bb_test_assert(_g.detention==_time && _door.lock_cd==_lock,
+        "office key preserves detention and source lockTime");
+    _door.open=false;
+    bb_test_assert(bb_door_try_open(_door,true),"key-unlocked door can reopen while lockTime remains positive");
+    _g.inv[0]=3;
+    bb_test_assert(!bb_use_item() && _g.inv[0]==3,"key is not consumed again on an unlocked door");
+    var _escape=bb_move_slide(4,-31.5,2,0,_g.radius,true);
+    _g.px=_escape[0];_g.pz=_escape[1];
+    bb_game_update(1/60);
+    bb_test_assert(_g.detention>0 && _g.guilt>0 && _g.guilt_type=="escape",
+        "leaving with office key still triggers no escaping detention");
+    bb_update_doors(100);
+    bb_test_assert(!_door.locked && _door.lock_cd==0,"office lock expires naturally after key use");
+    audio_stop_all();global.G=_original;
 }
 
 function bb_test_ai_profile() {
@@ -896,6 +1064,17 @@ function bb_test_presentation_render() {
     // Explicit top-left GUI projection, independent of the window's letterboxing.
     matrix_set(matrix_view, matrix_build( -320, -240, 0, 0, 0, 0, 1, 1, 1));
     matrix_set(matrix_projection, matrix_build_projection_ortho(640, -480, 0, 100));
+    surface_set_target(_expected);bb_loading_draw(0);surface_reset_target();
+    surface_set_target(_actual);bb_loading_draw(.25);surface_reset_target();
+    bb_test_assert(surface_getpixel(_actual,20,20)==c_white
+        && surface_getpixel(_actual,620,460)==c_white,"loading fills the screen with source white background");
+    bb_test_assert(bb_test_surface_difference(_expected,_actual,2)>100,
+        "source loading spin frames produce visible GPU animation");
+    surface_save(_actual,"bb_loading_spin_check.png");
+    surface_set_target(_expected);bb_ui_begin();draw_clear(c_white);
+    bb_ui_texture(bb_loading_texture(.25),global.P.menu.loading.rect);surface_reset_target();
+    bb_test_assert(bb_test_surface_difference(_expected,_actual,2)>30,
+        "loading renders source LOAD label over spinning head");
     var _start_button=global.P.menu.buttons.start;
     surface_set_target(_expected);bb_ui_begin();draw_clear(c_fuchsia);
     bb_menu_asset_draw(_start_button.normal,_start_button.rect,_start_button.preserve);surface_reset_target();
@@ -1079,6 +1258,7 @@ function bb_test_presentation_render() {
     bb_test_assert(surface_getpixel(_actual, 160, 120) != c_fuchsia,
         "Secret spawn view renders secretwall");
     surface_save(_actual, "bb_secret_front_check.png");
+    global.G.yaw=0;
     surface_set_target(_actual); bb3d_begin(global.G.px, global.G.py, global.G.pz, 0, 4/3);
     draw_clear(c_fuchsia); bb3d_draw_world(); bb_draw_environment(); bb_draw_doors(); bb_draw_entities();
     surface_reset_target(); bb3d_end();
@@ -1100,6 +1280,31 @@ function bb_test_presentation_render() {
         "Secret room renders the source green connecting door");
     surface_save(_actual, "bb_secret_door_check.png");
     surface_free(_expected); surface_free(_actual);
+    var _baldi=global.E.billboards[0],_deform=_baldi.deform;
+    var _spr=global.PS[$ _baldi.texture];
+    var _front=bb3d_deformed_vertices(_spr,_deform,0);
+    var _side=bb3d_deformed_vertices(_spr,_deform,pi/2);
+    bb_test_assert(abs(_front[2][0]-_front[1][0])>3
+        && abs(_front[2][2]-_front[1][2])>3,
+        "Secret Baldi vertical edge retains parent shear in X and Z");
+    bb_test_assert(abs(_front[1][1]-_front[0][1])>1
+        && abs(_side[1][1]-_side[0][1])>1,
+        "Secret Baldi width tilts with camera rotation through scaled parent");
+    bb_test_assert(bb_dist2(_front[1][0],_front[1][2],_side[1][0],_side[1][2])>1,
+        "Secret Baldi deformation updates with camera yaw");
+    _actual=surface_create(320,240);_expected=surface_create(320,240);
+    global.G.px=0;global.G.pz=-25;global.G.yaw=0;global.G.secret_time=1;
+    surface_set_target(_actual);bb3d_begin(0,1,-25,0,4/3);draw_clear(c_fuchsia);
+    bb3d_draw_world();bb_draw_environment();bb_draw_doors();bb_draw_entities();
+    surface_reset_target();bb3d_end();
+    surface_save(_actual,"bb_secret_baldi_check.png");
+    surface_set_target(_expected);bb3d_begin(0,1,-25,0,4/3);draw_clear(c_fuchsia);
+    bb3d_draw_world();bb_detail_meshes(global.E.meshes);
+    bb3d_draw_billboard(_spr,0,_baldi.x,_baldi.y,_baldi.z,_baldi.w,_baldi.h,0,-25,c_white);
+    bb_draw_doors();bb_draw_entities();surface_reset_target();bb3d_end();
+    bb_test_assert(bb_test_surface_difference(_actual,_expected,2)>50,
+        "Secret room GPU render includes deformed Baldi instead of rectangular billboard");
+    surface_free(_actual);surface_free(_expected);
     _actual = surface_create(320,240); surface_set_target(_actual); draw_clear(c_fuchsia);
     bb_game_draw_gui(); surface_reset_target();
     var _secret_gui_pixels=0;

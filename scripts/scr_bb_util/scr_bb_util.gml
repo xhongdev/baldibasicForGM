@@ -90,6 +90,7 @@ function bb_load_png_rb(_rel) {
 
 function bb_settings_init() {
     global.game_mode = "story";
+    global.school_loading_pending = false;
     ini_open("baldi_settings.ini");
     global.mouse_sensitivity = clamp(ini_read_real("Options", "MouseSensitivity", 2), 0.1, 10);
     global.master_volume = clamp(ini_read_real("Options", "Volume", 1), 0, 1);
@@ -112,8 +113,9 @@ function bb_settings_save() {
 }
 
 function bb_start_mode(_mode) {
+    if (global.school_loading_pending) return;
     global.game_mode = (_mode == "endless") ? "endless" : "story";
-    audio_stop_all();
+    global.school_loading_pending = true;
     room_goto(rm_school);
 }
 

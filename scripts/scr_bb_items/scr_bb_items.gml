@@ -134,11 +134,11 @@ function bb_use_item() {
         case 3:
             if (_hit.kind == "door") {
                 var _d = _g.doors[_hit.index];
-                if (_d.kind != "swing" && (_d.locked || _d.lock_cd > 0)) {
-                    _d.lock_cd = 0;
+                if (_d.kind != "swing" && _d.locked) {
+                    // Unity UnlockDoor only clears bDoorLocked. lockTime keeps
+                    // counting down and leaving the office still counts as escape.
                     _d.locked = false;
-                    bb_door_try_open(_d, true);
-                    if (_hit.index == bb_office_door()) _g.detention = 0;
+                    bb_door_try_open(_d, false);
                     _used = true;
                 }
             }

@@ -71,7 +71,7 @@ function bb_world_load(_map_file, _environment_file) {
     global.path_ready = true;
 }
 
-function bb_game_init() {
+function bb_game_init(_deferred=false) {
     global.path_ready=false;
     global.path_signature=0;
     global.path_grids={};
@@ -89,9 +89,11 @@ function bb_game_init() {
     }
     var _raw = bb_read_text("school_map.json");
     global.map = json_parse(_raw);
-    bb3d_build_map(global.map);
-    bb_build_collision(global.map);
-    bb_nav_build();
+    if (!_deferred) {
+        bb3d_build_map(global.map);
+        bb_build_collision(global.map);
+        bb_nav_build();
+    }
 
     var _p = global.map.player;
     var _t = global.map.tutor;
@@ -144,6 +146,7 @@ function bb_game_init() {
         over_t: 0,
         end_requested: false,
         secret_played: false,
+        secret_time: 0,
         secret_sound: -1,
         mouse_ready: false,
         move_latched: true,
@@ -322,10 +325,16 @@ function bb_game_init() {
     }
 
     global.G.exits = bb_runtime_exits(global.map);
+    if (_deferred) return;
     bb_refresh_details();
-    bb_grid_build();global.path_ready=true;
-    for (_i=0;_i<array_length(global.G.npcs);_i++) {
-        _npc=global.G.npcs[_i];
+    bb_grid_build();
+    bb_game_init_finish();
+}
+
+function bb_game_init_finish() {
+    global.path_ready=true;
+    for (var _i=0;_i<array_length(global.G.npcs);_i++) {
+        var _npc=global.G.npcs[_i];
         var _safe=bb_grid_recover_position(_npc.x,_npc.z,.3);
         if (_safe[0]!=_npc.x || _safe[1]!=_npc.z) {
             _npc.x=_safe[0];_npc.z=_safe[1];_npc.home_x=_safe[0];_npc.home_z=_safe[1];
@@ -343,6 +352,37 @@ function bb_game_init() {
     bb_voice_replace("tutor", [snd_bal_hi]);
     window_set_cursor(cr_none);
     window_mouse_set_locked(true);
+}
+
+function bb_school_loading_begin() {
+    window_mouse_set_locked(false);
+    window_set_cursor(cr_default);
+    return {stage:0,time:0,drawn:false,done:false,peak_us:0,presented:0,frame_changes:0,last_texture:""};
+}
+
+function bb_school_loading_tick(_load,_dt) {
+    if (_load.done) return true;
+    _load.time+=max(0,_dt);
+    // Present the source LoadScreen before beginning the expensive work.
+    if (!_load.drawn) return false;
+    var _begin=get_timer();
+    switch (_load.stage) {
+        case 0:
+            global.E=json_parse(bb_read_text(global.P.environment_file));
+            bb_game_init(true);_load.stage=1;break;
+        case 1: bb3d_build_map(global.map);_load.stage=2;break;
+        case 2:
+            bb_build_collision(global.map);bb_nav_build();bb_refresh_details();
+            bb_grid_begin();_load.stage=3;break;
+        case 3:
+            if (bb_grid_build_step(8000)) _load.stage=4;
+            break;
+        case 4:
+            bb_game_init_finish();_load.done=true;
+            break;
+    }
+    _load.peak_us=max(_load.peak_us,get_timer()-_begin);
+    return _load.done;
 }
 
 function bb_spr_info(_spr) {
@@ -369,7 +409,6 @@ function bb_dump_line(_f, _s) {
 
 function bb_dump_runtime() {
     var _paths = [
-        "D:/Github/baldibasicForGM/tools/gm_runtime_dump.txt",
         working_directory + "gm_runtime_dump.txt",
         program_directory + "gm_runtime_dump.txt",
         "gm_runtime_dump.txt"
@@ -833,7 +872,7 @@ function bb_door_try_open(_d, _hear) {
     if (_d.kind == "swing") {
         _d.locked = bb_swing_blocked(_d);
     }
-    if (_d.locked || _d.lock_cd > 0) {
+    if (_d.locked) {
         return false;
     }
     if (_d.kind == "swing") {
@@ -1206,21 +1245,24 @@ function bb_give_detention(_n) {
     else if (_g.det_n >= 5) _t = 99;
     _g.detention = _t;
     _g.px = 1;
-    _g.pz = -32;
+    _g.pz = -31;
     _g.yaw = 0;
     _g.guilt = 0;
     bb_end_playtime();
     _n.x = 1;
-    _n.z = -34;
+    _n.z = -33;
     _n.cool = 5;
     _n.stare = 0;
+    _n.target_ready = false;
+    _n.wander_cool = 0;
+    _n.stuck = 0;
     var _door = bb_office_door();
     if (_door != -1) {
         _g.doors[_door].lock_cd = _t;
         _g.doors[_door].locked = true;
         _g.doors[_door].open = false;
     }
-    bb_hear_pri(1, -32, 8);
+    if (_g.baldi_active) bb_hear_pri(_n.x, _n.z, 8);
     bb_voice_replace("principal", [global.S.aud_Delay, global.S[$ "audTimes" + string(min(4, _g.det_n-1))],
         global.S.audDetention, global.S[$ "audScolds" + string(irandom(2))]]);
 }
@@ -1662,7 +1704,7 @@ function bb_secret_begin() {
     _g.move_latched = true;
     _g.win = false; _g.gameover = false; _g.pause = false;
     _g.final_red = 0; _g.over_t = 0; _g.end_requested = false;
-    _g.secret_played = false; _g.secret_sound = -1;
+    _g.secret_played = false; _g.secret_sound = -1; _g.secret_time = 0;
     bb_world_load(_secret.map_file, _secret.environment_file);
     _g.px = global.map.player[0];
     _g.py = variable_struct_exists(global.map, "camera") ? global.map.camera[1] : global.map.player[1];
@@ -1676,6 +1718,7 @@ function bb_secret_begin() {
 
 function bb_secret_update(_dt) {
     var _g = global.G, _secret = global.P.details.secret, _actor = _secret.filename2;
+    _g.secret_time += _dt;
     if (!_g.secret_played && bb_dist2(_g.px, _g.pz, _actor.x, _actor.z) <= sqr(_secret.trigger_radius)) {
         _g.secret_played = true;
         _g.secret_sound = bb_world_sound(global.S.clips[$ _secret.recording_audio], _actor.x, _actor.z, 5, 100);

@@ -348,6 +348,48 @@ function bb3d_draw_billboard(_spr, _img, _x, _y, _z, _w, _h, _camx, _camz, _col)
     gpu_set_texrepeat(true);
 }
 
+function bb3d_deformed_vertices(_spr,_deform,_yaw) {
+    var _uv=sprite_get_uvs(_spr,0),_sw=sprite_get_width(_spr),_sh=sprite_get_height(_spr);
+    var _unit=_deform.units_per_pixel,_pivot=_deform.pivot;
+    var _left=(-_sw*_pivot[0]+_uv[4])*_unit[0];
+    var _right=_left+_uv[6]*_sw*_unit[0];
+    var _top=(_sh*(1-_pivot[1])-_uv[5])*_unit[1];
+    var _bottom=_top-_uv[7]*_sh*_unit[1];
+    var _m=_deform.stretch,_o=_deform.origin;
+    // Unity Billboard uses camera.rotation, including when looking backwards.
+    // Its parent's 3/5/23 scale remains in the local-to-world transform.
+    var _rx=cos(_yaw),_rz=-sin(_yaw),_right_axis=[],_up_axis=[];
+    for (var _i=0;_i<3;_i++) {
+        array_push(_right_axis,_m[_i][0]*_rx+_m[_i][2]*_rz);
+        array_push(_up_axis,_m[_i][1]);
+    }
+    var _corners=[[_left,_bottom,_uv[0],_uv[3]],[_right,_bottom,_uv[2],_uv[3]],
+        [_right,_top,_uv[2],_uv[1]],[_left,_top,_uv[0],_uv[1]]],_vertices=[];
+    for (var _i=0;_i<4;_i++) {
+        var _c=_corners[_i];
+        array_push(_vertices,[_o[0]+_right_axis[0]*_c[0]+_up_axis[0]*_c[1],
+            _o[1]+_right_axis[1]*_c[0]+_up_axis[1]*_c[1],
+            _o[2]+_right_axis[2]*_c[0]+_up_axis[2]*_c[1],_c[2],_c[3]]);
+    }
+    return _vertices;
+}
+
+function bb3d_draw_deformed_billboard(_spr,_deform,_yaw) {
+    var _v=bb3d_deformed_vertices(_spr,_deform,_yaw),_vb=global.vb_bill;
+    vertex_begin(_vb,global.vf_3d);
+    var _indices=[0,1,2,0,2,3];
+    for (var _i=0;_i<6;_i++) {
+        var _p=_v[_indices[_i]];
+        bb3d_vert(_vb,_p[0],_p[1],_p[2],0,1,0,_p[3],_p[4],c_white,1);
+    }
+    vertex_end(_vb);
+    gpu_set_texrepeat(false);
+    gpu_set_alphatestenable(true);
+    gpu_set_alphatestref(32);
+    vertex_submit(_vb,pr_trianglelist,sprite_get_texture(_spr,0));
+    gpu_set_texrepeat(true);
+}
+
 function bb3d_end() {
     gpu_set_ztestenable(false);
     gpu_set_zwriteenable(false);

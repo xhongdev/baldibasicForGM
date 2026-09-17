@@ -256,6 +256,382 @@
         32
       ]
     },
+    "loading_head_0": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0000.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0000.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_1": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0001.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0001.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_2": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0002.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0002.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_3": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0003.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0003.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_4": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0004.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0004.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_5": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0005.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0005.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_6": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0006.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0006.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_7": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0007.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0007.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_8": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0008.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0008.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_9": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0009.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0009.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_10": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0010.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0010.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_11": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0011.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0011.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_12": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0012.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0012.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_13": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0013.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0013.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_14": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0014.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0014.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_15": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0015.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0015.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_16": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0016.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0016.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_17": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0017.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0017.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_18": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0018.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0018.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_19": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0019.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0019.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_20": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0020.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0020.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_21": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0021.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0021.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_22": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0022.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0022.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_23": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0023.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0023.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_24": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0025.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0025.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_25": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0026.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0026.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_26": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0027.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0027.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_27": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0028.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0028.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_28": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0029.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0029.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_29": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0030.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0030.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_30": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0031.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0031.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_31": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0032.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0032.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_32": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0033.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0033.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_33": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0034.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0034.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_34": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0035.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0035.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_35": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0036.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0036.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_36": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0037.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0037.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_37": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0038.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0038.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_38": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0039.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0039.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_39": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0040.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0040.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_40": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0041.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0041.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_41": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0042.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0042.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_42": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0043.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0043.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_43": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0044.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0044.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_44": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0045.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0045.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_45": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0046.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0046.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "loading_head_46": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_LoadingHead_HeadSpin0047.png",
+      "source": "Assets/Texture2D/Characters/Baldi/LoadingHead/HeadSpin0047.png",
+      "size": [
+        128,
+        128
+      ]
+    },
     "yctp_BaldiFeed": {
       "file": "tex/presentation/Texture2D_Characters_Baldi_MathGame_Frown_Bald_Frown0000.png",
       "source": "Assets/Texture2D/Characters/Baldi/MathGame/Frown/Bald_Frown0000.png",
@@ -2647,6 +3023,46 @@
         106,
         256
       ]
+    },
+    "secret_baldi_0": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_Angry_Baldi_Slap0000.png",
+      "source": "Assets/Texture2D/Characters/Baldi/Angry/Baldi_Slap0000.png",
+      "size": [
+        106,
+        256
+      ]
+    },
+    "secret_baldi_1": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_Angry_Baldi_Slap0006.png",
+      "source": "Assets/Texture2D/Characters/Baldi/Angry/Baldi_Slap0006.png",
+      "size": [
+        106,
+        256
+      ]
+    },
+    "secret_baldi_2": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_Angry_Baldi_Slap0012.png",
+      "source": "Assets/Texture2D/Characters/Baldi/Angry/Baldi_Slap0012.png",
+      "size": [
+        106,
+        256
+      ]
+    },
+    "secret_baldi_3": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_Angry_Baldi_Slap0018.png",
+      "source": "Assets/Texture2D/Characters/Baldi/Angry/Baldi_Slap0018.png",
+      "size": [
+        106,
+        256
+      ]
+    },
+    "secret_baldi_4": {
+      "file": "tex/presentation/Texture2D_Characters_Baldi_Angry_Baldi_Slap0024.png",
+      "source": "Assets/Texture2D/Characters/Baldi/Angry/Baldi_Slap0024.png",
+      "size": [
+        106,
+        256
+      ]
     }
   },
   "hud": {
@@ -4081,6 +4497,223 @@
         31.9999,
         31.9999
       ]
+    },
+    "loading": {
+      "rect": [
+        236.984,
+        156.984,
+        166.0321,
+        166.0321
+      ],
+      "duration": 1.0208334,
+      "frames": [
+        {
+          "time": 0.020833334,
+          "texture": "loading_head_0"
+        },
+        {
+          "time": 0.041666668,
+          "texture": "loading_head_1"
+        },
+        {
+          "time": 0.0625,
+          "texture": "loading_head_2"
+        },
+        {
+          "time": 0.083333336,
+          "texture": "loading_head_3"
+        },
+        {
+          "time": 0.104166664,
+          "texture": "loading_head_4"
+        },
+        {
+          "time": 0.125,
+          "texture": "loading_head_5"
+        },
+        {
+          "time": 0.14583333,
+          "texture": "loading_head_6"
+        },
+        {
+          "time": 0.16666667,
+          "texture": "loading_head_7"
+        },
+        {
+          "time": 0.1875,
+          "texture": "loading_head_8"
+        },
+        {
+          "time": 0.20833333,
+          "texture": "loading_head_9"
+        },
+        {
+          "time": 0.22916667,
+          "texture": "loading_head_10"
+        },
+        {
+          "time": 0.25,
+          "texture": "loading_head_11"
+        },
+        {
+          "time": 0.27083334,
+          "texture": "loading_head_12"
+        },
+        {
+          "time": 0.29166666,
+          "texture": "loading_head_13"
+        },
+        {
+          "time": 0.3125,
+          "texture": "loading_head_14"
+        },
+        {
+          "time": 0.33333334,
+          "texture": "loading_head_15"
+        },
+        {
+          "time": 0.35416666,
+          "texture": "loading_head_16"
+        },
+        {
+          "time": 0.375,
+          "texture": "loading_head_17"
+        },
+        {
+          "time": 0.39583334,
+          "texture": "loading_head_18"
+        },
+        {
+          "time": 0.41666666,
+          "texture": "loading_head_19"
+        },
+        {
+          "time": 0.4375,
+          "texture": "loading_head_20"
+        },
+        {
+          "time": 0.45833334,
+          "texture": "loading_head_21"
+        },
+        {
+          "time": 0.47916666,
+          "texture": "loading_head_22"
+        },
+        {
+          "time": 0.5,
+          "texture": "loading_head_23"
+        },
+        {
+          "time": 0.5416667,
+          "texture": "loading_head_24"
+        },
+        {
+          "time": 0.5625,
+          "texture": "loading_head_25"
+        },
+        {
+          "time": 0.5833333,
+          "texture": "loading_head_26"
+        },
+        {
+          "time": 0.6041667,
+          "texture": "loading_head_27"
+        },
+        {
+          "time": 0.625,
+          "texture": "loading_head_28"
+        },
+        {
+          "time": 0.6458333,
+          "texture": "loading_head_29"
+        },
+        {
+          "time": 0.6666667,
+          "texture": "loading_head_30"
+        },
+        {
+          "time": 0.6875,
+          "texture": "loading_head_31"
+        },
+        {
+          "time": 0.7083333,
+          "texture": "loading_head_32"
+        },
+        {
+          "time": 0.7291667,
+          "texture": "loading_head_33"
+        },
+        {
+          "time": 0.75,
+          "texture": "loading_head_34"
+        },
+        {
+          "time": 0.7708333,
+          "texture": "loading_head_35"
+        },
+        {
+          "time": 0.7916667,
+          "texture": "loading_head_36"
+        },
+        {
+          "time": 0.8125,
+          "texture": "loading_head_37"
+        },
+        {
+          "time": 0.8333333,
+          "texture": "loading_head_38"
+        },
+        {
+          "time": 0.8541667,
+          "texture": "loading_head_39"
+        },
+        {
+          "time": 0.875,
+          "texture": "loading_head_40"
+        },
+        {
+          "time": 0.8958333,
+          "texture": "loading_head_41"
+        },
+        {
+          "time": 0.9166667,
+          "texture": "loading_head_42"
+        },
+        {
+          "time": 0.9375,
+          "texture": "loading_head_43"
+        },
+        {
+          "time": 0.9583333,
+          "texture": "loading_head_44"
+        },
+        {
+          "time": 0.9791667,
+          "texture": "loading_head_45"
+        },
+        {
+          "time": 1.0,
+          "texture": "loading_head_46"
+        }
+      ],
+      "text": {
+        "rect": [
+          236.984,
+          219.246,
+          166.0321,
+          41.508
+        ],
+        "value": "LOAD",
+        "font_size": 39.8477,
+        "alignment": 514,
+        "spacing": 4.383246912000001,
+        "colour": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
     }
   },
   "notebooks": {

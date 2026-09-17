@@ -11,8 +11,9 @@ switch (menu_page) {
     case "modes":
         var _story=global.P.menu.text.story,_endless=global.P.menu.text.endless;
         bb_yctp_text(_story.value,_story,false,false,_selected=="story");
-        bb_yctp_text(_endless.value+"\nHigh Score: "+string(global.high_books)+" Notebooks",
-            _endless,false,false,_selected=="endless");
+        var _endless_value=_endless.value+"\nHigh Score: "+string(global.high_books)+" Notebooks";
+        var _endless_fit=bb_menu_endless_text_node(_endless_value);
+        bb_yctp_text(_endless_value,_endless_fit,false,true,_selected=="endless");
         bb_menu_button_draw("endless",_selected=="endless");
         bb_menu_button_draw("story",_selected=="story");
         bb_menu_button_draw("play_back",_selected=="play_back");

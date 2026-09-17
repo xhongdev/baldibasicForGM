@@ -1,3 +1,9 @@
-bb_game_init();
 test_frames = 0;
-if (global.bb_selftest) bb_run_selftests();
+loading = undefined;
+if (global.school_loading_pending) {
+    global.school_loading_pending = false;
+    loading = bb_school_loading_begin();
+} else {
+    bb_game_init();
+    if (global.bb_selftest) bb_run_selftests();
+}
