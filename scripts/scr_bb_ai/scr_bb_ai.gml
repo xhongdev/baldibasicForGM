@@ -208,7 +208,22 @@ function bb_ai_sweep(_n,_dt) {
     }
 }
 
-function bb_ai_crafters(_n,_dt) {
+function bb_crafters_under_crosshair(_n,_look_back = undefined) {
+    if (!_n.live || !_n.visible) return false;
+    var _g=global.G,_yaw=bb_view_yaw(_look_back),_fx=-sin(_yaw),_fz=-cos(_yaw);
+    var _dx=_n.x-_g.px,_dz=_n.z-_g.pz,_along=_dx*_fx+_dz*_fz;
+    if (_along<=.000001) return false;
+    // Intersect the actual camera ray with the camera-facing sprite plane.
+    // A wide view cone also counted a sock far to either side of the reticle.
+    var _dd=_dx*_dx+_dz*_dz,_distance=sqrt(_dd);
+    var _side=(_dx*_fz-_dz*_fx)*_distance/_along;
+    var _height=_g.py+_g.jump_height-_n.y;
+    if (abs(_side)>_n.w*.5 || abs(_height)>_n.h*.5) return false;
+    var _ray_length=_dd/_along;
+    return bb_los(_g.px,_g.pz,_g.px+_fx*_ray_length,_g.pz+_fz*_ray_length);
+}
+
+function bb_ai_crafters(_n,_dt,_look_back = undefined) {
     var _g=global.G;
     for (var _i=0; _i<array_length(global.E.craft_triggers); _i++) {
         var _trigger=global.E.craft_triggers[_i],_b=_trigger.bounds;
@@ -234,8 +249,7 @@ function bb_ai_crafters(_n,_dt) {
     if (_n.target_ready) bb_ai_go(_n,_n.target_x,_n.target_z,_n.source.speed,_dt);
     var _dd=bb_dist2(_n.x,_n.z,_g.px,_g.pz);
     _n.visible=(_n.force_show>0 || (bb_dist2(_n.x,_n.z,_n.target_x,_n.target_z)<=16 && _dd>=144));
-    var _dot=(-sin(_g.yaw)*(_n.x-_g.px)-cos(_g.yaw)*(_n.z-_g.pz))/max(.001,sqrt(_dd));
-    if (_g.notebooks>=7 && _n.visible && _n.sees && _dot>.79) _n.stare+=_dt; else _n.stare=max(0,_n.stare-_dt);
+    if (_g.notebooks>=7 && bb_crafters_under_crosshair(_n,_look_back)) _n.stare+=_dt; else _n.stare=max(0,_n.stare-_dt);
     if (_n.stare>=1) {
         _n.angry=true;_n.spd=_n.source.speed;
         if (variable_struct_exists(_n.source,"angry_texture")) _n.spr=global.PS[$ _n.source.angry_texture];

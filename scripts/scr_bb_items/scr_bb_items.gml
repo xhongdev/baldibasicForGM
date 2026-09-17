@@ -37,9 +37,10 @@ function bb_target_point(_hit, _kind, _index, _x, _z, _radius, _fx, _fz) {
     }
 }
 
-function bb_view_yaw() {
+function bb_view_yaw(_look_back = undefined) {
     var _g = global.G;
-    return _g.yaw + ((keyboard_check(vk_space) && _g.play_lock <= 0) ? pi : 0);
+    if (is_undefined(_look_back)) _look_back=keyboard_check(vk_space);
+    return _g.yaw + ((_look_back && _g.play_lock <= 0 && _g.state=="play" && !_g.pause) ? pi : 0);
 }
 
 function bb_interaction_target(_range) {

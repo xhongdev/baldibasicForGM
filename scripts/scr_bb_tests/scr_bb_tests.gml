@@ -50,8 +50,17 @@ function bb_test_menu_source() {
     bb_test_assert(_story_bg[0]==0 && _story_bg[1]==0 && _story_bg[2]==640 && _story_bg[3]==480
         && _credits_bg[0]==0 && _credits_bg[1]==0 && _credits_bg[2]==640 && _credits_bg[3]==480,
         "Story and Credits retain full 640x480 source pages");
-    bb_test_assert(_story_hit[0]+_story_hit[2]<240 && _endless_hit[0]>400,
-        "mode selection hit regions stay on their visible left and right artwork");
+    bb_test_assert(_story_hit[0]==_menu.buttons.story.rect[0]
+        && _story_hit[1]==_menu.buttons.story.rect[1]
+        && _story_hit[2]==_menu.buttons.story.rect[2]
+        && _story_hit[3]==_menu.buttons.story.rect[3]
+        && _endless_hit[0]==_menu.buttons.endless.rect[0]
+        && _endless_hit[1]==_menu.buttons.endless.rect[1]
+        && _endless_hit[2]==_menu.buttons.endless.rect[2]
+        && _endless_hit[3]==_menu.buttons.endless.rect[3]
+        && _story_hit[0]+_story_hit[2]>_menu.text.story.rect[0]+_menu.text.story.rect[2]*.5
+        && _endless_hit[0]<_menu.text.endless.rect[0]+_menu.text.endless.rect[2]*.5,
+        "mode source raycast rectangles include their adjacent hover text");
     bb_test_assert(_menu.slider.min==.1 && _menu.slider.max==10
         && _menu.slider.track[0]==250 && _menu.slider.track[1]==390,
         "options sensitivity slider retains source range and track");
@@ -59,6 +68,23 @@ function bb_test_menu_source() {
         && abs(_menu.text.endless.font_size-30.369)<.001
         && _menu.text.controls.font_size==24 && _menu.text.controls.line_spacing==16,
         "menu TMP sizes include each source RectTransform scale");
+    var _font=global.P.yctp_font;
+    var _story_glyphs=bb_yctp_text_layout(_menu.text.story.value,_menu.text.story);
+    var _story_underlines=bb_yctp_underline_layout(_story_glyphs,_menu.text.story);
+    var _story_thickness=_font.underline_thickness*_menu.text.story.font_size/_font.size;
+    bb_test_assert(abs(_font.underline_offset+4.207031)<=.000001
+        && abs(_font.underline_thickness-2.050781)<=.000001
+        && array_length(_story_underlines)>=2
+        && abs((_story_underlines[0][3]-_story_underlines[0][1])-_story_thickness)<=.0001
+        && _story_underlines[0][1]>_menu.text.story.rect[1],
+        "mode hover underline uses the source TMP offset and thickness on screen count="
+        +string(array_length(_story_underlines))+" thickness="+string(_story_underlines[0][3]-_story_underlines[0][1])
+        +" expected="+string(_story_thickness)+" y="+string(_story_underlines[0][1]));
+    var _mouse_turn=bb_mouse_turn_radians(120,2),_mouse_expected=24*pi/180;
+    bb_test_assert(abs(_mouse_turn-_mouse_expected)<=.000001,
+        "mouse turning maps frame mouse displacement through source axis and degree units actual="
+        +string(_mouse_turn)+" expected="+string(_mouse_expected)
+        +" axis="+string(_menu.slider.input_axis_sensitivity));
     var _endless_value=_menu.text.endless.value+"\nHigh Score: 999999 Notebooks";
     var _endless_fit=bb_menu_endless_text_node(_endless_value);
     var _endless_glyphs=bb_yctp_text_layout(_endless_value,_endless_fit),_endless_bottom=-1000000;
@@ -90,6 +116,31 @@ function bb_run_selftests() {
     bb_test_assert(array_length(_g.notebooks_list) == 7, "7 authored notebooks");
     bb_test_assert(ds_map_size(global.floors) == 682, "682 floor tiles");
     bb_test_menu_source();
+    var _gameplay=json_parse(bb_read_text("school_gameplay.json"));
+    var _quarter_spawn=_gameplay.quarter_spawn,_quarter=undefined,_quarter_matches=0;
+    bb_test_assert(_quarter_spawn.min_index==1 && _quarter_spawn.max_index==15
+        && array_length(_quarter_spawn.locations)==15
+        && _quarter_spawn.locations[0].source_id=="5811"
+        && _quarter_spawn.locations[14].source_id=="8901",
+        "random quarter imports source AI locations 1 through 15");
+    for (var _i=0;_i<array_length(_quarter_spawn.locations);_i++) {
+        var _point=_quarter_spawn.locations[_i];
+        bb_test_assert(_point.index==_i+1 && bb_on_floor(_point.x,_point.z)
+            && !bb_blocked_world(_point.x,_point.z,.05,true),
+            "quarter fixed spawn is reachable "+string(_point.index));
+    }
+    for (var _i=0;_i<array_length(_g.items);_i++) {
+        if (_g.items[_i].source_id==_quarter_spawn.source_id) _quarter=_g.items[_i];
+    }
+    if (!is_undefined(_quarter)) {
+        for (var _i=0;_i<array_length(_quarter_spawn.locations);_i++) {
+            var _point=_quarter_spawn.locations[_i];
+            if (_quarter.spawn_index==_point.index && _quarter.x==_point.x && _quarter.z==_point.z
+                && _quarter.pickup_y==_point.y+_quarter_spawn.offset_y) _quarter_matches+=1;
+        }
+    }
+    bb_test_assert(!is_undefined(_quarter) && _quarter_matches==1,
+        "scene quarter starts at exactly one source-selected fixed location");
     var _tex = variable_struct_get_names(global.map_textures);
     for (var _i = 0; _i < array_length(_tex); _i++) {
         bb_test_assert(sprite_exists(global.map_textures[$ _tex[_i]]), "texture loaded: " + _tex[_i]);
@@ -206,6 +257,7 @@ function bb_run_selftests() {
     bb_test_principal_routes();
     bb_test_detention();
     bb_test_restored_gameplay();
+    bb_test_crafters_gaze();
     bb_test_end_states();
     bb_test_ai_profile();
     audio_stop_all();
@@ -322,6 +374,71 @@ function bb_test_restored_gameplay() {
     bb_test_assert(_g.new_high_score && global.high_books==_high+1,"Endless death records notebook high score");
     bb_test_assert(variable_struct_exists(global.PS,_g.gameover_image),"game-over selects an imported source failure image");
     audio_stop_all();global.high_books=_high;global.G=_original;bb_refresh_details();
+}
+
+function bb_test_crafters_gaze() {
+    var _original=global.G,_walls=global.walls;
+    global.G=variable_clone(_original);
+    var _g=global.G,_craft=undefined;
+    for (var _i=0;_i<array_length(_g.npcs);_i++) if (_g.npcs[_i].kind=="crafters") _craft=_g.npcs[_i];
+    _g.state="play";_g.pause=false;_g.play_lock=0;_g.jump_height=0;
+    _g.notebooks=7;_g.px=-22;_g.pz=-8;_g.yaw=0;
+    _craft.x=-22;_craft.z=-24;_craft.live=true;_craft.visible=true;
+    _craft.force_show=100;_craft.target_ready=false;_craft.angry=false;_craft.stare=0;
+    _craft.source.speed=0;_craft.sees=true;
+    bb_test_assert(bb_los(_g.px,_g.pz,_craft.x,_craft.z)
+        && bb_crafters_under_crosshair(_craft),"Crafters gaze fixture is visible under the real camera reticle");
+    var _rates=[30,60,144];
+    for (var _ri=0;_ri<array_length(_rates);_ri++) {
+        var _fps=_rates[_ri],_dt=1/_fps;
+        for (var _sign=-1;_sign<=1;_sign+=2) {
+            _g.yaw=degtorad(20*_sign);_craft.stare=0;_craft.angry=false;_craft.force_show=100;
+            for (var _frame=0;_frame<_fps*2;_frame++) bb_ai_crafters(_craft,_dt);
+            bb_test_assert(!_craft.angry && _craft.stare<=.000001
+                && _g.px==-22 && _g.pz==-8,
+                "Crafters off-reticle does not charge or teleport at "+string(_fps)+" FPS side="+string(_sign));
+        }
+        _g.yaw=0;
+        for (var _frame=0;_frame<floor(_fps*.75);_frame++) bb_ai_crafters(_craft,_dt);
+        bb_test_assert(!_craft.angry && _craft.stare>.7,"Crafters requires a full second of aimed gaze at "+string(_fps)+" FPS");
+        _g.yaw=degtorad(20);
+        for (var _frame=0;_frame<_fps;_frame++) bb_ai_crafters(_craft,_dt);
+        bb_test_assert(!_craft.angry && _craft.stare<=.000001,"looking away drains Crafters gaze at "+string(_fps)+" FPS");
+        _g.yaw=0;
+        for (var _frame=0;_frame<=_fps && !_craft.angry;_frame++) bb_ai_crafters(_craft,_dt);
+        bb_test_assert(_craft.angry,"one second of aimed gaze still triggers Crafters at "+string(_fps)+" FPS");
+        _craft.angry=false;_craft.stare=0;
+    }
+    _g.yaw=0;
+    bb_ai_crafters(_craft,.5,true);
+    bb_test_assert(!bb_crafters_under_crosshair(_craft,true) && _craft.stare<=.000001,
+        "looking back does not count Crafters in front of the player's body");
+    _g.yaw=pi;
+    bb_test_assert(bb_crafters_under_crosshair(_craft,true),"looking back can aim at Crafters behind the player's body");
+    _g.play_lock=1;
+    bb_test_assert(!bb_crafters_under_crosshair(_craft,true),"jump-rope space input does not rotate Crafters gaze");
+    _g.play_lock=0;_g.yaw=0;
+    _craft.visible=false;
+    bb_test_assert(!bb_crafters_under_crosshair(_craft),"invisible Crafters cannot be targeted");
+    _craft.visible=true;_craft.live=false;
+    bb_test_assert(!bb_crafters_under_crosshair(_craft),"despawned Crafters cannot be targeted");
+    _craft.live=true;_g.notebooks=6;bb_ai_crafters(_craft,1.1);
+    bb_test_assert(!_craft.angry && _craft.stare<=.000001,"Crafters cannot charge before seven notebooks");
+    _g.notebooks=7;
+    // A newly closed obstruction must win even if the cached NPC sight is stale.
+    global.walls=variable_clone(_walls);
+    array_push(global.walls,{x0:-23,z0:-16.2,x1:-21,z1:-15.8,sight:true});
+    bb_spatial_build();_craft.sees=true;bb_ai_crafters(_craft,1.1);
+    bb_test_assert(!_craft.angry && _craft.stare<=.000001,
+        "a wall blocks Crafters gaze immediately despite cached line of sight");
+    global.walls=_walls;bb_spatial_build();
+    // Once provoked, source chase remains active after the player turns away.
+    _craft.angry=true;_craft.spd=0;_g.yaw=pi;bb_ai_crafters(_craft,0);
+    bb_test_assert(_craft.angry && _craft.live,"provoked Crafters continues chasing after a turn away");
+    _craft.x=_g.px;_craft.z=_g.pz;bb_ai_crafters(_craft,0);
+    bb_test_assert(!_craft.live && !_craft.visible && _g.px==0 && _g.pz==-15
+        && _g.baldi_x==0 && _g.baldi_z==-24,"provoked Crafters still teleports on contact and despawns");
+    audio_stop_all();global.G=_original;bb_refresh_details();
 }
 
 function bb_test_principal_routes() {
@@ -1082,6 +1199,25 @@ function bb_test_presentation_render() {
     bb_menu_asset_draw(_start_button.selected,_start_button.rect,_start_button.preserve);surface_reset_target();
     bb_test_assert(bb_test_surface_difference(_expected,_actual,2)>20,
         "source START normal and selected crops render distinct pixels");
+    var _story_text=global.P.menu.text.story;
+    surface_set_target(_expected);bb_ui_begin();draw_clear(c_white);
+    bb_yctp_text(_story_text.value,_story_text,false,false,false);surface_reset_target();
+    surface_set_target(_actual);bb_ui_begin();draw_clear(c_white);
+    bb_yctp_text(_story_text.value,_story_text,false,false,true);surface_reset_target();
+    var _story_underline_pixels=bb_test_surface_difference(_expected,_actual,1);
+    bb_test_assert(_story_underline_pixels>100,
+        "Story hover underline reaches the visible GPU surface pixels="+string(_story_underline_pixels));
+    surface_save(_actual,"bb_menu_story_hover_check.png");
+    var _endless_value=global.P.menu.text.endless.value+"\nHigh Score: 999999 Notebooks";
+    var _endless_text=bb_menu_endless_text_node(_endless_value);
+    surface_set_target(_expected);bb_ui_begin();draw_clear(c_white);
+    bb_yctp_text(_endless_value,_endless_text,false,true,false);surface_reset_target();
+    surface_set_target(_actual);bb_ui_begin();draw_clear(c_white);
+    bb_yctp_text(_endless_value,_endless_text,false,true,true);surface_reset_target();
+    var _endless_underline_pixels=bb_test_surface_difference(_expected,_actual,1);
+    bb_test_assert(_endless_underline_pixels>100,
+        "Endless hover underline uses visible source thickness pixels="+string(_endless_underline_pixels));
+    surface_save(_actual,"bb_menu_endless_hover_check.png");
     surface_set_target(_expected); bb_ui_begin(); draw_clear_alpha(c_black, 0);
     bb_ui_texture("slots", global.P.hud.ItemSlots.rect);
     surface_reset_target();
@@ -1108,7 +1244,7 @@ function bb_test_presentation_render() {
     bb_ui_texture(global.P.yctp.YCTP.texture, global.P.yctp.YCTP.rect);
     for (var _i = 0; _i < array_length(global.yctp_pad); _i++) bb_ui_texture(global.yctp_pad[_i].texture, global.yctp_pad[_i].rect);
     surface_reset_target();
-    surface_set_target(_actual); draw_clear(c_black); bb_present_yctp(); surface_reset_target();
+    surface_set_target(_actual); draw_clear(c_black); bb_present_yctp(-1,-1); surface_reset_target();
     for (var _i = 0; _i < array_length(global.yctp_pad); _i++) {
         var _b = global.yctp_pad[_i], _bad = 0;
         for (var _y = ceil(_b.y1)+3; _y < _b.y2-3; _y += 6) {
@@ -1120,6 +1256,30 @@ function bb_test_presentation_render() {
         bb_test_assert(bb_yctp_pad_at((_b.x1+_b.x2)*0.5, (_b.y1+_b.y2)*0.5) == _b.v, "YCTP visible button hit area " + string(_b.v));
     }
     surface_save(_actual, "bb_yctp_check.png");
+    // Exercise the real pad drawing path with each pointer position. Only the
+    // hovered key may change, and leaving the keypad restores the normal image.
+    surface_set_target(_expected); bb_present_yctp(-1,-1); surface_reset_target();
+    var _normal_pad=bb_test_surface_buffer(_expected);
+    for (var _i=0;_i<array_length(global.yctp_pad);_i++) {
+        var _b=global.yctp_pad[_i];
+        surface_set_target(_actual); bb_present_yctp((_b.x1+_b.x2)*.5,(_b.y1+_b.y2)*.5); surface_reset_target();
+        var _hover_pad=bb_test_surface_buffer(_actual),_changed=0,_outside=0;
+        for (var _y=0;_y<480;_y+=2) for (var _x=0;_x<640;_x+=2) {
+            var _offset=(_y*640+_x)*4;
+            if (bb_test_pixel_near(buffer_peek(_normal_pad,_offset,buffer_u32)&16777215,
+                buffer_peek(_hover_pad,_offset,buffer_u32)&16777215)) continue;
+            if (_x>=floor(_b.x1) && _x<=ceil(_b.x2) && _y>=floor(_b.y1) && _y<=ceil(_b.y2)) _changed++;
+            else _outside++;
+        }
+        buffer_delete(_hover_pad);
+        bb_test_assert(_changed>20 && _outside==0,
+            "YCTP hover changes only the targeted key "+string(_b.v)+" pixels="+string(_changed));
+    }
+    buffer_delete(_normal_pad);
+    surface_save(_actual,"bb_yctp_hover_check.png");
+    surface_set_target(_actual); bb_present_yctp(-1,-1); surface_reset_target();
+    bb_test_assert(bb_test_surface_difference(_expected,_actual,2)==0,
+        "YCTP pointer exit restores every normal key");
     // Opposite backgrounds must produce the same complete pad, including its holes.
     surface_set_target(_expected); draw_clear(c_lime); bb_present_yctp(); surface_reset_target();
     surface_set_target(_actual); draw_clear(c_fuchsia); bb_present_yctp(); surface_reset_target();

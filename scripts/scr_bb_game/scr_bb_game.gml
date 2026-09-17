@@ -54,6 +54,19 @@ function bb_movement_ready(_held=undefined) {
     return true;
 }
 
+function bb_mouse_turn_radians(_mouse_delta,_sensitivity) {
+    var _axis_sensitivity=global.P.menu.slider.input_axis_sensitivity;
+    return _mouse_delta*_axis_sensitivity*_sensitivity*pi/180;
+}
+
+function bb_quarter_spawn_choice(_spawn) {
+    // QuarterExclusive uses RoundToInt(Random.Range(1f, 15f)), including
+    // half-width probability bands at the two endpoints.
+    var _index=round(random_range(_spawn.min_index,_spawn.max_index));
+    var _point=_spawn.locations[_index-_spawn.min_index];
+    return {index:_index,x:_point.x,y:_point.y+_spawn.offset_y,z:_point.z};
+}
+
 function bb_world_load(_map_file, _environment_file) {
     global.map = json_parse(bb_read_text(_map_file));
     global.E = json_parse(bb_read_text(_environment_file));
@@ -256,16 +269,24 @@ function bb_game_init(_deferred=false) {
 
     var _gameplay = json_parse(bb_read_text("school_gameplay.json"));
     var _items = _gameplay.items;
+    var _quarter_spawn=_gameplay.quarter_spawn;
     for (_i = 0; _i < array_length(_items); _i++) {
         var _it = _items[_i];
+        var _spawn_index=-1;
+        if (_it.source_id==_quarter_spawn.source_id) {
+            var _spawn=bb_quarter_spawn_choice(_quarter_spawn);
+            _it.x=_spawn.x;_it.y=_spawn.y;_it.z=_spawn.z;_spawn_index=_spawn.index;
+        }
         array_push(global.G.items, {
+            source_id: _it.source_id,
             x: _it.x,
             y: _it.y,
             z: _it.z,
             taken: !_it.active,
             reward: _it.reward,
             kind: _it.kind,
-            spr: bb_item_spr(_it.kind)
+            spr: bb_item_spr(_it.kind),
+            spawn_index: _spawn_index
         });
         var _item = global.G.items[array_length(global.G.items)-1];
         _item.w = 0.256; _item.h = 0.256;
@@ -714,6 +735,7 @@ function bb_game_update(_dt) {
         if (_g.pause) audio_pause_all(); else audio_resume_all();
         window_mouse_set_locked(!_g.pause);
         window_set_cursor(_g.pause ? cr_default : cr_none);
+        if (!_g.pause) _g.mouse_ready=false;
     }
     if (_g.pause) {
         if (keyboard_check_pressed(ord("Q"))) {
@@ -729,7 +751,7 @@ function bb_game_update(_dt) {
         window_mouse_set_locked(true);
     } else {
         var _mx = window_mouse_get_delta_x();
-        _g.yaw -= _mx * 0.005 * global.mouse_sensitivity;
+        _g.yaw -= bb_mouse_turn_radians(_mx,global.mouse_sensitivity);
     }
 
     if (_g.detention > 0) {
@@ -1765,10 +1787,7 @@ function bb_game_draw() {
         return;
     }
     var _aspect = bb_base_w() / bb_base_h();
-    var _yaw = _g.yaw;
-    if (keyboard_check(vk_space) && _g.play_lock <= 0 && _g.state == "play" && !_g.pause) {
-        _yaw += pi;
-    }
+    var _yaw = bb_view_yaw();
     var _far = (_g.gameover) ? max(0.081, 40*(1-_g.over_t)) : 220;
     bb3d_begin(_g.px, _g.py + _g.jump_height, _g.pz, _yaw, _aspect, _far);
     if (_g.final_red > 0) {

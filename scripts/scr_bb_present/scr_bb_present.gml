@@ -137,7 +137,7 @@ function bb_yctp_layout_init() {
         var _node = global.P.yctp[$ "Button (" + _keys[_i] + ")"];
         var _r = _node.rect;
         array_push(global.yctp_pad, {x1:_r[0], y1:_r[1], x2:_r[0]+_r[2], y2:_r[1]+_r[3],
-            v:_values[_i], rect:_r, texture:_node.texture});
+            v:_values[_i], rect:_r, texture:_node.texture, highlighted:_node.highlighted});
     }
 }
 
@@ -176,12 +176,17 @@ function bb_yctp_text_layout(_text, _node, _single = false) {
         var _glyph = bb_yctp_glyph(_ch), _advance = _glyph.advance * _scale + _spacing;
         if (!_single && _x > 0 && _x + _advance > _r[2]) { _x = 0; _y += _line_step; }
         if (_ch != " ") array_push(_glyphs, {x:_r[0]+_x+_glyph.bearing[0]*_scale,
-            y:_r[1]+_y-_glyph.bearing[1]*_scale, src:_glyph.src, scale:_scale, baseline:_y, right:_r[0]+_x+_advance});
+            y:_r[1]+_y-_glyph.bearing[1]*_scale, src:_glyph.src, scale:_scale, baseline:_y,
+            origin:_r[0]+_x, right:_r[0]+_x+_advance});
         _x += _advance;
     }
     // TMP single-line input scrolls to keep the latest digits inside its viewport.
     if (_single && _x > _r[2]) {
-        for (var _i = 0; _i < array_length(_glyphs); _i++) _glyphs[_i].x -= _x - _r[2];
+        for (var _i = 0; _i < array_length(_glyphs); _i++) {
+            _glyphs[_i].x -= _x - _r[2];
+            _glyphs[_i].origin -= _x - _r[2];
+            _glyphs[_i].right -= _x - _r[2];
+        }
     }
     var _halign = _node.alignment & 255;
     if (!_single && _halign != 1) {
@@ -191,7 +196,7 @@ function bb_yctp_text_layout(_text, _node, _single = false) {
             var _width = _glyphs[_end].right - _r[0];
             var _offset = (_r[2] - _width) * (_halign == 2 ? 0.5 : 1);
             for (var _j = _i; _j <= _end; _j++) {
-                _glyphs[_j].x += _offset;_glyphs[_j].right += _offset;
+                _glyphs[_j].x += _offset;_glyphs[_j].origin += _offset;_glyphs[_j].right += _offset;
             }
             _i = _end + 1;
         }
@@ -231,11 +236,25 @@ function bb_menu_endless_text_node(_text) {
     return bb_yctp_text_fit_node(_text,_source,_rect);
 }
 
+function bb_yctp_underline_layout(_glyphs,_node) {
+    var _result=[],_font=global.P.yctp_font,_scale=_node.font_size/_font.size;
+    var _offset=-_font.underline_offset*_scale;
+    var _thickness=_font.underline_thickness*_scale;
+    for (var _i=0;_i<array_length(_glyphs);) {
+        var _end=_i,_baseline=_glyphs[_i].baseline;
+        while (_end+1<array_length(_glyphs) && _glyphs[_end+1].baseline==_baseline) _end+=1;
+        var _y=_node.rect[1]+_baseline+_offset;
+        array_push(_result,[_glyphs[_i].origin,_y,_glyphs[_end].right,_y+_thickness]);
+        _i=_end+1;
+    }
+    return _result;
+}
+
 function bb_yctp_text(_text, _node, _single = false, _clip = true, _underline = false) {
-    var _glyphs = bb_yctp_text_layout(_text, _node, _single), _r = _node.rect;
+    var _glyphs = bb_yctp_text_layout(_text, _node, _single), _layout_rect = _node.rect;
+    var _r = _clip ? _layout_rect : [-10000, -10000, 20000, 20000];
     var _spr = global.PS[$ global.P.yctp_font.texture];
     var _c = _node.colour, _colour = make_colour_rgb(_c[0]*255, _c[1]*255, _c[2]*255);
-    if (!_clip) _r = [-10000, -10000, 20000, 20000];
     for (var _i = 0; _i < array_length(_glyphs); _i++) {
         var _g = _glyphs[_i], _s = _g.scale, _src = _g.src;
         var _x1 = max(_g.x, _r[0]), _y1 = max(_g.y, _r[1]);
@@ -246,11 +265,12 @@ function bb_yctp_text(_text, _node, _single = false, _clip = true, _underline = 
     }
     if (_underline && array_length(_glyphs)>0) {
         draw_set_color(_colour);draw_set_alpha(_c[3]);
-        for (var _i=0;_i<array_length(_glyphs);) {
-            var _end=_i,_baseline=_glyphs[_i].baseline;
-            while (_end+1<array_length(_glyphs) && _glyphs[_end+1].baseline==_baseline) _end+=1;
-            draw_rectangle(_glyphs[_i].x,_r[1]+_baseline+2,_glyphs[_end].right,_r[1]+_baseline+3,false);
-            _i=_end+1;
+        var _lines=bb_yctp_underline_layout(_glyphs,_node);
+        for (var _i=0;_i<array_length(_lines);_i++) {
+            var _line=_lines[_i];
+            var _x1=max(_line[0],_r[0]),_y1=max(_line[1],_r[1]);
+            var _x2=min(_line[2],_r[0]+_r[2]),_y2=min(_line[3],_r[1]+_r[3]);
+            if (_x2>_x1 && _y2>_y1) draw_rectangle(_x1,_y1,_x2,_y2,false);
         }
         draw_set_alpha(1);draw_set_color(c_white);
     }
@@ -281,8 +301,12 @@ function bb_yctp_face_texture() {
     return _key;
 }
 
-function bb_present_yctp() {
+function bb_present_yctp(_mx = undefined, _my = undefined) {
     var _g = global.G, _ui = global.P.yctp;
+    if (is_undefined(_mx)) _mx=device_mouse_x_to_gui(0);
+    if (is_undefined(_my)) _my=device_mouse_y_to_gui(0);
+    // Share the click hit areas and source SpriteSwap state, including C, - and OK.
+    var _hover=bb_yctp_pad_at(_mx,_my);
     bb_ui_begin();
     bb_ui_solid(_ui.BG);
     bb_ui_solid(_ui.Image);
@@ -309,7 +333,7 @@ function bb_present_yctp() {
     }
     for (var _i = 0; _i < array_length(global.yctp_pad); _i++) {
         var _key = global.yctp_pad[_i];
-        bb_ui_texture(_key.texture, _key.rect);
+        bb_ui_texture(!is_undefined(_hover) && _hover==_key.v ? _key.highlighted : _key.texture, _key.rect);
     }
     bb_ui_begin();
 }
