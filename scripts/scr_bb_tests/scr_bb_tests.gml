@@ -107,8 +107,7 @@ function bb_test_menu_source() {
 }
 
 function bb_run_selftests() {
-    global.test_total = 0;
-    global.test_failed = 0;
+    if (!variable_global_exists("test_total")) { global.test_total=0;global.test_failed=0; }
     var _saved = variable_clone(global.G);
     var _g = global.G;
     _g.notebooks = 7;
@@ -252,6 +251,7 @@ function bb_run_selftests() {
     bb_refresh_details();
     bb_test_yctp_state();
     bb_test_debug_menu();
+    bb_test_pause_state();
     bb_test_scene_details();
     bb_test_stationary_navigation();
     bb_test_principal_routes();
@@ -264,6 +264,60 @@ function bb_run_selftests() {
     window_mouse_set_locked(false);
     window_set_cursor(cr_default);
     show_debug_message("BB_TEST_LOGIC: " + string(global.test_total) + " checks, " + string(global.test_failed) + " failures");
+}
+
+function bb_test_pause_state() {
+    var _original=global.G;
+    global.G=variable_clone(_original);
+    var _g=global.G;
+    _g.state="play";_g.gameover=false;_g.win=false;_g.debug.open=false;
+    _g.pause=false;_g.detention=12;_g.mouse_ready=true;
+    var _tone=bb_sound_play(snd_alarm);
+    bb_pause_set(true);
+    bb_test_assert(_g.pause && audio_is_paused(_tone),"pause opens the source quit confirmation and pauses audio");
+    var _before=[_g.px,_g.pz,_g.yaw,_g.nb_t,_g.baldi_cd,_g.stamina];
+    bb_game_update(.1);
+    bb_test_assert(_g.detention==12 && _g.px==_before[0] && _g.pz==_before[1]
+        && _g.yaw==_before[2] && _g.nb_t==_before[3] && _g.baldi_cd==_before[4]
+        && _g.stamina==_before[5],"pause freezes movement, AI, stamina and world timers");
+    var _input={mx:193.6,my:289.95,down:false,up:false,yes:false,no:false,escape:false};
+    bb_pause_input(0,_input);bb_pause_input(.3,_input);
+    bb_test_assert(_g.pause_hover==0 && bb_pause_frame(_g.pause_time)>0 && _g.detention==12,
+        "YES nod animates with unscaled time while the world remains paused");
+    _input.mx=457.36248;bb_pause_input(0,_input);
+    bb_test_assert(_g.pause_hover==1 && _g.pause_time==0,"switching to NO resets its shake animation");
+    bb_pause_input(.3,_input);
+    bb_test_assert(bb_pause_frame(_g.pause_time)>0,"NO shake advances while paused");
+    _input.mx=320;_input.my=420;bb_pause_input(.1,_input);
+    bb_test_assert(_g.pause_hover==-1 && _g.pause_time==0,"leaving the heads restores their idle frame");
+    _input.mx=193.6;_input.my=289.95;_input.down=true;
+    bb_test_assert(bb_pause_input(0,_input)=="","pause button waits for mouse release");
+    _input.down=false;_input.up=true;_input.mx=457.36248;
+    bb_test_assert(bb_pause_input(0,_input)=="","dragging from YES to NO does not activate either button");
+    _input.up=false;_input.down=true;bb_pause_input(0,_input);
+    _input.down=false;_input.up=true;
+    var _action=bb_pause_input(0,_input);
+    bb_test_assert(_action=="resume","clicking NO resumes the paused game");
+    bb_pause_action(_action);
+    bb_test_assert(!_g.pause && !_g.mouse_ready && !audio_is_paused(_tone),
+        "resume restores audio and discards the first locked-mouse delta");
+    bb_pause_set(true);_input.up=false;_input.mx=193.6;_input.down=true;
+    bb_pause_input(0,_input);_input.down=false;_input.up=true;
+    bb_test_assert(bb_pause_input(0,_input)=="title","clicking YES requests the main menu");
+    _input.up=false;_input.yes=true;
+    bb_test_assert(bb_pause_input(0,_input)=="title","source Y shortcut confirms quitting to title");
+    _input.yes=false;_input.no=true;
+    bb_test_assert(bb_pause_input(0,_input)=="resume","source N shortcut resumes");
+    _input.no=false;_input.escape=true;
+    bb_test_assert(bb_pause_input(0,_input)=="resume","Escape closes the quit confirmation");
+    bb_pause_set(false);_g.state="yctp";
+    bb_test_assert(!bb_pause_set(true) && !_g.pause,"learning screen does not open the pause menu");
+    bb_test_assert(array_length(global.P.pause.frame_times)==47
+        && sprite_get_number(global.PS.pause_nod)==47 && sprite_get_number(global.PS.pause_shake)==47
+        && bb_pause_frame(.01)==0 && bb_pause_frame(.3)==bb_pause_frame(1.1),
+        "pause heads preserve 47 source frames and the 0.8-second loop");
+    audio_stop_all();global.G=_original;
+    window_mouse_set_locked(false);window_set_cursor(cr_default);
 }
 
 function bb_test_restored_gameplay() {
@@ -1142,8 +1196,50 @@ function bb_test_surface_difference(_a, _b, _step) {
     return _different;
 }
 
+function bb_test_world_filter() {
+    // Use the actual runtime-loaded floor PNG at its world scale and a shallow
+    // viewing angle. Compare a tiny camera movement, where moire is most visible.
+    var _spr=global.map_textures[$ "tex/map/TileFloor.png"];
+    var _frames=[surface_create(640,480),surface_create(640,480)];
+    var _motion=[],_means=[];
+    for (var _mode=0;_mode<2;_mode++) {
+        for (var _frame=0;_frame<2;_frame++) {
+            surface_set_target(_frames[_frame]);
+            bb3d_begin(_frame*.015,1,0,0,640/480);
+            bb3d_world_filter(_mode==1);
+            var _vb=global.vb_bill;
+            vertex_begin(_vb,global.vf_3d);
+            bb3d_quad(_vb,-40,0,-80,0,0,-40,0,-2,0,39,
+                40,0,-2,40,39,40,0,-80,40,0,c_white,1);
+            vertex_end(_vb);
+            vertex_submit(_vb,pr_trianglelist,sprite_get_texture(_spr,0));
+            surface_reset_target();bb3d_end();
+        }
+        surface_save(_frames[0],_mode==0?"bb_floor_point_check.png":"bb_floor_filtered_check.png");
+        var _a=bb_test_surface_buffer(_frames[0]),_b=bb_test_surface_buffer(_frames[1]);
+        var _delta=0,_mean=0,_samples=0;
+        for (var _y=252;_y<310;_y++) for (var _x=80;_x<560;_x++) {
+            var _offset=(_y*640+_x)*4;
+            for (var _channel=0;_channel<3;_channel++) {
+                var _value=buffer_peek(_a,_offset+_channel,buffer_u8);
+                _delta+=abs(_value-buffer_peek(_b,_offset+_channel,buffer_u8));
+                _mean+=_value;_samples++;
+            }
+        }
+        array_push(_motion,_delta/_samples);array_push(_means,_mean/_samples);
+        buffer_delete(_a);buffer_delete(_b);
+    }
+    show_debug_message("BB_FILTER_MOTION: point="+string(_motion[0])+" filtered="+string(_motion[1]));
+    bb_test_assert(_motion[0]>1 && _motion[1]<_motion[0]*.65,
+        "world filtering reduces distant floor shimmer by at least 35 percent");
+    bb_test_assert(_means[1]>30 && abs(_means[1]-_means[0])<10,
+        "filtered floor preserves source brightness while reducing aliasing");
+    surface_free(_frames[0]);surface_free(_frames[1]);bb_ui_begin();
+}
+
 function bb_test_presentation_render() {
     show_debug_message("BB_TEST_STAGE: presentation render");
+    bb_test_world_filter();
     var _mat = [matrix_get(matrix_world), matrix_get(matrix_view), matrix_get(matrix_projection)];
     var _saved = variable_clone(global.G);
     var _expected = surface_create(128, 128), _actual = surface_create(128, 128);
@@ -1181,6 +1277,36 @@ function bb_test_presentation_render() {
     // Explicit top-left GUI projection, independent of the window's letterboxing.
     matrix_set(matrix_view, matrix_build( -320, -240, 0, 0, 0, 0, 1, 1, 1));
     matrix_set(matrix_projection, matrix_build_projection_ortho(640, -480, 0, 100));
+    // The startup screen is the source bitmap at its authored 640x480 size.
+    surface_set_target(_expected);bb_ui_begin();draw_clear(c_fuchsia);
+    draw_sprite(global.PS.warning_screen,0,0,0);surface_reset_target();
+    surface_set_target(_actual);draw_clear(c_lime);bb_warning_draw();surface_reset_target();
+    bb_test_assert(bb_test_surface_difference(_expected,_actual,2)==0,
+        "startup warning matches the source bitmap and fully covers the title");
+    surface_save(_actual,"bb_warning_check.png");
+    global.G.state="play";global.G.gameover=false;global.G.win=false;
+    global.G.pause=true;global.G.pause_hover=-1;global.G.pause_time=0;
+    surface_set_target(_expected);draw_clear(c_white);bb_pause_draw();surface_reset_target();
+    bb_test_assert(surface_getpixel(_expected,20,400)==c_white,
+        "source transparent pause blocker leaves the scene background unchanged");
+    for (var _pi=0;_pi<2;_pi++) {
+        global.G.pause_hover=_pi;global.G.pause_time=.3;
+        surface_set_target(_actual);draw_clear(c_white);bb_pause_draw();surface_reset_target();
+        bb_test_assert(bb_test_surface_difference(_expected,_actual,2)>30,
+            "pause head hover renders the source animation "+string(_pi));
+        surface_save(_actual,_pi==0?"bb_pause_yes_check.png":"bb_pause_no_check.png");
+    }
+    global.G.pause_hover=-1;global.G.pause_time=0;
+    surface_set_target(_actual);draw_clear(c_white);bb_pause_draw();surface_reset_target();
+    bb_test_assert(bb_test_surface_difference(_expected,_actual,2)==0,
+        "leaving pause buttons restores both idle portraits");
+    var _pause_layout=bb_yctp_text_layout(global.P.pause.text.value,global.P.pause.text),_pause_lines=[];
+    for (var _pi=0;_pi<array_length(_pause_layout);_pi++) {
+        var _glyph=_pause_layout[_pi];
+        if (_pi==0 || _glyph.baseline!=_pause_layout[_pi-1].baseline) array_push(_pause_lines,_glyph.baseline);
+    }
+    bb_test_assert(array_length(_pause_lines)==3,"source pause text fits three authored centered lines");
+    global.G.pause=false;
     surface_set_target(_expected);bb_loading_draw(0);surface_reset_target();
     surface_set_target(_actual);bb_loading_draw(.25);surface_reset_target();
     bb_test_assert(surface_getpixel(_actual,20,20)==c_white

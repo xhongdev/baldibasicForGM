@@ -1,4 +1,4 @@
-menu_page = "title";
+menu_page = global.warning_pending ? "warning" : "title";
 test_title_frames = 0;
 menu_selection = -1;
 menu_buttons = bb_menu_layout(menu_page);
@@ -6,7 +6,6 @@ menu_mouse_x = device_mouse_x_to_gui(0);
 menu_mouse_y = device_mouse_y_to_gui(0);
 menu_drag_slider = false;
 audio_stop_all();
-audio_play_sound(snd_mus_intro, 1, false);
-audio_play_sound(snd_bal_menu, 2, false);
+if (menu_page=="title") bb_title_music_start();
 window_set_cursor(cr_default);
 window_mouse_set_locked(false);

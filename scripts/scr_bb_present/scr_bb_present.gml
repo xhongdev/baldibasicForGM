@@ -7,7 +7,11 @@ function bb_presentation_init() {
     for (var _i = 0; _i < array_length(_keys); _i++) {
         var _key = _keys[_i];
         var _path = global.P.textures[$ _key].file;
-        if (!variable_struct_exists(_files, _path)) _files[$ _path] = bb_load_png(_path, 0, 0);
+        if (!variable_struct_exists(_files, _path)) {
+            var _asset=global.P.textures[$ _key];
+            var _frames=variable_struct_exists(_asset,"frames")?_asset.frames:1;
+            _files[$ _path] = bb_load_png(_path, 0, 0, _frames);
+        }
         global.PS[$ _key] = _files[$ _path];
     }
     global.S = bb_audio_assets();
@@ -40,6 +44,7 @@ function bb_ui_begin() {
     gpu_set_alphatestenable(false);
     gpu_set_texrepeat(false);
     gpu_set_texfilter(false);
+    gpu_set_tex_mip_enable(mip_off);
     gpu_set_blendenable(true);
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);
@@ -48,9 +53,35 @@ function bb_ui_begin() {
     draw_set_valign(fa_top);
 }
 
-function bb_ui_texture(_key, _r) {
+function bb_ui_texture(_key, _r, _frame = 0) {
     var _spr = global.PS[$ _key];
-    draw_sprite_ext(_spr, 0, _r[0], _r[1], _r[2] / sprite_get_width(_spr), _r[3] / sprite_get_height(_spr), 0, c_white, 1);
+    draw_sprite_ext(_spr, _frame, _r[0], _r[1], _r[2] / sprite_get_width(_spr), _r[3] / sprite_get_height(_spr), 0, c_white, 1);
+}
+
+function bb_pause_frame(_time) {
+    var _pause=global.P.pause,_phase=max(0,_time) mod _pause.duration,_frame=0;
+    for (var _i=1;_i<array_length(_pause.frame_times);_i++) {
+        if (_pause.frame_times[_i]>_phase) break;
+        _frame=_i;
+    }
+    return _frame;
+}
+
+function bb_pause_draw() {
+    bb_ui_begin();
+    var _g=global.G,_pause=global.P.pause;
+    // The source BG Blocker is transparent; retain the frozen scene behind it.
+    bb_yctp_text(_pause.text.value,_pause.text);
+    for (var _i=0;_i<array_length(_pause.buttons);_i++) {
+        var _button=_pause.buttons[_i];
+        bb_ui_texture(_button.texture,_button.rect,_g.pause_hover==_i?bb_pause_frame(_g.pause_time):0);
+    }
+}
+
+function bb_warning_draw() {
+    bb_ui_begin();
+    var _warning=global.P.warning;
+    bb_ui_texture(_warning.texture,_warning.rect);
 }
 
 function bb_menu_asset_draw(_asset,_r,_preserve=false) {

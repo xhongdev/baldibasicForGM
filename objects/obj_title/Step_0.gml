@@ -1,5 +1,31 @@
+if (menu_page=="warning") {
+    if (global.bb_selftest) {
+        if (test_title_frames++==0) {
+            bb_test_assert(!audio_is_playing(snd_mus_intro) && !audio_is_playing(snd_bal_menu),
+                "startup warning is shown before title music and voice");
+            bb_test_assert(!bb_warning_accept(false) && menu_page=="warning",
+                "startup warning waits for a fresh confirmation input");
+        } else {
+            bb_test_assert(bb_warning_accept(true) && menu_page=="title" && !global.warning_pending,
+                "warning confirmation enters title once per launch");
+            bb_test_assert(audio_is_playing(snd_mus_intro) && audio_is_playing(snd_bal_menu),
+                "title music and voice start after warning confirmation");
+            test_title_frames=0;
+        }
+    } else {
+        bb_warning_accept(keyboard_check_pressed(vk_anykey) || mouse_check_button_pressed(mb_left)
+            || mouse_check_button_pressed(mb_right) || mouse_check_button_pressed(mb_middle));
+    }
+    // Consume the confirmation here so it cannot also activate a title button.
+    exit;
+}
 if (global.bb_selftest) {
+    if (global.test_bootstrap) {
+        global.test_bootstrap=false;room_goto(rm_school);exit;
+    }
     var _pages=["title","modes","menu","options","story_info","credits","controls"];
+    if (test_title_frames==0) bb_test_assert(!global.warning_pending && menu_page=="title",
+        "returning from school opens title without replaying the startup warning");
     if (variable_global_exists("test_loading_mode") && global.test_loading_mode=="story") {
         global.test_loading_mode="endless";bb_start_mode("endless");exit;
     }

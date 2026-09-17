@@ -2,6 +2,9 @@ bb_ui_begin();
 draw_clear(c_white);
 var _selected=(menu_selection>=0 && menu_selection<array_length(menu_buttons))?menu_buttons[menu_selection].key:"";
 switch (menu_page) {
+    case "warning":
+        bb_warning_draw();
+        break;
     case "title":
         draw_sprite_stretched(spr_title,0,0,0,640,480);
         bb_menu_button_draw("start",_selected=="start");

@@ -62,7 +62,7 @@ function bb_key(_x, _z) {
     return string(_x) + "," + string(_z);
 }
 
-function bb_load_png(_rel, _ox, _oy) {
+function bb_load_png(_rel, _ox, _oy, _frames = 1) {
     var _p = _rel;
     if (!file_exists(_p)) {
         _p = working_directory + _rel;
@@ -70,7 +70,7 @@ function bb_load_png(_rel, _ox, _oy) {
     if (!file_exists(_p)) {
         return -1;
     }
-    return sprite_add(_p, 1, false, false, _ox, _oy);
+    return sprite_add(_p, _frames, false, false, _ox, _oy);
 }
 
 function bb_load_png_rb(_rel) {
@@ -117,6 +117,19 @@ function bb_start_mode(_mode) {
     global.game_mode = (_mode == "endless") ? "endless" : "story";
     global.school_loading_pending = true;
     room_goto(rm_school);
+}
+
+function bb_title_music_start() {
+    audio_play_sound(snd_mus_intro,1,false);
+    audio_play_sound(snd_bal_menu,2,false);
+}
+
+function bb_warning_accept(_pressed) {
+    if (menu_page!="warning" || !_pressed) return false;
+    global.warning_pending=false;
+    menu_page="title";menu_selection=-1;menu_buttons=bb_menu_layout(menu_page);
+    bb_title_music_start();
+    return true;
 }
 
 function bb_menu_button(_key,_action) {

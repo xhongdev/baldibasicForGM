@@ -260,6 +260,16 @@ function bb3d_emit_vertices(_vb, _v, _uv, _col) {
         _v[3][0], _v[3][1], _v[3][2], _u0, _v0, _col, 1);
 }
 
+function bb3d_world_filter(_enabled) {
+    // mip_on also covers the separate PNG textures loaded at runtime. Filtering
+    // the minified world prevents distant floor/wall patterns from shimmering.
+    gpu_set_texfilter(_enabled);
+    gpu_set_tex_mip_enable(_enabled ? mip_on : mip_off);
+    gpu_set_tex_mip_filter(_enabled ? tf_anisotropic : tf_point);
+    gpu_set_tex_max_aniso(_enabled ? 8 : 1);
+    gpu_set_tex_mip_bias(0);
+}
+
 function bb3d_begin(_px, _py, _pz, _yaw, _aspect, _far = 220) {
     if (!variable_global_exists("matrix_stack")) global.matrix_stack = [];
     array_push(global.matrix_stack, [matrix_get(matrix_world), matrix_get(matrix_view), matrix_get(matrix_projection)]);
@@ -271,7 +281,7 @@ function bb3d_begin(_px, _py, _pz, _yaw, _aspect, _far = 220) {
     gpu_set_zwriteenable(true);
     gpu_set_zfunc(cmpfunc_lessequal);
     gpu_set_cullmode(cull_noculling);
-    gpu_set_texfilter(false);
+    bb3d_world_filter(false);
     gpu_set_texrepeat(true);
     gpu_set_alphatestenable(true);
     gpu_set_alphatestref(16);
@@ -288,6 +298,7 @@ function bb3d_begin(_px, _py, _pz, _yaw, _aspect, _far = 220) {
 
 function bb3d_draw_world() {
     var _i;
+    bb3d_world_filter(true);
     // Imported winding preserves Unity's front faces, including mirrored scales.
     // Opposing walls may have different posters; culling avoids coplanar flicker.
     if (variable_struct_exists(global.map, "materials")) gpu_set_cullmode(cull_clockwise);
@@ -306,6 +317,7 @@ function bb3d_draw_world() {
     gpu_set_blendmode(bm_normal);
     gpu_set_zwriteenable(true);
     gpu_set_cullmode(cull_noculling);
+    bb3d_world_filter(false);
 }
 
 function bb3d_draw_char(_spr, _img, _x, _y, _z, _h, _camx, _camz, _col) {
@@ -391,6 +403,7 @@ function bb3d_draw_deformed_billboard(_spr,_deform,_yaw) {
 }
 
 function bb3d_end() {
+    bb3d_world_filter(false);
     gpu_set_ztestenable(false);
     gpu_set_zwriteenable(false);
     gpu_set_cullmode(cull_noculling);

@@ -1,5 +1,22 @@
 {
   "textures": {
+    "pause_nod": {
+      "file": "tex/presentation/pause_nod.png",
+      "source": "Assets/AnimationClip/Bald_Nod.anim",
+      "frames": 47,
+      "size": [6016, 128]
+    },
+    "pause_shake": {
+      "file": "tex/presentation/pause_shake.png",
+      "source": "Assets/AnimationClip/Baldi_Shake.anim",
+      "frames": 47,
+      "size": [6016, 128]
+    },
+    "warning_screen": {
+      "file": "tex/presentation/WarningScreen.png",
+      "source": "Assets/Texture2D/Screens/WarningScreen.png",
+      "size": [640, 480]
+    },
     "menu_texture2d_menutextures_buttontextures_start_png": {
       "file": "tex/presentation/Texture2D_MenuTextures_ButtonTextures_Start.png",
       "source": "Assets/Texture2D/MenuTextures/ButtonTextures/Start.png",
@@ -3191,6 +3208,27 @@
       ],
       "texture": "hud_ItemSlot2"
     }
+  },
+  "warning": {
+    "texture": "warning_screen",
+    "rect": [0, 0, 640, 480]
+  },
+  "pause": {
+    "source_canvas": [800, 600],
+    "text": {
+      "rect": [0, 100, 640, 160],
+      "font_size": 28.8,
+      "spacing": 0,
+      "alignment": 258,
+      "colour": [0, 0, 0, 1],
+      "value": "GAME PAUSE\nARE YOU SURE YOU WANT TO QUIT?\nYES                         NO"
+    },
+    "buttons": [
+      {"key": "yes", "action": "title", "texture": "pause_nod", "rect": [131.16248, 227.51248, 124.87504, 124.87504]},
+      {"key": "no", "action": "resume", "texture": "pause_shake", "rect": [394.92488, 227.5124, 124.8752, 124.8752]}
+    ],
+    "duration": 0.8,
+    "frame_times": [0.016666668, 0.033333335, 0.05, 0.06666667, 0.083333336, 0.1, 0.11666667, 0.13333334, 0.15, 0.16666667, 0.18333334, 0.2, 0.21666667, 0.23333333, 0.25, 0.26666668, 0.28333333, 0.3, 0.31666666, 0.33333334, 0.35, 0.36666667, 0.38333333, 0.4, 0.41666666, 0.43333334, 0.45, 0.46666667, 0.48333332, 0.5, 0.51666665, 0.53333336, 0.55, 0.56666666, 0.5833333, 0.6, 0.6166667, 0.6333333, 0.65, 0.6666667, 0.68333334, 0.7, 0.71666664, 0.73333335, 0.75, 0.76666665, 0.78333336]
   },
   "yctp": {
     "BaldiFeed": {

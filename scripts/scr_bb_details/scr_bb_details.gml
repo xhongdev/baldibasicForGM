@@ -28,6 +28,7 @@ function bb_detail_meshes(_meshes, _dy = 0, _wall = "", _map = undefined) {
         }
         global.detail_cache[$ _key]=_batches;
     }
+    bb3d_world_filter(true);
     gpu_set_cullmode(cull_clockwise);
     gpu_set_zwriteenable(true);
     gpu_set_texrepeat(true);
@@ -39,6 +40,7 @@ function bb_detail_meshes(_meshes, _dy = 0, _wall = "", _map = undefined) {
     matrix_set(matrix_world, matrix_build_identity());
     gpu_set_cullmode(cull_noculling);
     gpu_set_texrepeat(false);
+    bb3d_world_filter(false);
 }
 
 function bb_draw_entrances() {

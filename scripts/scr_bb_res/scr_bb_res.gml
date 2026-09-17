@@ -85,6 +85,7 @@ function bb_res_post_draw() {
     draw_clear(c_black);
     if (surface_exists(application_surface)) {
         gpu_set_texfilter(false);
+        gpu_set_tex_mip_enable(mip_off);
         draw_surface_stretched(application_surface, global.res_x, global.res_y, global.res_w, global.res_h);
     }
     gpu_set_blendenable(true);

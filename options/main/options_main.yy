@@ -15,7 +15,7 @@
   "option_legacy_number_conversion":false,
   "option_legacy_other_behaviour":false,
   "option_legacy_primitive_drawing":false,
-  "option_mips_for_3d_textures":false,
+  "option_mips_for_3d_textures":true,
   "option_remove_unused_assets":false,
   "option_sci_usesci":false,
   "option_spine_licence":false,

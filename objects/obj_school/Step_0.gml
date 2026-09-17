@@ -26,7 +26,9 @@ if (global.bb_selftest) {
         bb_debug_open();
     }
     if (test_frames >= 5) {
-        room_goto(rm_title);
+        bb_debug_close();
+        bb_pause_set(true);
+        bb_pause_action("title");
     }
 } else {
     bb_game_update(delta_time / 1000000);

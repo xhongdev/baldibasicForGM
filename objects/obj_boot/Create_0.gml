@@ -72,4 +72,7 @@ global.bb_selftest = (environment_get_variable("BB_SELF_TEST") == "1");
 for (var _arg = 1; _arg <= parameter_count(); _arg++) {
     if (parameter_string(_arg) == "--bb-self-test") global.bb_selftest = true;
 }
-room_goto(global.bb_selftest ? rm_school : rm_title);
+global.warning_pending=true;
+global.test_bootstrap=global.bb_selftest;
+if (global.bb_selftest) { global.test_total=0;global.test_failed=0; }
+room_goto(rm_title);

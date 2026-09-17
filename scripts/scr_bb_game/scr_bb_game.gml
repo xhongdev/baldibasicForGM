@@ -150,6 +150,9 @@ function bb_game_init(_deferred=false) {
         yctp_bad2: "",
         yctp_bad3: "",
         pause: false,
+        pause_hover: -1,
+        pause_pressed: -1,
+        pause_time: 0,
         gameover: false,
         gameover_image: "gameover_0",
         gameover_rare: false,
@@ -719,9 +722,63 @@ function bb_on_floor(_px, _pz) {
     return false;
 }
 
+function bb_pause_set(_paused) {
+    var _g=global.G;
+    if (_paused && (_g.state=="yctp" || _g.gameover || _g.win)) return false;
+    _g.pause=_paused;_g.pause_hover=-1;_g.pause_pressed=-1;_g.pause_time=0;
+    if (_paused) audio_pause_all(); else audio_resume_all();
+    window_mouse_set_locked(!_paused);
+    window_set_cursor(_paused?cr_default:cr_none);
+    if (!_paused) _g.mouse_ready=false;
+    return true;
+}
+
+function bb_pause_hit(_mx,_my) {
+    var _buttons=global.P.pause.buttons;
+    for (var _i=0;_i<array_length(_buttons);_i++) {
+        var _r=_buttons[_i].rect;
+        if (_mx>=_r[0] && _mx<=_r[0]+_r[2] && _my>=_r[1] && _my<=_r[1]+_r[3]) return _i;
+    }
+    return -1;
+}
+
+function bb_pause_input(_dt,_input=undefined) {
+    var _g=global.G;
+    if (!_g.pause) return "";
+    if (is_undefined(_input)) _input={
+        mx:device_mouse_x_to_gui(0),my:device_mouse_y_to_gui(0),
+        down:mouse_check_button_pressed(mb_left),up:mouse_check_button_released(mb_left),
+        yes:keyboard_check_pressed(ord("Y")),no:keyboard_check_pressed(ord("N")),
+        escape:keyboard_check_pressed(vk_escape)
+    };
+    var _hover=bb_pause_hit(_input.mx,_input.my);
+    if (_hover!=_g.pause_hover) { _g.pause_hover=_hover;_g.pause_time=0; }
+    else if (_hover>=0) _g.pause_time=(_g.pause_time+max(0,_dt)) mod global.P.pause.duration;
+    if (_input.escape) return "resume";
+    if (_input.yes) return "title";
+    if (_input.no) return "resume";
+    if (_input.down) _g.pause_pressed=_hover;
+    if (_input.up) {
+        var _pressed=_g.pause_pressed;
+        _g.pause_pressed=-1;
+        if (_hover>=0 && _hover==_pressed) return global.P.pause.buttons[_hover].action;
+    }
+    return "";
+}
+
+function bb_pause_action(_action) {
+    if (_action=="resume") bb_pause_set(false);
+    else if (_action=="title") {
+        audio_stop_all();
+        window_mouse_set_locked(false);window_set_cursor(cr_default);
+        room_goto(rm_title);
+    }
+}
+
 function bb_game_update(_dt) {
     var _g = global.G;
     var _old_x = _g.px, _old_z = _g.pz;
+    var _ui_dt=max(0,_dt);
     _dt = clamp(_dt, 0, 0.1);
     if (bb_debug_update()) return;
     if (_g.gameover) { bb_gameover_update(_dt); return; }
@@ -730,20 +787,12 @@ function bb_game_update(_dt) {
         bb_yctp_update(_dt);
         return;
     }
-    if (keyboard_check_pressed(vk_escape)) {
-        _g.pause = !_g.pause;
-        if (_g.pause) audio_pause_all(); else audio_resume_all();
-        window_mouse_set_locked(!_g.pause);
-        window_set_cursor(_g.pause ? cr_default : cr_none);
-        if (!_g.pause) _g.mouse_ready=false;
-    }
     if (_g.pause) {
-        if (keyboard_check_pressed(ord("Q"))) {
-            audio_stop_all();
-            window_mouse_set_locked(false);
-            window_set_cursor(cr_default);
-            room_goto(rm_title);
-        }
+        bb_pause_action(bb_pause_input(_ui_dt));
+        return;
+    }
+    if (keyboard_check_pressed(vk_escape)) {
+        bb_pause_set(true);
         return;
     }
     if (!_g.mouse_ready) {
@@ -2041,6 +2090,7 @@ function bb_game_draw_gui() {
         return;
     }
     if (_g.state == "secret") {
+        if (_g.pause) bb_pause_draw();
         return;
     }
     if (_g.final_red > 0) {
@@ -2055,19 +2105,7 @@ function bb_game_draw_gui() {
         draw_set_halign(fa_left);
     }
     bb_draw_hud_effects();
-    if (_g.pause) {
-        draw_set_alpha(0.55);
-        draw_set_color(c_black);
-        draw_rectangle(0, 0, _gw, _gh, false);
-        draw_set_alpha(1);
-        draw_set_font(global.fnt_big);
-        draw_set_halign(fa_center);
-        draw_set_color(c_white);
-        draw_text(_gw * 0.5, 180, "PAUSED");
-        draw_set_font(global.fnt_ui);
-        draw_text(_gw * 0.5, 240, "ESC resume   Q title   F11 fullscreen");
-        draw_set_halign(fa_left);
-    }
+    if (_g.pause) bb_pause_draw();
 }
 
 function bb_draw_classic_hud(_g, _gw, _gh) {
